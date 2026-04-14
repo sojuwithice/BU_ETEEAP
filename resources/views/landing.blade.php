@@ -167,6 +167,38 @@
 
   </div> </div>
 
+  
+  <section class="programs-section">
+    <div class="programs-title-container">
+        <h2 class="programs-title">PROGRAMS</h2>
+    </div>
+
+    <div class="programs-info-card">
+        <p>The Bicol University ETEEAP offers the following degree programs:</p>
+        <br>
+        <ul class="program-bullets">
+            <li><strong>BS Information Technology</strong></li>
+            <li><strong>BS Nursing</strong></li>
+            <li><strong>BS Automotive Technology</strong></li>
+            <li><strong>BS Fisheries</strong></li>
+            <li><strong>AB Communication</strong></li>
+        </ul>
+        <br>
+        <p class="program-note">Each program is designed to certify your professional experience into an academic degree.</p>
+        
+        <button class="btn-view-details" onclick="viewPdf('{{ asset('pdf/BU_ETEEAP_Guide.pdf') }}')">
+            View Program Details
+        </button>
+    </div>
+  </div>
+</section>
+
+<div id="pdfModal" class="pdf-modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closePdf()">&times;</span>
+        <iframe id="pdfFrame" src="" frameborder="0"></iframe>
+    </div>
+</div>
   </div>
 </section>
 
@@ -176,7 +208,7 @@
 
     <!-- LEFT -->
     <div class="faq-left">
-      <h2>Frequently ask<br>question</h2>
+      <h2>Frequently ask<br> questions</h2>
 
       <div class="faq-box">
     <h3>Still have Question?</h3>
@@ -350,6 +382,38 @@ document.querySelectorAll('.nav-links a').forEach(link => {
         btn.innerHTML = "See Example Here";
     }
 }
+
+function viewPdf(pdfPath) {
+    const modal = document.getElementById('pdfModal');
+    const frame = document.getElementById('pdfFrame');
+    
+    frame.src = pdfPath;
+    modal.style.display = 'block';
+    
+    // Disable scroll on body when modal is open
+    document.body.style.overflow = 'hidden';
+}
+
+function closePdf() {
+    const modal = document.getElementById('pdfModal');
+    const frame = document.getElementById('pdfFrame');
+    
+    modal.style.display = 'none';
+    frame.src = '';
+    
+    // Re-enable scroll
+    document.body.style.overflow = 'auto';
+}
+
+// Close modal if user clicks outside the content
+window.onclick = function(event) {
+    const modal = document.getElementById('pdfModal');
+    if (event.target == modal) {
+        closePdf();
+    }
+}
+
+
 async function loadFBNews() {
     const myRSSLink = "https://rss.app/feeds/hehF7HW8NbInvS2H.xml"; 
     const API_URL = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(myRSSLink)}`;
