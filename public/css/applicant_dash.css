@@ -1,0 +1,568 @@
+body {
+    margin: 0;
+    font-family: 'Raleway', sans-serif;
+}
+
+/* HEADER */
+.header {
+    background: #223381;
+    padding: 15px 35px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+    height: 45px;
+}
+
+.left-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.left-head img {
+    width: 45px;
+}
+
+.profile {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    border: 2px solid white;
+}
+
+/* BG */
+.main-bg {
+    background: #D6E9FA;
+    padding: 30px;
+}
+
+/* WELCOME */
+.welcome {
+    background: #223381;
+    color: white;
+    padding: 25px;
+    border-radius: 30px;
+    font-size: 28px;
+    font-weight: 600;
+    box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+}
+
+/* NAV */
+.nav {
+    margin: 20px 0;
+    display: flex;
+    gap: 12px;
+}
+
+.nav button {
+    border: none;
+    padding: 10px 35px;
+    border-radius: 18px;
+    background: #a2e0ff;
+    font-size: 18px;
+    font-weight: 700;
+    color: #223381;
+    cursor: pointer;
+}
+
+.nav .active {
+    background: #EF7631;
+    color: white;
+}
+
+/* MAIN CARD */
+.card-container {
+    margin-top: 20px;
+    background: #fff;
+    padding: 25px;
+    border-radius: 25px;
+    display: grid;
+    grid-template-columns: 280px 3fr 320px; 
+    gap: 25px;
+    align-items: start;
+}
+
+.center-content-wrapper {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    align-items: stretch; 
+}
+
+.center-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.rem-title-outside {
+    color: #2f3c8f;
+    font-size: 1.8rem;
+    margin-bottom: 25px; 
+    margin-top: 0;
+}
+
+.center h2 {
+    margin-top: 0;
+}
+
+/* LEFT */
+.progress-card {
+    background: #f26c13;
+    color: white;
+    padding: 20px;
+    border-radius: 30px;
+    margin-bottom: 10px;
+    height: 100px;
+}
+
+.progress-card h1 {
+    font-size: 45px;
+    margin: 0;
+}
+
+
+.progress-card p{
+    margin: 0;
+}
+
+.progress {
+    height: 6px;
+    background: rgba(255,255,255,0.4);
+    border-radius: 10px;
+}
+
+.progress span {
+    display: block;
+    height: 100%;
+    background: white;
+    border-radius: 10px;
+}
+
+.left h2 {
+    color: #2f3c8f;
+    font-size: 1.7rem;
+    text-align: center;
+}
+
+/* CENTER COLUMN */
+
+.center h2 {
+    color: #2f3c8f;
+    font-size: 1.7rem;
+    margin-bottom: 25px;
+    margin-top: 20px;
+    text-align: center;
+}
+
+.req-box, .reminders-card {
+    flex: 1; 
+    min-height: 390px; 
+    
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start; 
+}
+
+.req-box {
+    flex: 1.5; 
+    background: #D6E9FA;
+    border-radius: 25px;
+    padding: 25px;
+    border: 1px solid #223381;
+}
+
+/* Tasks Pill Badge */
+.task-header {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.task-badge {
+    background: white;
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 15px;
+    border-radius: 50px; 
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #000;
+    gap: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.badge-num {
+    background: #5c7cfa; 
+    color: white;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+}
+
+.message-badge {
+    background: rgba(0, 0, 0, 0.1); 
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 15px;
+    border-radius: 50px; 
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #777; 
+    gap: 8px;
+}
+
+.badge-num-gray {
+    background: #5c7cfa; 
+    opacity: 0.8; 
+    color: white;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+}
+
+/* To do Title */
+.todo-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 15px;
+    color: #000;
+}
+
+/* Requirement Items */
+.req-header {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 15px 10px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #333;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    margin-bottom: 10px;
+}
+
+.req-item {
+    background: #A2E0FF;
+    display: flex;
+    justify-content: space-between;
+    padding: 15px 20px;
+    border-radius: 15px;
+    margin-bottom: 10px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #1a1a1a;
+    transition: transform 0.2s;
+}
+
+.req-item:hover {
+    background: rgba(255, 255, 255, 0.6);
+    transform: translateY(-2px);
+}
+
+/* REMINDERS CARD STYLING */
+.reminders-card {
+    flex: 1; 
+    background: #D6E9FA;
+    border-radius: 25px;
+    padding: 25px;
+    border: 1px solid #223381;
+}
+
+.rem-title {
+    color: #223381 !important; /* Blue color */
+    font-size: 1.8rem !important;
+    margin: 0 !important;
+}
+
+.sched-title {
+    font-size: 1.6rem;
+    margin: 10px 0 20px 0;
+    color: #000;
+}
+
+/* Calendar Layout */
+.calendar-grid {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 25px;
+    background: rgba(255,255,255,0.2);
+    padding: 10px;
+    border-radius: 15px;
+}
+
+.cal-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.cal-item span {
+    color: #EF7631; /* Orange text */
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+.cal-item strong {
+    font-size: 1.2rem;
+    color: #000;
+}
+
+/* Highlighted Day (TUE 7) */
+.active-cal {
+    background: #FBCB9E; 
+    padding: 5px 12px;
+    border-radius: 12px;
+    margin-top: -5px;
+}
+
+.active-cal span {
+    color: #223381; 
+}
+
+/* Interview White Box */
+.interview-box {
+    background: #fff;
+    border-radius: 12px;
+    padding: 10px 15px;
+    display: flex;
+    gap: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+    margin-top: -15px;
+    width: fit-content; 
+    min-width: 260px;
+}
+
+.blue-line {
+    width: 3px;
+    background: #223381;
+    border-radius: 10px;
+}
+
+.interview-info h4 {
+    margin: 0;
+    font-size: 0.85rem; 
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    color: #223381;
+}
+
+.interview-info p {
+    margin: 2px 0 0;
+    font-size: 0.7rem; 
+    color: #555;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* Material Icons Styling */
+.material-symbols-outlined {
+    font-size: 14px !important; 
+    color: #EF7631; 
+    vertical-align: middle;
+}
+
+
+/* RIGHT */
+.right h2 {
+    color: #2f3c8f;
+    font-size: 1.7rem;
+    text-align: center;
+}
+
+.status-container {
+    display: flex;
+    flex-direction: column;
+    margin-top: 20px;
+}
+
+.status-row {
+    display: flex;
+    align-items: center; 
+    gap: 20px;
+    margin-bottom: 15px; 
+}
+
+
+.timeline-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    width: 40px;
+    flex-shrink: 0;
+}
+
+.dot {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 2px solid #2f3c8f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    font-weight: 600;
+    z-index: 2;
+    color: #2f3c8f;
+}
+
+.dot.active {
+    background: #2f3c8f;
+    color: #fff;
+}
+
+/* Ang Vertical Line */
+.line {
+    position: absolute;
+    top: 45px; 
+    width: 2px;
+    height: 20px; 
+    background: #2f3c8f;
+    z-index: 1;
+}
+
+/* Status Box */
+.status {
+    background: white;
+    border-radius: 12px;
+    padding: 8px 15px;
+    border: 2px solid #ccc;
+    width: 220px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    box-shadow: 2px 2px 8px rgba(0,0,0,0.05);
+}
+
+.status p {
+    margin: 0;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #2f3c8f;
+}
+
+.status small {
+    font-size: 0.75rem;
+    color: #777;
+}
+
+.status.active {
+    border-color: #2f3c8f;
+}
+
+/* ACTIVITIES */
+.activities {
+    background: #FCC58D;
+    margin-top: -5px;
+    padding: 15px;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.activities h3 {
+    margin-bottom: 10px;
+    color: #2f3c8f;
+    margin-top: 1px;
+    flex-shrink: 0; 
+}
+
+/* ITO ANG MAG-I-SCROLL */
+.activity-list {
+    max-height: 50px; 
+    overflow-y: auto;
+    padding-right: 5px; 
+}
+
+.activity {
+    padding: 10px 0;
+    border-top: 1px solid #000;
+    font-size: 0.85rem;
+    color: #595957;
+}
+
+.activity-list::-webkit-scrollbar {
+    width: 5px;
+}
+
+.activity-list::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 10px;
+}
+
+.activity-list::-webkit-scrollbar-thumb {
+    background: #2f3c8f;
+    border-radius: 10px;
+}
+
+
+
+
+/* RESPONSIVE */
+@media (max-width: 992px) {
+    .card-container {
+        grid-template-columns: 1fr; 
+        padding: 15px;
+        gap: 30px;
+    }
+
+    .center-content-wrapper {
+        flex-direction: column; 
+        gap: 25px;
+        align-items: stretch;
+    }
+
+    .req-box, .reminders-card {
+        max-width: 100%; 
+        min-width: unset;
+        min-height: auto; 
+    }
+
+    .nav {
+        flex-wrap: wrap; 
+        justify-content: center;
+    }
+
+    .nav button {
+        padding: 10px 20px;
+        font-size: 16px;
+        flex: 1; 
+        min-width: 100px;
+    }
+
+    .welcome {
+        font-size: 22px;
+        text-align: center;
+        padding: 20px;
+    }
+
+    .interview-box {
+        width: 90%;
+        min-width: unset;
+    }
+
+    .left h2, .center h2, .right h2, .rem-title-outside {
+        text-align: center;
+        font-size: 1.5rem;
+    }
+    
+    .status {
+        width: 100%; 
+    }
+    
+    .activities {
+    margin-top: 5px;
+    }
+}

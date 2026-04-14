@@ -1,0 +1,508 @@
+body {
+    margin: 0;
+    font-family: 'Raleway', sans-serif;
+}
+
+/* HEADER */
+.header {
+    background: #223381;
+    padding: 15px 35px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+    height: 45px;
+}
+
+.left-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.left-head img {
+    width: 45px;
+}
+
+.profile {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    border: 2px solid white;
+}
+
+/* BG */
+.main-bg {
+    background: #D6E9FA;
+    padding: 30px;
+}
+
+/* WELCOME */
+.welcome {
+    background: #223381;
+    color: white;
+    padding: 25px;
+    border-radius: 30px;
+    font-size: 28px;
+    font-weight: 600;
+    box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+}
+
+/* NAV */
+.nav {
+    margin: 20px 0;
+    display: flex;
+    gap: 12px;
+}
+
+.nav button {
+    border: none;
+    padding: 10px 35px;
+    border-radius: 18px;
+    background: #a2e0ff;
+    font-size: 18px;
+    font-weight: 700;
+    color: #223381;
+    cursor: pointer;
+}
+
+.nav .active {
+    background: #EF7631;
+    color: white;
+}
+
+/* CARD CONTAINER */
+.card-container {
+    background: #fff;
+    padding: 40px;
+    border-radius: 25px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+}
+
+/* PROFILE LAYOUT */
+.profile-container {
+    display: flex;
+    gap: 50px;
+}
+
+.profile-sidebar {
+    width: 200px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.profile-sidebar h3 {
+    color: #233a8e;
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+}
+
+/* I-update lang ito sa existing style mo */
+.pic-circle {
+    width: 160px;
+    height: 160px;
+    border: 3px solid #233a8e;
+    border-radius: 50%;
+    margin: 0 auto 15px;
+    overflow: hidden; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.edit-btn {
+    background: #e0e0e0;
+    border: none;
+    padding: 6px 20px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    margin: 0 auto;
+}
+
+
+
+/* FORM STYLING */
+.profile-main {
+    flex-grow: 1;
+}
+
+.form-title {
+    color: #233a8e;
+    font-size: 2.3rem;
+    font-weight: 800;
+    margin: 0 0 5px 0;
+}
+
+.form-desc {
+    color: #555;
+    font-size: 0.95rem;
+    margin-bottom: 35px;
+    line-height: 1.5;
+}
+
+.form-row {
+    display: grid;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.four-cols {
+    display: flex;
+    gap: 15px; 
+}
+
+.four-cols .field-group {
+    flex: 1;
+    min-width: 0; 
+}
+
+.two-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr; 
+    gap: 20px; 
+    margin-bottom: 20px;
+}
+
+.two-cols .field-group {
+    width: 100%;
+}
+
+.form-date {
+    width: 100%;
+    padding: 11px 15px; 
+    border-radius: 12px;
+    border: 1px solid #ccc;
+    font-family: 'Raleway', sans-serif;
+    font-size: 0.9rem;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.field-group label {
+    color: #233a8e;
+    font-weight: 800;
+    font-size: 1rem;
+}
+
+.field-group label span { color: #d9534f; }
+
+.field-group input, 
+.field-group select {
+
+    border: 2px solid #233a8e;
+    border-radius: 25px;
+    padding: 12px 20px;
+    font-size: 1rem;
+    outline: none;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* CUSTOM SELECT */
+.select-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.select-box select {
+    border: 1px solid #233a8e;
+    border-radius: 25px; 
+    padding: 12px 50px 12px 20px; 
+    font-size: 1rem;
+    outline: none;
+    width: 100%;
+    cursor: pointer;
+    appearance: none; 
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    font-family: 'Raleway', sans-serif;
+    color: #333;
+}
+
+/* CUSTOM CIRCLE ARROW ICON */
+.select-arrow {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 24px; 
+    height: 24px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpolyline points='8 10 12 14 16 10'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    pointer-events: none;
+}
+
+/* Hover Effect */
+.select-box select:hover {
+    background-color: #D1D1D1;
+}
+
+/* Container */
+.custom-select {
+    position: relative;
+    width: 100%;
+    user-select: none;
+}
+
+/* Ang main bar */
+.select-trigger {
+    border: 2px solid #233a8e;
+    border-radius: 25px;
+    padding: 12px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    font-weight: 600;
+    color: #333;
+    transition: all 0.3s;
+}
+
+/* Circle Arrow Icon base sa screenshot */
+.arrow-icon {
+    width: 22px;
+    height: 22px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpolyline points='8 10 12 14 16 10'/%3E%3C/svg%3E");
+    background-size: contain;
+    background-repeat: no-repeat;
+    transition: transform 0.3s;
+}
+
+/* Floating Menu Box */
+.select-options {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15); 
+    display: none; 
+    z-index: 999;
+    max-height: 250px;
+    overflow-y: auto;
+    padding: 8px 0;
+}
+
+/* Show menu when active */
+.custom-select.active .select-options {
+    display: block;
+}
+
+.custom-select.active .arrow-icon {
+    transform: rotate(180deg); 
+}
+
+/* Individual Options */
+.option {
+    padding: 12px 20px;
+    cursor: pointer;
+    font-weight: 500;
+    color: #444;
+    transition: 0.2s;
+}
+
+.option:hover {
+    background-color: #f0f4ff; 
+    color: #223381; 
+}
+
+/* Custom Scrollbar */
+.select-options::-webkit-scrollbar {
+    width: 6px;
+}
+.select-options::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 10px;
+}
+
+/* SAVE BUTTON */
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 30px;
+}
+
+.save-btn {
+    background: #EF7631;
+    color: white;
+    border: none;
+    padding: 10px 30px;
+    border-radius: 30px;
+    font-size: 1.2rem;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.label-note {
+    font-size: 0.8rem;
+    color: #515151; 
+    font-weight: 400;
+    font-style: italic;
+    margin-left: 2px;
+}
+
+.field-group label {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    flex-wrap: wrap; 
+}
+
+
+.modal {
+    display: none; 
+    position: fixed;
+    z-index: 9999;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.8);
+    align-items: center;
+    justify-content: center;
+    padding: 15px; 
+}
+
+.modal-content {
+    background-color: #fff;
+    padding: 25px; /* Dinagdagan natin ng konting padding para mas malinis */
+    border-radius: 15px;
+    width: 100%;
+    max-width: 500px; /* Nilakihan natin ang max-width para sa desktop */
+    text-align: center;
+    box-sizing: border-box;
+}
+
+#image-demo {
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin-top: 20px;
+    flex-wrap: nowrap; /* Siniguro nating laging row */
+}
+
+.btn-save, .btn-cancel {
+    border: none;
+    padding: 10px 24px; /* Mas balance na padding */
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    white-space: nowrap; /* Para hindi mag-break ang text sa loob ng button */
+    transition: 0.3s;
+}
+
+/* Specific colors */
+.btn-save { background: #233a8e; color: white; }
+.btn-save:hover { background: #1a2b6d; }
+.btn-cancel { background: #e0e0e0; color: #333; }
+.btn-cancel:hover { background: #d0d0d0; }
+
+
+/* MOBILE RESPONSIVE */
+@media (max-width: 1100px) {
+    .four-cols, .two-cols { 
+        display: grid;
+        grid-template-columns: 1fr; 
+        gap: 15px;
+    }
+    .profile-container { gap: 30px; }
+}
+
+@media (max-width: 900px) {
+    .profile-container { 
+        flex-direction: column; 
+        align-items: center; 
+    }
+    .profile-sidebar { 
+        width: 100%; 
+        text-align: center; 
+    }
+    .profile-main { width: 100%; }
+    .main-bg { padding: 15px; }
+    
+    .nav {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .nav button {
+        padding: 10px 15px;
+        font-size: 14px;
+        flex: 1; 
+        min-width: 120px;
+    }
+}
+
+@media (max-width: 600px) {
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr !important;
+        gap: 15px;
+    }
+
+    .four-cols, .two-cols { 
+        grid-template-columns: 1fr !important; 
+    }
+
+    .welcome { font-size: 20px; padding: 20px; }
+    .form-title { font-size: 1.5rem; }
+    .save-btn { width: 100%; padding: 15px; }
+    
+    .field-group input, .select-trigger {
+        font-size: 16px; 
+    }
+
+    .modal-content {
+        padding: 15px;
+        width: 92%; 
+        max-width: 380px;
+        margin-left: -30px;
+    }
+
+    /* Liitan ang heading size */
+    .modal-content h3 {
+        font-size: 1.1rem;
+        margin-bottom: 10px;
+    }
+
+    .cr-boundary {
+        width: 100% !important;
+        height: 220px !important; 
+    }
+
+    .modal-actions {
+        gap: 6px; 
+        margin-top: 15px;
+    }
+
+    .btn-save, .btn-cancel, .btn-change { 
+        padding: 8px 10px; 
+        font-size: 12px;   
+        border-radius: 6px;
+        flex: 1;           
+        white-space: nowrap; 
+    }
+    
+    
+}
