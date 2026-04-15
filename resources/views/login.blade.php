@@ -15,6 +15,23 @@
   <div class="form-container sign-up-container">
     <form action="#">
       <h1 class="form-title">SIGN UP</h1>
+
+      <div class="role-selection">
+      <label class="role-item">
+        <input type="radio" name="role_signup" value="student" checked>
+        <div class="role-btn">
+          <i class="fa-solid fa-user-graduate"></i>
+          <span>Student</span>
+        </div>
+      </label>
+      <label class="role-item">
+        <input type="radio" name="role_signup" value="staff">
+        <div class="role-btn">
+          <i class="fa-solid fa-user-tie"></i>
+          <span>Staff</span>
+        </div>
+      </label>
+    </div>
       
       <div class="input-row">
         <div class="input-group">
@@ -52,6 +69,7 @@
         By creating an account you agree to BU ETEEAP's 
         <a href="#">Terms of Services</a> and <a href="#">Privacy Policy</a>.
       </p>
+      
 
       <button type="button" class="primary-btn">SIGN UP</button>
       
@@ -64,6 +82,23 @@
   <div class="form-container sign-in-container">
     <form action="#">
       <h1 class="form-title">LOGIN</h1>
+
+      <div class="role-selection">
+      <label class="role-item">
+        <input type="radio" name="role_signup" value="student" checked>
+        <div class="role-btn">
+          <i class="fa-solid fa-user-graduate"></i>
+          <span>Student</span>
+        </div>
+      </label>
+      <label class="role-item">
+        <input type="radio" name="role_signup" value="staff">
+        <div class="role-btn">
+          <i class="fa-solid fa-user-tie"></i>
+          <span>Staff</span>
+        </div>
+      </label>
+    </div>
       
       <div class="input-group full-width">
         <label>Email</label>
