@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ETEEAP Landing</title>
+    <link rel="icon" type="image/png" href="{{ asset('images/eteeap_logo.png') }}">
 <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{{ asset('css/style.css') }}">
 </head>
@@ -388,9 +389,8 @@ function viewPdf(pdfPath) {
     const frame = document.getElementById('pdfFrame');
     
     frame.src = pdfPath;
-    modal.style.display = 'block';
+    modal.style.display = 'flex';
     
-    // Disable scroll on body when modal is open
     document.body.style.overflow = 'hidden';
 }
 
@@ -401,7 +401,7 @@ function closePdf() {
     modal.style.display = 'none';
     frame.src = '';
     
-    // Re-enable scroll
+    
     document.body.style.overflow = 'auto';
 }
 
