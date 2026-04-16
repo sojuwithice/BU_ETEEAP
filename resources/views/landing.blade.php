@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>ETEEAP Landing</title>
     <link rel="icon" type="image/png" href="{{ asset('images/eteeap_logo.png') }}">
 <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -326,13 +326,6 @@ faqItems.forEach(item => {
     item.classList.toggle('active');
   });
 });
-
-window.onload = function() {
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('mode') === 'signup') {
-        document.getElementById('container').classList.add("right-panel-active");
-    }
-}
 
 const hamburger = document.getElementById('hamburger');
 const navLinks = document.getElementById('nav-links');

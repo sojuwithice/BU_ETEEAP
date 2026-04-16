@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>BU ETEEAP Login/Signup</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <link rel="stylesheet" href="{{ asset('css/login.css') }}">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -222,6 +222,17 @@
         document.getElementById('recaptcha_token').value = token;
     });
   });
+
+window.onload = function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    if (urlParams.get('mode') === 'signup') {
+        const container = document.getElementById('container');
+        if (container) {
+            container.classList.add("right-panel-active");
+        }
+    }
+}
 </script>
 
 </body>
