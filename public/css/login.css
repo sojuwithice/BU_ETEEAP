@@ -322,23 +322,9 @@ input:not([type="checkbox"]) {
   transition: none !important;
 }
 
+
+
 /* Mobile Adjustments */
-@media (max-width: 768px) {
-  .role-selection {
-    margin-bottom: 20px;
-  }
-  
-  .role-btn {
-    padding: 15px;
-  }
-
-  .role-btn i {
-    font-size: 24px;
-  }
-}
-
-
-
 @media (max-width: 768px) {
   body {
     background: #f5f5f5;
@@ -357,16 +343,14 @@ input:not([type="checkbox"]) {
     display: block; 
   }
 
-  
   .overlay-container {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
-    height: 280px;
+    height: 190px;
     background: var(--primary-green);
-  
-    border-radius: 0 0 80px 80px !important; 
+    border-radius: 0 0 50px 50px !important; 
     z-index: 20;
     transform: none !important; 
     display: block;
@@ -374,7 +358,7 @@ input:not([type="checkbox"]) {
 
   .overlay {
     width: 200%;
-    height: 90%;
+    height: 100%;
     display: flex;
     background: transparent;
     transition: transform 0.6s cubic-bezier(0.7, 0, 0.3, 1);
@@ -385,25 +369,62 @@ input:not([type="checkbox"]) {
   }
 
   .overlay-panel {
-    width: 50%;
+    width: 50% !important; 
     height: 100%;
-    padding: 30px 20px;
+    padding: 20px;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    align-items: center;
+    align-items: center; 
     position: relative;
     transform: none !important;
     text-align: center;
     color: white;
   }
 
+  /* LOGO FIX */
+  .logo-header {
+    position: relative !important;
+    display: flex !important;
+    justify-content: center !important;
+    width: 100% !important;
+    margin-bottom: 5px !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    transform: none !important;
+  }
+  
+  .logo-header img { 
+    height: 35px !important; 
+  }
+
+  /* TEXT*/
+  .text-content {
+    width: 100%;
+    text-align: center !important;
+  }
+
+  .text-content h1 { 
+    font-size: 30px !important;
+    margin: 5px 0 !important;
+    width: 100%;
+  }
+
+  .text-content p {
+    font-size: 12px !important;
+    line-height: 1.4;
+    max-width: 85%;
+    margin: 0 auto !important;
+  }
+
+  /* FORM CONTAINER*/
   .form-container {
     position: absolute;
-    top: 290px; 
+    top: 190px; 
     left: 0;
     width: 100%;
-    height: calc(100% - 280px);
+    height: calc(100% - 200px);
     background: white;
     transition: transform 0.6s cubic-bezier(0.7, 0, 0.3, 1), opacity 0.4s;
     z-index: 10;
@@ -422,7 +443,6 @@ input:not([type="checkbox"]) {
     visibility: hidden;
   }
 
-  
   .container.right-panel-active .sign-in-container {
     transform: translateX(-100%);
     opacity: 0;
@@ -436,42 +456,48 @@ input:not([type="checkbox"]) {
   }
 
   form {
-    padding: 10px 30px 40px !important;
+    padding: 10px 30px 20px !important;
     height: 100%;
     justify-content: flex-start !important;
     overflow-y: auto; 
+    align-items: center; 
   }
 
   .form-title {
-    font-size: 50px !important;
-    font-weight: 900;
-    margin: 10px 0 20px 0;
+    font-size: 24px !important;
+    font-weight: 800;
+    margin: 10px 0 15px 0;
     color: var(--primary-green);
+    text-align: center;
   }
 
   .input-row {
     flex-direction: row !important; 
     gap: 10px;
+    width: 100%;
   }
 
   input:not([type="checkbox"]) {
     border: 1.5px solid #ccc !important;
-    border-radius: 15px !important;
+    border-radius: 12px !important;
     padding: 10px 15px !important;
+    font-size: 14px !important;
   }
 
   .primary-btn {
-    width: 220px !important;
-    margin: 30px auto 10px !important;
-    border-radius: 30px !important;
-    padding: 15px 0 !important;
+    width: 180px !important;
+    margin: 15px auto 10px !important;
+    border-radius: 25px !important;
+    padding: 12px 0 !important;
+    font-size: 14px;
   }
 
-  .logo-header {
-    position: static !important;
-    margin-bottom: 10px;
+  .role-selection {
+    margin-bottom: 15px;
+    gap: 10px;
   }
   
-  .logo-header img { height: 45px !important; }
-  .text-content h1 { font-size: 42px !important; }
+  .role-btn {
+    padding: 8px !important;
+  }
 }
