@@ -24,7 +24,7 @@ body {
   background: var(--white);
   width: 1000px;
   max-width: 95%;
-  min-height: 650px;
+  min-height: 700px;
   position: relative;
   overflow: hidden;
   border-radius: 20px;
@@ -300,6 +300,26 @@ input:not([type="checkbox"]) {
 .role-btn:hover {
   border-color: var(--primary-green);
   color: var(--primary-green);
+}
+
+.error-text {
+  color: #ff4d4f;
+  font-size: 12px;
+  margin-top: 5px;
+  display: block;
+}
+
+.input-group input {
+  border: 1px solid #ccc;
+}
+
+/* highlight input if may error */
+.input-group input.error {
+  border-color: #ff4d4f;
+}
+
+.no-animation {
+  transition: none !important;
 }
 
 /* Mobile Adjustments */

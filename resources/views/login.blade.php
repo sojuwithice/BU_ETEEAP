@@ -7,25 +7,31 @@
   <link rel="stylesheet" href="{{ asset('css/login.css') }}">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://www.google.com/recaptcha/api.js?render={{ env('RECAPTCHA_SITE') }}"></script>
 </head>
 <body>
 
-<div class="container" id="container">
+<div class="container 
+  @if($errors->any()) no-animation @endif
+  @if($errors->signup->any()) right-panel-active @endif
+" id="container">
 
   <div class="form-container sign-up-container">
-    <form action="#">
-      <h1 class="form-title">SIGN UP</h1>
+  <form method="POST" action="{{ route('register.post') }}">
+    @csrf
 
-      <div class="role-selection">
+    <h1 class="form-title">SIGN UP</h1>
+
+    <div class="role-selection">
       <label class="role-item">
-        <input type="radio" name="role_signup" value="student" checked>
+        <input type="radio" name="role" value="student" checked>
         <div class="role-btn">
           <i class="fa-solid fa-user-graduate"></i>
           <span>Student</span>
         </div>
       </label>
       <label class="role-item">
-        <input type="radio" name="role_signup" value="staff">
+        <input type="radio" name="role" value="staff">
         <div class="role-btn">
           <i class="fa-solid fa-user-tie"></i>
           <span>Staff</span>
@@ -33,66 +39,91 @@
       </label>
     </div>
       
-      <div class="input-row">
-        <div class="input-group">
-          <label>First name</label>
-          <input type="text" placeholder="e.g. Juan" />
-        </div>
-        <div class="input-group">
-          <label>Last name</label>
-          <input type="text" placeholder="e.g. Dela Cruz" />
-        </div>
+    <div class="input-row">
+      <div class="input-group">
+        <label>First name</label>
+        <input type="text" name="first_name" value="{{ old('first_name') }}" placeholder="e.g. Juan" />
+        
+        @error('first_name', 'signup')
+          <small class="error-text">{{ $message }}</small>
+        @enderror
+      </div>
+      <div class="input-group">
+        <label>Last name</label>
+        <input type="text" name="last_name" value="{{ old('last_name') }}" placeholder="e.g. Dela Cruz" />
+
+        @error('last_name', 'signup')
+          <small class="error-text">{{ $message }}</small>
+        @enderror
+      </div>
+    </div>
+
+    <div class="input-group full-width">
+      <label>Email</label>
+      <input type="email" name="email" value="{{ old('email') }}" placeholder="e.g. juandelacruz@gmail.com" />
+
+      @error('email', 'signup')
+        <small class="error-text">{{ $message }}</small>
+      @enderror
+    </div>
+
+    <div class="input-group full-width">
+      <label>Password</label>
+      <div class="password-wrapper">
+        <input type="password" name="password" placeholder="Enter your Password" />
+        <i class="fa-solid fa-eye eye-toggle" onclick="togglePassword(this)"></i>
       </div>
 
-      <div class="input-group full-width">
-        <label>Email</label>
-        <input type="email" placeholder="e.g. juandelacruz@gmail.com" />
+      @error('password', 'signup')
+        <small class="error-text">{{ $message }}</small>
+      @enderror
+    </div>
+
+    <div class="input-group full-width">
+      <label>Confirm Password</label>
+      <div class="password-wrapper">
+        <input type="password" name="password_confirmation" placeholder="Confirm Password" />
+        <i class="fa-solid fa-eye eye-toggle" onclick="togglePassword(this)"></i>
       </div>
 
-      <div class="input-group full-width">
-        <label>Password</label>
-        <div class="password-wrapper">
-          <input type="password" placeholder="Enter your Password" />
-          <i class="fa-solid fa-eye eye-toggle" onclick="togglePassword(this)"></i>
-        </div>
-      </div>
+      @error('password_confirmation', 'signup')
+        <small class="error-text">{{ $message }}</small>
+      @enderror
+    </div>
 
-      <div class="input-group full-width">
-        <label>Confirm Password</label>
-        <div class="password-wrapper">
-          <input type="password" placeholder="Enter your Password" />
-          <i class="fa-solid fa-eye eye-toggle" onclick="togglePassword(this)"></i>
-        </div>
-      </div>
+    <!-- RECAPTCHA TOKEN -->
+    <input type="hidden" name="recaptcha_token" id="recaptcha_token">
 
-      <p class="terms-text">
-        By creating an account you agree to BU ETEEAP's 
-        <a href="#">Terms of Services</a> and <a href="#">Privacy Policy</a>.
-      </p>
+    <p class="terms-text">
+      By creating an account you agree to BU ETEEAP's 
+      <a href="#">Terms of Services</a> and <a href="#">Privacy Policy</a>.
+    </p>
+
+    <button type="submit" class="primary-btn">SIGN UP</button>
       
+    <p class="switch-field">
+      Already have an Account? <span onclick="toggle()">Login here</span>
+    </p>
+  </form>
+</div>
 
-      <button type="button" class="primary-btn">SIGN UP</button>
-      
-      <p class="switch-field">
-        Already have an Account? <span onclick="toggle()">Login here</span>
-      </p>
-    </form>
-  </div>
+<!-- LOGIN -->
+<div class="form-container sign-in-container">
+  <form method="POST" action="{{ route('login.post') }}">
+    @csrf
 
-  <div class="form-container sign-in-container">
-    <form action="#">
-      <h1 class="form-title">LOGIN</h1>
+    <h1 class="form-title">LOGIN</h1>
 
-      <div class="role-selection">
+    <div class="role-selection">
       <label class="role-item">
-        <input type="radio" name="role_signup" value="student" checked>
+        <input type="radio" name="role" value="student" checked>
         <div class="role-btn">
           <i class="fa-solid fa-user-graduate"></i>
           <span>Student</span>
         </div>
       </label>
       <label class="role-item">
-        <input type="radio" name="role_signup" value="staff">
+        <input type="radio" name="role" value="staff">
         <div class="role-btn">
           <i class="fa-solid fa-user-tie"></i>
           <span>Staff</span>
@@ -100,34 +131,41 @@
       </label>
     </div>
       
-      <div class="input-group full-width">
-        <label>Email</label>
-        <input type="email" placeholder="Enter your Email Account" />
+    <div class="input-group full-width">
+      <label>Email</label>
+      <input type="email" name="email" value="{{ old('email') }}" placeholder="Enter your Email Account" />
+
+      @error('email', 'login')
+        <small class="error-text">{{ $message }}</small>
+      @enderror
+    </div>
+
+    <div class="input-group full-width">
+      <label>Password</label>
+      <div class="password-wrapper">
+        <input type="password" name="password" placeholder="Enter your Password" />
+        <i class="fa-solid fa-eye eye-toggle" onclick="togglePassword(this)"></i>
       </div>
 
-      <div class="input-group full-width">
-        <label>Password</label>
-        <div class="password-wrapper">
-          <input type="password" placeholder="Enter your Password" />
-          <i class="fa-solid fa-eye eye-toggle" onclick="togglePassword(this)"></i>
-        </div>
-      </div>
+      @error('password', 'login')
+        <small class="error-text">{{ $message }}</small>
+      @enderror
+    </div>
 
-      <div class="form-utils">
-        <label class="remember-me">
-          <input type="checkbox"> Remember me
-        </label>
-        <a href="#" class="forgot-pass">Forgot Password?</a>
-      </div>
+    <div class="form-utils">
+      <label class="remember-me">
+        <input type="checkbox"> Remember me
+      </label>
+      <a href="#" class="forgot-pass">Forgot Password?</a>
+    </div>
 
-      <button type="button" class="primary-btn">LOGIN</button>
+    <button type="submit" class="primary-btn">LOGIN</button>
 
-      <p class="switch-field">
-        Don't have an Account? <span onclick="toggle()">Sign up here</span>
-      </p>
-    </form>
-  </div>
-
+    <p class="switch-field">
+      Don't have an Account? <span onclick="toggle()">Sign up here</span>
+    </p>
+  </form>
+</div>
   <div class="overlay-container">
     <div class="overlay">
       
@@ -160,22 +198,12 @@
 
 <script>
   const container = document.getElementById('container');
-  
-  // Eto yung function para sa manual toggle (yung "Login here" / "Sign up here" links)
-  function toggle() {
-    container.classList.toggle("right-panel-active");
-  }
 
-  // Eto yung logic para sa "Apply Now" galing sa Landing Page
-  window.onload = function() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const mode = urlParams.get('mode');
-    
-    // Kung ang URL ay may ?mode=signup, i-trigger ang slide pakanan
-    if (mode === 'signup' && container) {
-      container.classList.add("right-panel-active");
-    }
-  };
+  function toggle() {
+    @if(!$errors->any())
+      container.classList.toggle("right-panel-active");
+    @endif
+  }
 
   function togglePassword(icon) {
     const passwordInput = icon.parentElement.querySelector('input');
@@ -187,6 +215,13 @@
       icon.classList.replace('fa-eye-slash', 'fa-eye');
     }
   }
+
+  grecaptcha.ready(function() {
+    grecaptcha.execute('{{ env('RECAPTCHA_SITE') }}', {action: 'submit'})
+    .then(function(token) {
+        document.getElementById('recaptcha_token').value = token;
+    });
+  });
 </script>
 
 </body>
