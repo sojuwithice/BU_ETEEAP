@@ -531,7 +531,8 @@ ol li{
   padding: 25px 30px;
   border-left: 6px solid #e07b39;
   border-radius: 0 10px 10px 0;
-  width: 80.9rem; 
+  width: 145%; 
+  box-sizing: border-box; 
 }
 
 .programs-info-card p {
@@ -980,12 +981,18 @@ ol li{
   }
 
 .programs-info-card {
-    max-width: 25rem;
-}
+    width: 100% !important; 
+    max-width: 100% !important;
+    padding: 20px !important;
+    margin-left: 0 !important; 
+  }
 
-.programs-title {
-  font-size: 28px;
-}
+  .programs-title {
+    font-size: 28px;
+    padding: 8px 20px;
+    display: block; 
+    width: fit-content;
+  }
 
 .programs-info-card p{
   font-size: 15px;
