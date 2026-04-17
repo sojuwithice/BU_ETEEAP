@@ -13,12 +13,14 @@ class User extends Authenticatable
     /**
      * Fields na pwedeng i-mass assign
      */
-    protected $fillable = [
+        protected $fillable = [
         'first_name',
         'last_name',
         'email',
         'password',
-        'role'
+        'password_plain', // Idagdag ito!
+        'role',
+        'profile_image' // Siguraduhin na andito rin ito kung ginagamit mo
     ];
 
     /**
@@ -35,5 +37,6 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'password_plain' => 'encrypted',
     ];
 }

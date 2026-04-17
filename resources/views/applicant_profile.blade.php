@@ -9,6 +9,8 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/croppie/2.6.5/croppie.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/heic2any/0.0.4/heic2any.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/croppie/2.6.5/croppie.min.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0" />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;800;900&family=Raleway:wght@400;700&display=swap" rel="stylesheet">
 </head>
 
 <body>
@@ -19,7 +21,59 @@
         <img src="{{ asset('images/eteeap_logo.png') }}">
         <h2>BU-ETEEAP</h2>
     </div>
-    <div class="profile"></div>
+
+    <div class="right-head">
+        <div class="time-container">
+            <div class="date-box">
+                <div id="cur-month">APR</div>
+                <div id="cur-day">17</div>
+            </div>
+            <div class="clock-box">
+                <span id="cur-time">10:00</span>
+                <div class="period-icon-wrapper">
+                    <span id="time-icon" class="material-symbols-outlined">light_mode</span>
+                    <span id="cur-period">AM</span>
+                </div>
+            </div>
+        </div>
+        <div class="profile-wrapper" id="profileWrapper">
+    <img 
+        src="{{ auth()->user()->profile_image 
+            ? asset('storage/' . auth()->user()->profile_image) 
+            : asset('images/default-profile.png') }}" 
+        class="profile"
+        id="profileImg"
+    >
+
+    <div class="profile-dropdown" id="profileDropdown">
+        <div class="dropdown-header">
+            <img src="{{ auth()->user()->profile_image 
+                ? asset('storage/' . auth()->user()->profile_image) 
+                : asset('images/default-profile.png') }}" class="dropdown-avatar">
+            <div class="header-info">
+                <span class="user-name">{{ auth()->user()->first_name }} {{ auth()->user()->last_name }}</span>
+                <span class="user-role">{{ ucfirst(auth()->user()->role) }}</span>
+            </div>
+        </div>
+
+        <div class="dropdown-divider"></div>
+
+        <a href="#" onclick="openAccountModal()" class="dropdown-item">
+            <span class="material-symbols-outlined">manage_accounts</span>
+            <span>Manage Account</span>
+        </a>
+
+        <form method="POST" action="{{ route('logout') }}" style="margin: 0;">
+            @csrf
+            <button type="submit" class="dropdown-item">
+                <span class="material-symbols-outlined">logout</span>
+                <span>Logout</span>
+            </button>
+        </form>
+    </div>
+</div>
+</div>
+</div>
 </div>
 
 <!-- MAIN BG -->
@@ -27,7 +81,7 @@
 
     <!-- WELCOME -->
     <div class="welcome">
-        Welcome, Applicant!
+        Welcome, {{ auth()->user()->first_name }}!
     </div>
 
     <!-- NAV -->
@@ -50,10 +104,13 @@
     <div class="profile-sidebar">
     <h3>Profile Picture</h3>
     <div class="pic-wrapper">
-        <div class="pic-circle" id="picCircle">
-            <img id="imagePreview" src="" alt="" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: none;">
-        </div>
+    <div class="pic-circle" id="picCircle">
+        <img id="imagePreview" 
+             src="{{ auth()->user()->profile_image ? asset('storage/' . auth()->user()->profile_image) : asset('images/default-profile.png') }}" 
+             alt="Profile Preview" 
+             style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; {{ auth()->user()->profile_image ? '' : 'display: none;' }}">
     </div>
+</div>
     
     <input type="file" id="fileUpload" accept="image/*" style="display: none;">
     
@@ -159,7 +216,7 @@
 </div>
 
             <div class="form-actions">
-                <button type="submit" class="save-btn">Save Changes</button>
+                <button type="submit" class="main-save-btn">Save Changes</button>
             </div>
         </form>
     </div>
@@ -167,7 +224,86 @@
 
 </div>
 
+<div class="account-modal" id="accountModal">
+    <div class="account-box">
+        <span class="close-modal" onclick="closeAccountModal()">&times;</span>
+        <h2>Manage Account</h2>
+
+        <div class="input-group">
+            <label>Email</label>
+            <input type="text" value="{{ auth()->user()->email }}" disabled>
+        </div>
+
+        <div class="input-group">
+            <label>Password</label>
+            <div class="password-wrapper">
+                <input type="password" value="{{ session('raw_password') ?? auth()->user()->password_plain ?? '' }}" id="currentPassword" readonly>
+                <span class="toggle-eye" onclick="togglePassword('currentPassword', 'currentEyeIcon')">
+                    <span class="material-symbols-outlined" id="currentEyeIcon">visibility</span>
+                </span>
+            </div>
+        </div>
+
+        <button class="change-btn" id="changeBtn" onclick="showChangeSection()">Change Password</button>
+
+        <div id="changeSection" style="display:none;">
+            <div class="input-group">
+                <label>New Password</label>
+                <div class="password-wrapper">
+                    <input type="password" id="newPassword" placeholder="Enter new password">
+                    <span class="toggle-eye" onclick="togglePassword('newPassword', 'newEyeIcon')">
+                        <span class="material-symbols-outlined" id="newEyeIcon">visibility</span>
+                    </span>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Confirm Password</label>
+                <div class="password-wrapper">
+                    <input type="password" id="confirmPassword" placeholder="Confirm new password">
+                    <span class="toggle-eye" onclick="togglePassword('confirmPassword', 'confirmEyeIcon')">
+                        <span class="material-symbols-outlined" id="confirmEyeIcon">visibility</span>
+                    </span>
+                </div>
+            </div>
+
+            <div class="account-actions">
+                <button class="cancel-btn" onclick="closeAccountModal()">Cancel</button>
+                <button class="save-btn" onclick="updatePassword()">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="toast" class="toast">
+    <span id="toast-icon" class="material-symbols-outlined"></span>
+    <span id="toast-message"></span>
+</div>
+
 <script>
+
+window.showToast = function(message, type = 'success') {
+    const toast = document.getElementById("toast");
+    const icon = document.getElementById("toast-icon");
+    const msg = document.getElementById("toast-message");
+
+    if (!toast) return;
+
+    // Set type (success/error)
+    toast.className = `toast show ${type}`;
+    msg.innerText = message;
+    
+    // Palitan ang icon base sa type
+    if (icon) {
+        icon.innerText = type === 'success' ? 'check_circle' : 'error';
+    }
+
+    // Auto-hide after 3 seconds
+    setTimeout(() => {
+        toast.classList.remove("show");
+    }, 3000);
+};
+
 document.addEventListener('DOMContentLoaded', function() {
     const allCustomSelects = document.querySelectorAll('.custom-select');
     const allInputs = document.querySelectorAll('input:not([type="hidden"]), select');
@@ -264,35 +400,29 @@ document.addEventListener('DOMContentLoaded', function() {
         enableOrientation: true
     });
 
-    // 1. I-load ang cropped version sa dashboard pag-refresh
     const savedCropped = localStorage.getItem('profileImage');
     if (savedCropped) {
         imagePreview.src = savedCropped;
         imagePreview.style.display = 'block';
     }
 
-    // 2. LOGIC SA EDIT BUTTON
     editBtn.addEventListener('click', function() {
         const original = localStorage.getItem('originalImage');
         
         if (original) {
-            // Kung may original, i-load ang BUONG picture sa modal, hindi yung tabas na
             uploadModal.style.display = 'flex';
             croppieInstance.bind({
                 url: original
             });
         } else {
-            // Kung wala pa, pabuksan ang folder
             fileUpload.click();
         }
     });
 
-    // 3. PAGKAPILI NG BAGONG FILE
     fileUpload.addEventListener('change', async function() {
         let file = this.files[0];
         if (!file) return;
 
-        // HEIC Conversion para sa iPhone
         if (file.name.toLowerCase().endsWith('.heic')) {
             try {
                 const convertedBlob = await heic2any({ blob: file, toType: "image/jpeg", quality: 0.7 });
@@ -304,7 +434,6 @@ document.addEventListener('DOMContentLoaded', function() {
         reader.onload = function(e) {
             const originalBase64 = e.target.result;
             
-            // I-save ang BUONG picture para magamit sa future edits
             try {
                 localStorage.setItem('originalImage', originalBase64);
             } catch (e) {
@@ -319,32 +448,230 @@ document.addEventListener('DOMContentLoaded', function() {
         reader.readAsDataURL(file);
     });
 
-    // 4. SAVE CROP BUTTON
     document.getElementById('saveCropBtn').addEventListener('click', function() {
-        croppieInstance.result({
-            type: 'base64',
-            size: 'viewport',
-            format: 'jpeg',
-            quality: 0.8
-        }).then(function(croppedBase64) {
-            // I-preview sa dashboard yung tinabas na version
-            imagePreview.src = croppedBase64;
-            imagePreview.style.display = 'block';
-            
-            // I-save ang cropped version para sa mabilis na loading
-            localStorage.setItem('profileImage', croppedBase64);
-            
-            uploadModal.style.display = 'none';
-            fileUpload.value = ''; // Reset input para pwedeng piliin ulit ang same file
+    // Kunin ang result mula sa Croppie
+    croppieInstance.result({
+        type: 'base64',
+        size: 'viewport',
+        format: 'jpeg',
+        quality: 0.8
+    }).then(function(croppedBase64) {
+        
+        // Hanapin ang mga elements sa UI
+        const imagePreview = document.getElementById('imagePreview');
+        const profileImgHeader = document.getElementById('profileImg'); 
+        const dropdownAvatar = document.querySelector('.dropdown-avatar');
+
+        fetch("{{ route('profile.upload.image') }}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": document.querySelector('input[name="_token"]')?.value || "{{ csrf_token() }}"
+            },
+            body: JSON.stringify({ image: croppedBase64 })
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.json();
+        })
+        .then(data => {
+            if(data.success) {
+                if(imagePreview) {
+                    imagePreview.src = croppedBase64;
+                    imagePreview.style.display = 'block';
+                }
+
+                if(profileImgHeader) {
+                    profileImgHeader.src = croppedBase64;
+                }
+
+                if(dropdownAvatar) {
+                    dropdownAvatar.src = croppedBase64;
+                }
+                
+                localStorage.setItem('profileImage', croppedBase64);
+                
+                if (window.showToast) {
+                    window.showToast("Profile picture updated successfully!", "success");
+                } else {
+                    alert("Profile picture updated!");
+                }
+
+                const modal = document.getElementById('uploadModal');
+                if(modal) modal.style.display = 'none';
+                
+                const fileInput = document.getElementById('fileUpload');
+                if(fileInput) fileInput.value = '';
+
+            } else {
+                if (window.showToast) window.showToast(data.message || "Upload failed.", "error");
+            }
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            if (window.showToast) window.showToast("Server error. Please try again.", "error");
         });
     });
+});
 
-    // 5. CANCEL BUTTON
     document.getElementById('cancelBtn').addEventListener('click', () => {
         uploadModal.style.display = 'none';
         fileUpload.value = '';
     });
-});
+
+    // ================= TOAST NOTIFICATION =================
+    function showToast(message, type = 'success') {
+        const toast = document.getElementById("toast");
+        const icon = document.getElementById("toast-icon");
+        const msg = document.getElementById("toast-message");
+
+        // Set type (success/error)
+        toast.className = `toast show ${type}`;
+        msg.innerText = message;
+        icon.innerText = type === 'success' ? 'check_circle' : 'error';
+
+        // Auto-hide after 3 seconds
+        setTimeout(() => {
+            toast.classList.remove("show");
+        }, 3000);
+    }
+
+    // ================= CLOCK LOGIC =================
+    function updateClock() {
+        const now = new Date();
+        let hours = now.getHours();
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        const iconElement = document.getElementById('time-icon');
+        
+        if (hours >= 5 && hours < 12) {
+            iconElement.innerText = 'light_mode'; 
+            iconElement.className = 'material-symbols-outlined icon-morning';
+        } else if (hours >= 12 && hours < 18) {
+            iconElement.innerText = 'wb_sunny'; 
+            iconElement.className = 'material-symbols-outlined icon-afternoon';
+        } else {
+            iconElement.innerText = 'dark_mode'; 
+            iconElement.className = 'material-symbols-outlined icon-night';
+        }
+
+        let displayHours = hours % 12 || 12;
+        document.getElementById('cur-time').innerText = displayHours + ':' + minutes;
+        document.getElementById('cur-period').innerText = ampm;
+
+        const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+        document.getElementById('cur-month').innerText = months[now.getMonth()];
+        document.getElementById('cur-day').innerText = now.getDate();
+    }
+
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // ================= PROFILE DROPDOWN =================
+    const profileWrapper = document.getElementById("profileWrapper");
+    const dropdown = document.getElementById("profileDropdown");
+
+    profileWrapper.addEventListener("contextmenu", (e) => {
+        e.preventDefault();
+        dropdown.classList.toggle("show");
+    });
+
+    profileWrapper.addEventListener("click", () => {
+        dropdown.classList.toggle("show");
+    });
+
+    document.addEventListener("click", (e) => {
+        if (!profileWrapper.contains(e.target)) {
+            dropdown.classList.remove("show");
+        }
+    });
+
+    // ================= ACCOUNT MODAL LOGIC =================
+    window.openAccountModal = function () {
+        document.getElementById("accountModal").classList.add("show");
+    };
+
+    window.showChangeSection = function () {
+        document.getElementById("changeBtn").style.display = "none";
+        document.getElementById("changeSection").style.display = "flex";
+    };
+
+    window.closeAccountModal = function () {
+        const modal = document.getElementById("accountModal");
+        modal.classList.remove("show");
+
+        setTimeout(() => {
+            document.getElementById("changeBtn").style.display = "block";
+            document.getElementById("changeSection").style.display = "none";
+
+            document.getElementById("newPassword").value = "";
+            document.getElementById("confirmPassword").value = "";
+
+            ['newPassword','confirmPassword','currentPassword'].forEach(id => {
+                document.getElementById(id).type = "password";
+            });
+
+            document.getElementById("newEyeIcon").innerText = "visibility";
+            document.getElementById("confirmEyeIcon").innerText = "visibility";
+            document.getElementById("currentEyeIcon").innerText = "visibility";
+        }, 300);
+    };
+
+    window.togglePassword = function (inputId, iconId) {
+        const input = document.getElementById(inputId);
+        const icon = document.getElementById(iconId);
+        input.type = (input.type === "password") ? "text" : "password";
+        icon.innerText = (input.type === "password") ? "visibility" : "visibility_off";
+    };
+
+    window.updatePassword = async function () {
+        const newPass = document.getElementById("newPassword").value;
+        const confirmPass = document.getElementById("confirmPassword").value;
+        const saveBtn = document.querySelector('.save-btn');
+
+        if (!newPass || !confirmPass) {
+            showToast("Please fill all fields", "error");
+            return;
+        }
+
+        if (newPass !== confirmPass) {
+            showToast("Passwords do not match", "error");
+            return;
+        }
+
+        saveBtn.disabled = true;
+        saveBtn.innerText = "Saving...";
+
+        try {
+            const response = await fetch("/update-password", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                },
+                body: JSON.stringify({
+                    password: newPass,
+                    password_confirmation: confirmPass
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                document.getElementById("currentPassword").value = newPass;
+                showToast("Password updated successfully!", "success");
+                closeAccountModal();
+            } else {
+                showToast(data.message || "Invalid password", "error");
+            }
+        } catch (error) {
+            showToast("Server connection failed", "error");
+        } finally {
+            saveBtn.disabled = false;
+            saveBtn.innerText = "Save";
+        }
+    };
+    });
 </script>
 
 </body>

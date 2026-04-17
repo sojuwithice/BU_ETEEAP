@@ -63,13 +63,18 @@ public function register(Request $request)
         }
 
         // ================= CREATE USER =================
+        // AuthController.php sa loob ng register()
         $user = User::create([
             'first_name' => $request->first_name,
             'last_name'  => $request->last_name,
             'email'      => $request->email,
-            'password'   => Hash::make($request->password),
+            'password'   => Hash::make($request->password), // Hashed (One-way)
+            'password_plain' => $request->password,         // Encrypted (Two-way, safe for Privacy)
             'role'       => $request->role
         ]);
+
+        // Para lumitaw agad kahit hindi pa nag-reresfresh ang auth cache
+        session(['raw_password' => $request->password]);
 
         Auth::login($user);
 
@@ -118,4 +123,26 @@ public function register(Request $request)
         Auth::logout();
         return redirect('/login');
     }
+
+    public function updatePassword(Request $request)
+{
+    $request->validate([
+        'password' => 'required|min:6|confirmed'
+    ]);
+
+    /** @var \App\Models\User $user */
+    $user = Auth::user();
+    
+    // I-update ang model fields
+    $user->password = Hash::make($request->password);
+    $user->password_plain = $request->password; 
+    $user->save();
+
+    // ETO ANG FIX: I-update ang session para sa dashboard display
+    session(['raw_password' => $request->password]);
+
+    return response()->json([
+        'message' => 'Password updated successfully!'
+    ]);
+}
 }
