@@ -95,8 +95,9 @@
 </div>
 
     <!-- CARD CONTAINER -->
-    <div class="card-container">
 
+    <div class="card-container">
+    <div class="dashboard-container">
         <!-- LEFT -->
         <div class="left">
             <h2>Your Progress</h2>
@@ -263,7 +264,8 @@
         </div>
 
     </div>
-
+</div>
+</div>
 </div>
 
 <div class="account-modal" id="accountModal">
