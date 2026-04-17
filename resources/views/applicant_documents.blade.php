@@ -99,8 +99,15 @@
     <div class="card-container">
 
     <div class="documents-container">
-    <div class="docs-list-section">
-        <h2 class="section-title">Documents List</h2>
+  <div class="docs-list-section">
+
+    <div class="docs-header">
+      <h2 class="section-title">Documents List</h2>
+
+      <button class="onsite-btn">
+        Already Submitted Onsite
+      </button>
+</div>
         <ul class="docs-items">
             <li class="doc-item completed">
                 <div class="check-icon">✔</div>

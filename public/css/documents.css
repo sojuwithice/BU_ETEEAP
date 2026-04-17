@@ -300,16 +300,16 @@ body {
     display: flex;
     gap: 30px;
     align-items: flex-start;
-    height: 100%; /* Gamitin ang buong height ng card */
-    min-height: 0; /* Mahalaga para sa flexbox scrolling */
+    height: 100%; 
+    min-height: 0; 
 }
 
 .docs-list-section, 
 .upload-section {
     flex: 1;
     height: 100%; 
-    overflow-y: auto; /* Dito lalabas ang scrollbar kung mahaba ang listahan */
-    padding-right: 15px; /* Space para sa scrollbar */
+    overflow-y: auto; 
+    padding-right: 15px; 
 }
 
 .docs-list-section::-webkit-scrollbar,
@@ -325,7 +325,7 @@ body {
 
 .docs-list-section {
     flex: 1;
-    border-right: 2px solid #223381; /* Vertical Divider sa screenshot */
+    border-right: 2px solid #223381; 
     padding-right: 30px;
 }
 
@@ -333,11 +333,36 @@ body {
     flex: 1;
 }
 
+.docs-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
 .section-title {
     color: #223381;
-    font-size: 1.5rem; /* Mula 1.8rem */
+    font-size: 1.5rem;
     font-weight: 800;
-    margin-bottom: 15px;
+    margin: 0; 
+}
+
+/* button style */
+.onsite-btn {
+   border: 2px solid #223381;
+    color: #223381;
+    background: white;
+    padding: 8px 14px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.onsite-btn:hover {
+    background: #1a2a66;
+    color: white;
 }
 
 /* LIST STYLING */
@@ -349,14 +374,14 @@ body {
 .doc-item {
     display: flex;
     gap: 12px;
-    align-items: center; /* Center para mas pantay */
+    align-items: center; 
     padding: 10px 12px;
     border-radius: 10px;
     margin-bottom: 5px;
 }
 
 .doc-item.completed {
-    background-color: #D6E9FA; /* Light blue highlight */
+    background-color: #D6E9FA; 
 }
 
 .check-icon {
@@ -396,9 +421,9 @@ body {
 
 /* UPLOAD BOX STYLING */
 .upload-box {
-    border: 2.5px dashed #223381; /* Ginawang kulay ng brand */
+    border: 2.5px dashed #223381; 
     border-radius: 20px;
-    padding: 25px; /* Mula 40px para mas compact */
+    padding: 25px; 
     background-color: #f4f9ff;
     text-align: center;
     cursor: pointer;
@@ -407,7 +432,7 @@ body {
 }
 
 .upload-icon {
-    font-size: 30px; /* Mula 40px */
+    font-size: 30px; 
     margin-bottom: 8px;
 }
 
@@ -431,7 +456,7 @@ body {
 
 .recent-table th {
     text-align: left;
-    color: #EF7631; /* Orange text based on screenshot */
+    color: #EF7631; 
     padding: 10px 10px;
     font-size: 0.85rem;
 }
