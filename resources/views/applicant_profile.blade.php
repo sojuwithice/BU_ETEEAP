@@ -162,7 +162,7 @@
              <div class="form-row four-cols">
             <div class="field-group">
                 <label>Birthdate <span>*</span></label>
-                <input type="date" class="form-date">
+                <input type="date" name="birthdate" class="form-date" required>
             </div>
 
             <div class="field-group">
@@ -392,6 +392,26 @@ document.addEventListener('DOMContentLoaded', function() {
     const imagePreview = document.getElementById('imagePreview');
     const uploadModal = document.getElementById('uploadModal');
     
+    // ================= IMAGE SYNC PRIORITY =================
+    // Pag-load ng page, tignan muna kung ano ang image galing sa server (Blade)
+    if (imagePreview) {
+        const serverImage = imagePreview.getAttribute('src');
+        
+        // Kung default-profile pa rin ang sineserve ng server, check local storage
+        if (serverImage && serverImage.includes('default-profile.png')) {
+            const savedCropped = localStorage.getItem('profileImage');
+            if (savedCropped) {
+                imagePreview.src = savedCropped;
+                imagePreview.style.display = 'block';
+            }
+        } 
+        // Kung HINDI na default ang server image (ibig sabihin nag-update ka sa ibang device),
+        // hayaan lang natin ang imagePreview.src sa server value at i-update ang local storage.
+        else if (serverImage && serverImage.startsWith('http')) {
+             localStorage.setItem('profileImage', serverImage);
+        }
+    }
+
     // Initialize Croppie
     let croppieInstance = new Croppie(document.getElementById('image-demo'), {
         viewport: { width: 180, height: 180, type: 'circle' },
@@ -400,20 +420,11 @@ document.addEventListener('DOMContentLoaded', function() {
         enableOrientation: true
     });
 
-    const savedCropped = localStorage.getItem('profileImage');
-    if (savedCropped) {
-        imagePreview.src = savedCropped;
-        imagePreview.style.display = 'block';
-    }
-
     editBtn.addEventListener('click', function() {
         const original = localStorage.getItem('originalImage');
-        
         if (original) {
             uploadModal.style.display = 'flex';
-            croppieInstance.bind({
-                url: original
-            });
+            croppieInstance.bind({ url: original });
         } else {
             fileUpload.click();
         }
@@ -433,86 +444,66 @@ document.addEventListener('DOMContentLoaded', function() {
         const reader = new FileReader();
         reader.onload = function(e) {
             const originalBase64 = e.target.result;
-            
             try {
                 localStorage.setItem('originalImage', originalBase64);
             } catch (e) {
                 console.warn("Original image is too large for localStorage.");
             }
-            
             uploadModal.style.display = 'flex';
-            croppieInstance.bind({
-                url: originalBase64
-            });
+            croppieInstance.bind({ url: originalBase64 });
         }
         reader.readAsDataURL(file);
     });
 
     document.getElementById('saveCropBtn').addEventListener('click', function() {
-    // Kunin ang result mula sa Croppie
-    croppieInstance.result({
-        type: 'base64',
-        size: 'viewport',
-        format: 'jpeg',
-        quality: 0.8
-    }).then(function(croppedBase64) {
-        
-        // Hanapin ang mga elements sa UI
-        const imagePreview = document.getElementById('imagePreview');
-        const profileImgHeader = document.getElementById('profileImg'); 
-        const dropdownAvatar = document.querySelector('.dropdown-avatar');
+        croppieInstance.result({
+            type: 'base64',
+            size: 'viewport',
+            format: 'jpeg',
+            quality: 0.8
+        }).then(function(croppedBase64) {
+            const profileImgHeader = document.getElementById('profileImg'); 
+            const dropdownAvatar = document.querySelector('.dropdown-avatar');
 
-        fetch("{{ route('profile.upload.image') }}", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRF-TOKEN": document.querySelector('input[name="_token"]')?.value || "{{ csrf_token() }}"
-            },
-            body: JSON.stringify({ image: croppedBase64 })
-        })
-        .then(response => {
-            if (!response.ok) throw new Error('Network response was not ok');
-            return response.json();
-        })
-        .then(data => {
-            if(data.success) {
-                if(imagePreview) {
-                    imagePreview.src = croppedBase64;
-                    imagePreview.style.display = 'block';
-                }
+            fetch("{{ route('profile.upload.image') }}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": document.querySelector('input[name="_token"]')?.value || "{{ csrf_token() }}"
+                },
+                body: JSON.stringify({ image: croppedBase64 })
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.json();
+            })
+            .then(data => {
+                if(data.success) {
+                    // Sabay-sabay na update sa UI para synchronized
+                    if(imagePreview) {
+                        imagePreview.src = croppedBase64;
+                        imagePreview.style.display = 'block';
+                    }
+                    if(profileImgHeader) profileImgHeader.src = croppedBase64;
+                    if(dropdownAvatar) dropdownAvatar.src = croppedBase64;
+                    
+                    localStorage.setItem('profileImage', croppedBase64);
+                    
+                    // Gamitin ang local showToast function
+                    showToast("Profile picture updated successfully!", "success");
 
-                if(profileImgHeader) {
-                    profileImgHeader.src = croppedBase64;
-                }
-
-                if(dropdownAvatar) {
-                    dropdownAvatar.src = croppedBase64;
-                }
-                
-                localStorage.setItem('profileImage', croppedBase64);
-                
-                if (window.showToast) {
-                    window.showToast("Profile picture updated successfully!", "success");
+                    uploadModal.style.display = 'none';
+                    fileUpload.value = '';
                 } else {
-                    alert("Profile picture updated!");
+                    showToast(data.message || "Upload failed.", "error");
                 }
-
-                const modal = document.getElementById('uploadModal');
-                if(modal) modal.style.display = 'none';
-                
-                const fileInput = document.getElementById('fileUpload');
-                if(fileInput) fileInput.value = '';
-
-            } else {
-                if (window.showToast) window.showToast(data.message || "Upload failed.", "error");
-            }
-        })
-        .catch(error => {
-            console.error("Error:", error);
-            if (window.showToast) window.showToast("Server error. Please try again.", "error");
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                showToast("Server error. Please try again.", "error");
+            });
         });
     });
-});
 
     document.getElementById('cancelBtn').addEventListener('click', () => {
         uploadModal.style.display = 'none';
@@ -525,12 +516,12 @@ document.addEventListener('DOMContentLoaded', function() {
         const icon = document.getElementById("toast-icon");
         const msg = document.getElementById("toast-message");
 
-        // Set type (success/error)
+        if(!toast || !icon || !msg) return;
+
         toast.className = `toast show ${type}`;
         msg.innerText = message;
         icon.innerText = type === 'success' ? 'check_circle' : 'error';
 
-        // Auto-hide after 3 seconds
         setTimeout(() => {
             toast.classList.remove("show");
         }, 3000);
@@ -544,6 +535,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const ampm = hours >= 12 ? 'PM' : 'AM';
         const iconElement = document.getElementById('time-icon');
         
+        if (!iconElement) return;
+
         if (hours >= 5 && hours < 12) {
             iconElement.innerText = 'light_mode'; 
             iconElement.className = 'material-symbols-outlined icon-morning';
@@ -556,16 +549,22 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         let displayHours = hours % 12 || 12;
-        document.getElementById('cur-time').innerText = displayHours + ':' + minutes;
-        document.getElementById('cur-period').innerText = ampm;
+        const curTime = document.getElementById('cur-time');
+        const curPeriod = document.getElementById('cur-period');
+        const curMonth = document.getElementById('cur-month');
+        const curDay = document.getElementById('cur-day');
+
+        if(curTime) curTime.innerText = displayHours + ':' + minutes;
+        if(curPeriod) curPeriod.innerText = ampm;
 
         const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
-        document.getElementById('cur-month').innerText = months[now.getMonth()];
-        document.getElementById('cur-day').innerText = now.getDate();
+        if(curMonth) curMonth.innerText = months[now.getMonth()];
+        if(curDay) curDay.innerText = now.getDate();
     }
 
     setInterval(updateClock, 1000);
     updateClock();
+
 
     // ================= PROFILE DROPDOWN =================
     const profileWrapper = document.getElementById("profileWrapper");

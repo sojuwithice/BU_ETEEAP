@@ -722,6 +722,30 @@ body {
     width: 100%;
 }
 
+input[type="date"]::-webkit-calendar-picker-indicator {
+    background: transparent;
+    bottom: 0;
+    color: transparent;
+    cursor: pointer;
+    height: auto;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: auto;
+    z-index: 2; /* Para clickable pa rin yung buong box */
+}
+
+/* Ilagay ang sariling icon sa gilid */
+input[type="date"] {
+    position: relative;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' height='24' viewBox='0 -960 960 960' width='24' fill='%23233a8e'%3E%3Cpath d='M200-80q-33 0-56.5-23.5T120-160v-560q0-33 23.5-56.5T200-800h40v-80h80v80h320v-80h80v80h40q33 0 56.5 23.5T840-720v560q0-33-23.5 56.5T760-80H200Zm0-80h560v-400H200v400Zm0-480h560v-80H200v80Zm0 0v-80 80Z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 15px center; /* Palaging nasa gilid */
+    background-size: 20px;
+    padding-right: 45px !important; /* Space para hindi matabunan ang icon */
+}
+
 .account-box label {
     font-size: 13px;
     font-weight: 600;
@@ -859,19 +883,21 @@ body {
     .main-bg { padding: 15px; }
     
     .nav {
-        flex-wrap: wrap;
+        flex-wrap: wrap; 
         justify-content: center;
     }
-    
+
     .nav button {
-        padding: 10px 15px;
-        font-size: 14px;
+        padding: 10px 20px;
+        font-size: 16px;
         flex: 1; 
-        min-width: 120px;
+        min-width: 100px;
     }
 }
 
 @media (max-width: 600px) {
+
+    .welcome { font-size: 25px; padding: 25px; }
     .form-row {
         display: grid;
         grid-template-columns: 1fr !important;
@@ -882,19 +908,108 @@ body {
         grid-template-columns: 1fr !important; 
     }
 
-    .welcome { font-size: 20px; padding: 20px; }
-    .form-title { font-size: 1.5rem; }
-    .save-btn { width: 100%; padding: 15px; }
-    
-    .field-group input, .select-trigger {
-        font-size: 16px; 
+    .form-title {
+        font-size: 1.7rem;
     }
 
+    .form-desc {
+        font-size: 0.9rem;
+    }
+
+    .field-group input, 
+    .select-trigger, 
+    .form-date {
+        font-size: 16px; /* 16px para hindi mag-auto zoom ang iPhone */
+        padding: 10px 15px;
+        height: 45px; 
+        width: 100%;
+        box-sizing: border-box;
+        border: 1.5px solid #233a8e; /* Siguraduhin na visible ang border */
+        border-radius: 25px;
+        background-color: #ffffff !important;
+        color: #333 !important;
+    }
+
+    /* SPECIFIC SAFARI & MOBILE FIX PARA SA DATE */
+    /* ALL DEVICES (Laptop & Phone) */
+input[type="date"] {
+    position: relative;
+    -webkit-appearance: none; /* Alisin ang default Safari look */
+    appearance: none;
+    background-color: #ffffff !important;
+    border: 1.5px solid #233a8e;
+    border-radius: 25px;
+    padding: 10px 45px 10px 15px !important; /* May extra space sa kanan para sa icon */
+    font-size: 16px;
+    color: #333 !important;
+    text-align: left !important; /* Siguradong nasa left ang text */
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 45px;
+
+    /* Dito natin ilalagay yung bagong Calendar Icon sa gilid */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' height='24' viewBox='0 -960 960 960' width='24' fill='%23233a8e'%3E%3Cpath d='M200-80q-33 0-56.5-23.5T120-160v-560q0-33 23.5-56.5T200-800h40v-80h80v80h320v-80h80v80h40q33 0 56.5 23.5T840-720v560q0-33-23.5 56.5T760-80H200Zm0-80h560v-400H200v400Zm0-480h560v-80H200v80Zm0 0v-80 80Z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: calc(100% - 15px) center; /* Palaging 15px mula sa dulo */
+    background-size: 20px;
+}
+
+/* Para sa Safari Mobile (iPhone) */
+input[type="date"]::-webkit-datetime-edit {
+    display: inline-block;
+    text-align: left;
+    width: 100%;
+}
+
+/* Itago ang default calendar icon ng browser pero clickable pa rin */
+input[type="date"]::-webkit-calendar-picker-indicator {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    cursor: pointer;
+    opacity: 0; /* Hidden pero clickable */
+    z-index: 5;
+}
+
+/* Fix para sa placeholder na minsan gray sa phone */
+input[type="date"]::-webkit-datetime-edit-fields-wrapper {
+    padding: 0;
+}
+
+    /* Tanggalin ang default gray background ni Safari */
+    input[type="date"]:invalid {
+        color: #999;
+    }
+
+    /* Liitan ang label note para hindi maka-abala sa layout */
+    .label-note {
+        font-size: 10px;
+        display: block; /* I-force sa bagong line kung mahaba */
+        margin-top: 2px;
+    }
+
+    /* I-adjust ang gap ng bawat row */
+    .form-row {
+        gap: 12px !important;
+    }
+
+    /* I-adjust ang layout ng container para may sapat na space sa gilid */
+    .profile-main {
+        padding: 15px;
+    }
+
+    /* Iba pang mobile fixes mo (wag gagalawin ang iba) */
     .modal-content {
         padding: 15px;
         width: 92%; 
         max-width: 380px;
-        margin-left: -30px;
+        margin-left: 0; /* Ginawa nating 0 para centered */
     }
 
     /* Liitan ang heading size */
@@ -1008,7 +1123,20 @@ body {
     .dropdown-item .material-symbols-outlined {
         font-size: 20px !important;
     }
-}
+
+    .main-save-btn {
+        background-color: #EF7631;
+        color: #ffffff;
+        border: none;
+        border-radius: 25px;
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+
+    .main-save-btn:hover {
+        background-color: #1a2a6d;
+    }
 
 @media screen and (max-width: 480px) {
     .toast {
@@ -1021,4 +1149,4 @@ body {
         font-size: 20px;
     }
 }
-    
+}
