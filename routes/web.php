@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController; 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RequirementController;
 
 Route::get('/', function () {
     return view('landing');
@@ -53,6 +54,17 @@ Route::post('/profile/update', [AuthController::class, 'updateProfile'])
 
 Route::post('/profile/upload-image', [AuthController::class, 'uploadProfileImage'])
     ->name('profile.upload.image');
+
+
+
+
+Route::get('/requirements', [RequirementController::class, 'index'])->name('requirements.index');
+Route::post('/requirements', [RequirementController::class, 'store']);
+Route::put('/requirements/{id}', [RequirementController::class, 'update']);
+Route::delete('/requirements/{id}', [RequirementController::class, 'destroy']);
+
+
+
 
 
 
