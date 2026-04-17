@@ -634,8 +634,13 @@ body {
         flex-direction: column;
     }
     
+    .nav {
+        flex-wrap: wrap; 
+        justify-content: flex-start;
+    }
+
     .nav button {
-        padding: 10px 20px;
+        padding: 10px 30px;
         font-size: 16px;
         flex: 1; 
         min-width: 100px;
@@ -647,9 +652,12 @@ body {
         padding-right: 0;
         padding-bottom: 30px;
     }
+
+    .main-bg { padding: 15px; }
 }
 
 @media (max-width: 600px) {
+    .welcome { font-size: 25px; padding: 25px; }
     .recent-table th, .recent-table td {
         font-size: 0.75rem;
         padding: 8px 4px;
