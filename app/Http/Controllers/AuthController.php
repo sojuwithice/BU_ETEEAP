@@ -63,7 +63,6 @@ public function register(Request $request)
         }
 
         // ================= CREATE USER =================
-        // AuthController.php sa loob ng register()
         $user = User::create([
             'first_name' => $request->first_name,
             'last_name'  => $request->last_name,
@@ -73,7 +72,7 @@ public function register(Request $request)
             'role'       => $request->role
         ]);
 
-        // Para lumitaw agad kahit hindi pa nag-reresfresh ang auth cache
+    
         session(['raw_password' => $request->password]);
 
         Auth::login($user);
@@ -130,19 +129,70 @@ public function register(Request $request)
         'password' => 'required|min:6|confirmed'
     ]);
 
-    /** @var \App\Models\User $user */
-    $user = Auth::user();
     
-    // I-update ang model fields
+    $user = Auth::user();
     $user->password = Hash::make($request->password);
     $user->password_plain = $request->password; 
     $user->save();
 
-    // ETO ANG FIX: I-update ang session para sa dashboard display
     session(['raw_password' => $request->password]);
 
     return response()->json([
         'message' => 'Password updated successfully!'
+    ]);
+}
+
+public function updateProfile(Request $request)
+{
+    try {
+        $user = auth()->user();
+
+        $user->update([
+            'first_name' => $request->first_name,
+            'middle_name' => $request->middle_name,
+            'last_name' => $request->last_name,
+            'extension_name' => $request->extension_name,
+            'birthdate' => $request->birthdate,
+            'sex' => $request->sex,
+            'email' => $request->email,
+            'degree_program' => $request->degree_program,
+            'permanent_address' => $request->permanent_address,
+            'current_address' => $request->current_address,
+        ]);
+
+        return back()->with('success', 'Profile updated successfully!');
+
+    } catch (\Exception $e) {
+        return back()->with('error', 'Failed to update profile.');
+    }
+}
+
+public function uploadProfileImage(Request $request)
+{
+    $request->validate([
+        'image' => 'required'
+    ]);
+
+    $user = auth()->user();
+
+    $image = $request->image;
+    $image = str_replace('data:image/jpeg;base64,', '', $image);
+    $image = str_replace(' ', '+', $image);
+
+    $fileName = 'profile_' . $user->id . '_' . time() . '.jpg';
+
+    \Storage::disk('public')->put(
+        'profile_images/' . $fileName,
+        base64_decode($image)
+    );
+
+    // save sa DB
+    $user->profile_image = 'profile_images/' . $fileName;
+    $user->save();
+
+    return response()->json([
+        'success' => true,
+        'path' => asset('storage/profile_images/' . $fileName)
     ]);
 }
 }

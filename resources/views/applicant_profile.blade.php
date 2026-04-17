@@ -106,9 +106,9 @@
     <div class="pic-wrapper">
     <div class="pic-circle" id="picCircle">
         <img id="imagePreview" 
-             src="{{ auth()->user()->profile_image ? asset('storage/' . auth()->user()->profile_image) : asset('images/default-profile.png') }}" 
-             alt="Profile Preview" 
-             style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; {{ auth()->user()->profile_image ? '' : 'display: none;' }}">
+     src="{{ auth()->user()->profile_image ? asset('storage/' . auth()->user()->profile_image) : asset('images/default-profile.png') }}" 
+     alt="Profile Preview" 
+     style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
     </div>
 </div>
     
@@ -138,87 +138,100 @@
             This will serve as your application form for the ETEEAP program. Please fill out all required fields carefully and accurately.
         </p>
 
-        <form class="profile-form">
-            <div class="form-row four-cols">
-                <div class="field-group">
-                    <label>First Name <span>*</span></label>
-                    <input type="text">
-                </div>
-                <div class="field-group">
-                <label>Middle Name <span>*</span> <small class="label-note">(Write "N/A" if none)</small></label>
-                <input type="text" name="middle_name">
-            </div>
-                <div class="field-group">
-                    <label>Last Name <span>*</span></label>
-                    <input type="text">
-                </div>
-                <div class="field-group">
-                    <label>Extension Name <small class="label-note">(Ex. Jr., Sr.)</small></label>
-                    <input type="text">
-                </div>
-            </div>
+        <form method="POST" action="{{ route('profile.update') }}" class="profile-form">
+    @csrf
 
-            
-             <div class="form-row four-cols">
-            <div class="field-group">
-                <label>Birthdate <span>*</span></label>
-                <input type="date" name="birthdate" class="form-date" required>
-            </div>
-
-            <div class="field-group">
-                <label>Sex <span>*</span></label>
-                <div class="custom-select" id="sexSelect">
-                    <div class="select-trigger">
-                        <span id="selectedSex"></span> 
-                        <div class="arrow-icon"></div>
-                    </div>
-                    <div class="select-options">
-                        <div class="option" data-value="male">Male</div>
-                        <div class="option" data-value="female">Female</div>
-                    </div>
-                </div>
-                <input type="hidden" name="sex" id="sexInput">
-            </div>
-
-    <div class="field-group">
-        <label>Email Address <span>*</span></label>
-        <input type="email">
-    </div>
-
-    <div class="field-group">
-        <label>Degree Program <span>*</span></label>
-        <div class="custom-select" id="degreeSelect">
-            <div class="select-trigger">
-                <span id="selectedText"></span> 
-                <div class="arrow-icon"></div>
-            </div>
-            <div class="select-options">
-                <div class="option" data-value="fisheries">BS Fisheries</div>
-                <div class="option" data-value="cs">BS Computer Science</div>
-                <div class="option" data-value="comm">AB Communication</div>
-                <div class="option" data-value="auto">BS Automotive Technology</div>
-                <div class="option" data-value="nursing">BS Nursing</div>
-            </div>
+    <div class="form-row four-cols">
+        <div class="field-group">
+            <label>First Name <span>*</span></label>
+            <input type="text" name="first_name" value="{{ auth()->user()->first_name }}" required>
         </div>
-        <input type="hidden" name="degree_program" id="degreeInput">
-    </div>
-</div>
 
-            <div class="form-row two-cols">
-    <div class="field-group">
-        <label>Permanent Address <span>*</span></label>
-        <input type="text" name="permanent_address">
-    </div>
-    <div class="field-group">
-        <label>Current Address <span>*</span></label>
-        <input type="text" name="current_address">
-    </div>
-</div>
+        <div class="field-group">
+            <label>Middle Name</label>
+            <input type="text" name="middle_name" value="{{ auth()->user()->middle_name }}">
+        </div>
 
-            <div class="form-actions">
-                <button type="submit" class="main-save-btn">Save Changes</button>
+        <div class="field-group">
+            <label>Last Name <span>*</span></label>
+            <input type="text" name="last_name" value="{{ auth()->user()->last_name }}" required>
+        </div>
+
+        <div class="field-group">
+            <label>Extension Name</label>
+            <input type="text" name="extension_name" value="{{ auth()->user()->extension_name }}">
+        </div>
+    </div>
+
+    <div class="form-row four-cols">
+
+        <div class="field-group">
+            <label>Birthdate <span>*</span></label>
+            <input type="date" name="birthdate" class="form-date"
+                   value="{{ auth()->user()->birthdate }}" required>
+        </div>
+
+        <div class="field-group">
+            <label>Sex <span>*</span></label>
+            <div class="custom-select" id="sexSelect">
+                <div class="select-trigger">
+                    <span id="selectedSex"></span>
+                    <div class="arrow-icon"></div>
+                </div>
+                <div class="select-options">
+                    <div class="option" data-value="male">Male</div>
+                    <div class="option" data-value="female">Female</div>
+                </div>
             </div>
-        </form>
+            <input type="hidden" name="sex" id="sexInput" value="{{ auth()->user()->sex }}">
+        </div>
+
+        <div class="field-group">
+            <label>Email Address <span>*</span></label>
+            <input type="email" name="email" value="{{ auth()->user()->email }}" required>
+        </div>
+
+        <div class="field-group">
+            <label>Degree Program <span>*</span></label>
+            <div class="custom-select" id="degreeSelect">
+                <div class="select-trigger">
+                    <span id="selectedText"></span>
+                    <div class="arrow-icon"></div>
+                </div>
+                <div class="select-options">
+                    <div class="option" data-value="fisheries">BS Fisheries</div>
+                    <div class="option" data-value="cs">BS Computer Science</div>
+                    <div class="option" data-value="comm">AB Communication</div>
+                    <div class="option" data-value="auto">BS Automotive Technology</div>
+                    <div class="option" data-value="nursing">BS Nursing</div>
+                </div>
+            </div>
+            <input type="hidden" name="degree_program" id="degreeInput" value="{{ auth()->user()->degree_program }}">
+        </div>
+
+    </div>
+
+    <div class="form-row two-cols">
+
+        <div class="field-group">
+            <label>Permanent Address <span>*</span></label>
+            <input type="text" name="permanent_address"
+                   value="{{ auth()->user()->permanent_address }}">
+        </div>
+
+        <div class="field-group">
+            <label>Current Address <span>*</span></label>
+            <input type="text" name="current_address"
+                   value="{{ auth()->user()->current_address }}">
+        </div>
+
+    </div>
+
+    <div class="form-actions">
+        <button type="submit" class="main-save-btn">Save Changes</button>
+    </div>
+
+</form>
     </div>
 </div>
 
@@ -278,6 +291,48 @@
 <div id="toast" class="toast">
     <span id="toast-icon" class="material-symbols-outlined"></span>
     <span id="toast-message"></span>
+</div>
+
+@if(session('success'))
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    showToast(@json(session('success')), "success");
+});
+</script>
+@endif
+
+@if(session('error'))
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    showToast(@json(session('error')), "error");
+});
+</script>
+@endif
+
+<div id="confirmModal" class="confirm-modal" style="display:none;">
+    <div class="confirm-box">
+
+        <div class="confirm-icon">
+            <span class="material-symbols-outlined">warning</span>
+        </div>
+
+        <h3>Are you sure you want to save changes?</h3>
+
+        <p class="confirm-note">
+            Please check if all information is correct before saving.
+        </p>
+
+        <div class="confirm-actions">
+            <button type="button" onclick="closeModal()" class="btn-cancel">
+                Cancel
+            </button>
+
+            <button type="button" onclick="submitForm()" class="btn-save">
+                Yes, Save
+            </button>
+        </div>
+
+    </div>
 </div>
 
 <script>
@@ -392,26 +447,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const imagePreview = document.getElementById('imagePreview');
     const uploadModal = document.getElementById('uploadModal');
     
-    // ================= IMAGE SYNC PRIORITY =================
-    // Pag-load ng page, tignan muna kung ano ang image galing sa server (Blade)
-    if (imagePreview) {
-        const serverImage = imagePreview.getAttribute('src');
-        
-        // Kung default-profile pa rin ang sineserve ng server, check local storage
-        if (serverImage && serverImage.includes('default-profile.png')) {
-            const savedCropped = localStorage.getItem('profileImage');
-            if (savedCropped) {
-                imagePreview.src = savedCropped;
-                imagePreview.style.display = 'block';
-            }
-        } 
-        // Kung HINDI na default ang server image (ibig sabihin nag-update ka sa ibang device),
-        // hayaan lang natin ang imagePreview.src sa server value at i-update ang local storage.
-        else if (serverImage && serverImage.startsWith('http')) {
-             localStorage.setItem('profileImage', serverImage);
-        }
-    }
-
     // Initialize Croppie
     let croppieInstance = new Croppie(document.getElementById('image-demo'), {
         viewport: { width: 180, height: 180, type: 'circle' },
@@ -420,11 +455,18 @@ document.addEventListener('DOMContentLoaded', function() {
         enableOrientation: true
     });
 
+    // EDIT BUTTON: Kukunin ang image sa preview (galing server) para ma-edit kahit anong device
     editBtn.addEventListener('click', function() {
-        const original = localStorage.getItem('originalImage');
-        if (original) {
+        const currentSrc = imagePreview ? imagePreview.getAttribute('src') : null;
+        
+        // Kung hindi default image ang gamit, ito ang i-load sa croppie
+        if (currentSrc && !currentSrc.includes('default-profile.png')) {
             uploadModal.style.display = 'flex';
-            croppieInstance.bind({ url: original });
+            croppieInstance.bind({
+                url: currentSrc
+            }).then(() => {
+                croppieInstance.setZoom(0);
+            });
         } else {
             fileUpload.click();
         }
@@ -444,11 +486,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const reader = new FileReader();
         reader.onload = function(e) {
             const originalBase64 = e.target.result;
-            try {
-                localStorage.setItem('originalImage', originalBase64);
-            } catch (e) {
-                console.warn("Original image is too large for localStorage.");
-            }
             uploadModal.style.display = 'flex';
             croppieInstance.bind({ url: originalBase64 });
         }
@@ -460,7 +497,7 @@ document.addEventListener('DOMContentLoaded', function() {
             type: 'base64',
             size: 'viewport',
             format: 'jpeg',
-            quality: 0.8
+            quality: 0.9
         }).then(function(croppedBase64) {
             const profileImgHeader = document.getElementById('profileImg'); 
             const dropdownAvatar = document.querySelector('.dropdown-avatar');
@@ -479,7 +516,6 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(data => {
                 if(data.success) {
-                    // Sabay-sabay na update sa UI para synchronized
                     if(imagePreview) {
                         imagePreview.src = croppedBase64;
                         imagePreview.style.display = 'block';
@@ -487,11 +523,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     if(profileImgHeader) profileImgHeader.src = croppedBase64;
                     if(dropdownAvatar) dropdownAvatar.src = croppedBase64;
                     
-                    localStorage.setItem('profileImage', croppedBase64);
-                    
-                    // Gamitin ang local showToast function
                     showToast("Profile picture updated successfully!", "success");
-
                     uploadModal.style.display = 'none';
                     fileUpload.value = '';
                 } else {
@@ -570,20 +602,22 @@ document.addEventListener('DOMContentLoaded', function() {
     const profileWrapper = document.getElementById("profileWrapper");
     const dropdown = document.getElementById("profileDropdown");
 
-    profileWrapper.addEventListener("contextmenu", (e) => {
-        e.preventDefault();
-        dropdown.classList.toggle("show");
-    });
+    if (profileWrapper && dropdown) {
+        profileWrapper.addEventListener("contextmenu", (e) => {
+            e.preventDefault();
+            dropdown.classList.toggle("show");
+        });
 
-    profileWrapper.addEventListener("click", () => {
-        dropdown.classList.toggle("show");
-    });
+        profileWrapper.addEventListener("click", () => {
+            dropdown.classList.toggle("show");
+        });
 
-    document.addEventListener("click", (e) => {
-        if (!profileWrapper.contains(e.target)) {
-            dropdown.classList.remove("show");
-        }
-    });
+        document.addEventListener("click", (e) => {
+            if (!profileWrapper.contains(e.target)) {
+                dropdown.classList.remove("show");
+            }
+        });
+    }
 
     // ================= ACCOUNT MODAL LOGIC =================
     window.openAccountModal = function () {
@@ -597,6 +631,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     window.closeAccountModal = function () {
         const modal = document.getElementById("accountModal");
+        if (!modal) return;
         modal.classList.remove("show");
 
         setTimeout(() => {
@@ -607,7 +642,8 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById("confirmPassword").value = "";
 
             ['newPassword','confirmPassword','currentPassword'].forEach(id => {
-                document.getElementById(id).type = "password";
+                const el = document.getElementById(id);
+                if(el) el.type = "password";
             });
 
             document.getElementById("newEyeIcon").innerText = "visibility";
@@ -619,6 +655,7 @@ document.addEventListener('DOMContentLoaded', function() {
     window.togglePassword = function (inputId, iconId) {
         const input = document.getElementById(inputId);
         const icon = document.getElementById(iconId);
+        if(!input || !icon) return;
         input.type = (input.type === "password") ? "text" : "password";
         icon.innerText = (input.type === "password") ? "visibility" : "visibility_off";
     };
@@ -657,7 +694,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const data = await response.json();
 
             if (response.ok) {
-                document.getElementById("currentPassword").value = newPass;
+                const currentPassInput = document.getElementById("currentPassword");
+                if(currentPassInput) currentPassInput.value = newPass;
                 showToast("Password updated successfully!", "success");
                 closeAccountModal();
             } else {
@@ -670,7 +708,53 @@ document.addEventListener('DOMContentLoaded', function() {
             saveBtn.innerText = "Save";
         }
     };
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+    // SEX RESTORE
+    const sexInput = document.getElementById("sexInput");
+    const sexText = document.getElementById("selectedSex");
+
+    if (sexInput?.value && sexText) {
+        const option = document.querySelector(`#sexSelect .option[data-value="${sexInput.value}"]`);
+        if (option) {
+            sexText.innerText = option.innerText;
+        }
+    }
+
+    // DEGREE RESTORE
+    const degreeInput = document.getElementById("degreeInput");
+    const degreeText = document.getElementById("selectedText");
+
+    if (degreeInput?.value && degreeText) {
+        const option = document.querySelector(`#degreeSelect .option[data-value="${degreeInput.value}"]`);
+        if (option) {
+            degreeText.innerText = option.innerText;
+        }
+    }
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+    const form = document.querySelector(".profile-form");
+    const modal = document.getElementById("confirmModal");
+
+    if (!form || !modal) return;
+
+    form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        modal.style.display = "flex";
     });
+
+    window.closeModal = function () {
+        modal.style.display = "none";
+    };
+
+    window.submitForm = function () {
+        modal.style.display = "none";
+        form.submit();
+    };
+});
+
 </script>
 
 </body>

@@ -47,8 +47,12 @@ Route::post('/update-password', [AuthController::class, 'updatePassword'])
 
 Route::post('/profile/upload-image', [ProfileController::class, 'uploadImage'])->name('profile.upload.image');
 
+Route::post('/profile/update', [AuthController::class, 'updateProfile'])
+    ->name('profile.update');
 
 
+Route::post('/profile/upload-image', [AuthController::class, 'uploadProfileImage'])
+    ->name('profile.upload.image');
 
 
 

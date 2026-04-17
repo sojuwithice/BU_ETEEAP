@@ -733,17 +733,16 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     right: 0;
     top: 0;
     width: auto;
-    z-index: 2; /* Para clickable pa rin yung buong box */
+    z-index: 2; 
 }
 
-/* Ilagay ang sariling icon sa gilid */
 input[type="date"] {
     position: relative;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' height='24' viewBox='0 -960 960 960' width='24' fill='%23233a8e'%3E%3Cpath d='M200-80q-33 0-56.5-23.5T120-160v-560q0-33 23.5-56.5T200-800h40v-80h80v80h320v-80h80v80h40q33 0 56.5 23.5T840-720v560q0-33-23.5 56.5T760-80H200Zm0-80h560v-400H200v400Zm0-480h560v-80H200v80Zm0 0v-80 80Z'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
-    background-position: right 15px center; /* Palaging nasa gilid */
+    background-position: right 15px center; 
     background-size: 20px;
-    padding-right: 45px !important; /* Space para hindi matabunan ang icon */
+    padding-right: 45px !important; 
 }
 
 .account-box label {
@@ -860,6 +859,123 @@ input[type="date"] {
     align-items: center;
 }
 
+
+/* ================= CONFIRM MODAL BACKDROP ================= */
+.confirm-modal {
+    position: fixed;
+    inset: 0; 
+    width: 100vw; 
+    height: 100vh; 
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+/* ================= CONFIRM BOX ================= */
+.confirm-box {
+    background: #fff;
+    width: 100%;
+    max-width: 340px;
+    border-radius: 14px;
+    padding: 24px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    display: flex;
+    flex-direction: column;
+    align-items: center; 
+}
+
+/* ================= ICON ================= */
+.confirm-icon {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: #fff3cd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 5px;
+}
+
+.confirm-icon .material-symbols-outlined {
+    font-size: 34px;
+    color: #ff9800;
+}
+
+/* ================= TITLE ================= */
+.confirm-box h3 {
+    font-size: 17px;
+    font-weight: 700;
+    color: #233a8e;
+    margin-bottom: 0;
+    line-height: 1.4;
+}
+
+/* ================= NOTE ================= */
+.confirm-note {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 18px;
+    line-height: 1.4;
+}
+
+/* ================= ACTIONS ================= */
+.confirm-actions {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    justify-content: center;
+}
+
+/* ================= BUTTONS ================= */
+.confirm-actions .btn-save,
+.confirm-actions .btn-cancel {
+    flex: 1;
+    padding: 10px 12px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+/* SAVE */
+.confirm-actions .btn-save {
+    background: #233a8e;
+    color: #fff;
+}
+
+.confirm-actions .btn-save:hover {
+    background: #1a2c6b;
+}
+
+/* CANCEL */
+.confirm-actions .btn-cancel {
+    background: #e5e5e5;
+    color: #333;
+}
+
+.confirm-actions .btn-cancel:hover {
+    background: #d0d0d0;
+}
+
+/* ================= ANIMATION ================= */
+@keyframes confirmPop {
+    from {
+        transform: scale(0.9);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+
 /* MOBILE RESPONSIVE */
 @media (max-width: 1100px) {
     .four-cols, .two-cols { 
@@ -888,7 +1004,7 @@ input[type="date"] {
     }
 
     .nav button {
-        padding: 10px 30px;
+        padding: 10px 20px;
         font-size: 16px;
         flex: 1; 
         min-width: 100px;
@@ -919,49 +1035,47 @@ input[type="date"] {
     .field-group input, 
     .select-trigger, 
     .form-date {
-        font-size: 16px; /* 16px para hindi mag-auto zoom ang iPhone */
+        font-size: 16px; 
         padding: 10px 15px;
         height: 45px; 
         width: 100%;
         box-sizing: border-box;
-        border: 1.5px solid #233a8e; /* Siguraduhin na visible ang border */
+        border: 1.5px solid #233a8e; 
         border-radius: 25px;
         background-color: #ffffff !important;
         color: #333 !important;
     }
 
-    /* SPECIFIC SAFARI & MOBILE FIX PARA SA DATE */
-    /* ALL DEVICES (Laptop & Phone) */
+    
 input[type="date"] {
     position: relative;
-    -webkit-appearance: none; /* Alisin ang default Safari look */
+    -webkit-appearance: none; 
     appearance: none;
     background-color: #ffffff !important;
     border: 1.5px solid #233a8e;
     border-radius: 25px;
-    padding: 10px 45px 10px 15px !important; /* May extra space sa kanan para sa icon */
+    padding: 10px 45px 10px 15px !important; 
     font-size: 16px;
     color: #333 !important;
-    text-align: left !important; /* Siguradong nasa left ang text */
+    text-align: left !important;  
     width: 100%;
     box-sizing: border-box;
     min-height: 45px;
 
-    /* Dito natin ilalagay yung bagong Calendar Icon sa gilid */
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' height='24' viewBox='0 -960 960 960' width='24' fill='%23233a8e'%3E%3Cpath d='M200-80q-33 0-56.5-23.5T120-160v-560q0-33 23.5-56.5T200-800h40v-80h80v80h320v-80h80v80h40q33 0 56.5 23.5T840-720v560q0-33-23.5 56.5T760-80H200Zm0-80h560v-400H200v400Zm0-480h560v-80H200v80Zm0 0v-80 80Z'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
-    background-position: calc(100% - 15px) center; /* Palaging 15px mula sa dulo */
+    background-position: calc(100% - 15px) center; 
     background-size: 20px;
 }
 
-/* Para sa Safari Mobile (iPhone) */
+
 input[type="date"]::-webkit-datetime-edit {
     display: inline-block;
     text-align: left;
     width: 100%;
 }
 
-/* Itago ang default calendar icon ng browser pero clickable pa rin */
+
 input[type="date"]::-webkit-calendar-picker-indicator {
     position: absolute;
     top: 0;
@@ -973,46 +1087,41 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     margin: 0;
     padding: 0;
     cursor: pointer;
-    opacity: 0; /* Hidden pero clickable */
+    opacity: 0; 
     z-index: 5;
 }
 
-/* Fix para sa placeholder na minsan gray sa phone */
+
 input[type="date"]::-webkit-datetime-edit-fields-wrapper {
     padding: 0;
 }
 
-    /* Tanggalin ang default gray background ni Safari */
+    
     input[type="date"]:invalid {
         color: #999;
     }
 
-    /* Liitan ang label note para hindi maka-abala sa layout */
     .label-note {
         font-size: 10px;
-        display: block; /* I-force sa bagong line kung mahaba */
+        display: block; 
         margin-top: 2px;
     }
 
-    /* I-adjust ang gap ng bawat row */
     .form-row {
         gap: 12px !important;
     }
 
-    /* I-adjust ang layout ng container para may sapat na space sa gilid */
     .profile-main {
         padding: 15px;
     }
 
-    /* Iba pang mobile fixes mo (wag gagalawin ang iba) */
     .modal-content {
         padding: 15px;
         width: 92%; 
         max-width: 380px;
-        margin-left: 0; /* Ginawa nating 0 para centered */
+        margin-left: 0; 
     }
 
-    /* Liitan ang heading size */
     .modal-content h3 {
         font-size: 1.1rem;
         margin-bottom: 10px;
@@ -1139,6 +1248,12 @@ input[type="date"]::-webkit-datetime-edit-fields-wrapper {
     }
 
 @media screen and (max-width: 480px) {
+    .confirm-modal {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
     .toast {
         width: 70%; 
         padding: 10px 15px;
@@ -1147,6 +1262,48 @@ input[type="date"]::-webkit-datetime-edit-fields-wrapper {
     
     .toast .material-symbols-outlined {
         font-size: 20px;
+    }
+
+    .confirm-box {
+        max-width: 290px;
+        padding: 20px;
+        margin: auto; 
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .confirm-box h3 {
+        font-size: 16px;
+        margin-top: 10px;
+    }
+
+    .confirm-note {
+        font-size: 12px;
+        margin-bottom: 15px;
+    }
+
+    .confirm-icon {
+        width: 60px;
+        height: 60px;
+    }
+
+    .confirm-icon .material-symbols-outlined {
+        font-size: 30px;
+    }
+
+    .confirm-actions {
+        flex-direction: row;
+        gap: 10px;
+        width: 100%;
+    }
+
+    .confirm-actions .btn-save,
+    .confirm-actions .btn-cancel {
+        font-size: 13px;
+        padding: 10px;
+        flex: 1; 
     }
 }
 }

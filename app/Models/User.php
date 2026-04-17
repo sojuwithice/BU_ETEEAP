@@ -10,17 +10,21 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
-    /**
-     * Fields na pwedeng i-mass assign
-     */
         protected $fillable = [
         'first_name',
+        'middle_name',
         'last_name',
+        'extension_name',
         'email',
         'password',
-        'password_plain', // Idagdag ito!
+        'password_plain',
         'role',
-        'profile_image' // Siguraduhin na andito rin ito kung ginagamit mo
+        'profile_image',
+        'birthdate',
+        'sex',
+        'degree_program',
+        'permanent_address',
+        'current_address',
     ];
 
     /**
