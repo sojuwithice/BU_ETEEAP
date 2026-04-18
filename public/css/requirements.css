@@ -1,13 +1,13 @@
 /* GLOBAL RESET */
 * {
     margin: 0; padding: 0; box-sizing: border-box;
-    font-family: 'Raleway', sans-serif;
 }
 
 body {
     background: #fdfdfd;
     overflow: hidden; 
     height: 100vh;
+     font-family: 'Raleway', sans-serif;
 }
 
 /* HEADER - FIXED */
@@ -355,7 +355,7 @@ body {
     font-weight: bold;
 }
 
-/* TABLE STYLING */
+/* TABLE STYLING - SCROLLABLE BODY ONLY WITH HOVER SCROLLBAR */
 .table-container {
     background: white;
     border-radius: 20px;
@@ -364,17 +364,88 @@ body {
     flex-grow: 1; 
     display: flex;
     flex-direction: column;
+    max-height: 600px; /* Fixed max height for container */
 }
 
 .requirements-table {
     width: 100%;
     border-collapse: collapse;
     text-align: left;
+    display: flex;
+    flex-direction: column;
 }
 
+/* Make thead fixed */
 .requirements-table thead {
     background: #223381;
     color: white;
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+}
+
+/* Make tbody scrollable - scrollbar hidden by default */
+.requirements-table tbody {
+    display: block;
+    overflow-y: auto;
+    max-height: 500px; /* Adjust this value as needed - only tbody scrolls */
+    width: 100%;
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent; /* Hide scrollbar for Firefox */
+}
+
+/* Hide scrollbar by default for Webkit browsers (Chrome, Safari, Edge) */
+.requirements-table tbody::-webkit-scrollbar {
+    width: 6px;
+    background: transparent;
+}
+
+.requirements-table tbody::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 10px;
+}
+
+.requirements-table tbody::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: 10px;
+    transition: background 0.3s ease;
+}
+
+/* Show scrollbar on hover */
+.requirements-table tbody:hover {
+    scrollbar-color: #223381 #f1f1f1; /* Show scrollbar for Firefox on hover */
+}
+
+.requirements-table tbody:hover::-webkit-scrollbar {
+    width: 6px;
+}
+
+.requirements-table tbody:hover::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.requirements-table tbody:hover::-webkit-scrollbar-thumb {
+    background: #223381;
+    border-radius: 10px;
+}
+
+.requirements-table tbody:hover::-webkit-scrollbar-thumb:hover {
+    background: #1a2866;
+}
+
+/* Make rows take full width */
+.requirements-table tbody tr {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+}
+
+/* Keep thead rows consistent */
+.requirements-table thead tr {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
 }
 
 .requirements-table th {

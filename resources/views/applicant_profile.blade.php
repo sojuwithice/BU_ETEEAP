@@ -179,8 +179,8 @@
                     <div class="arrow-icon"></div>
                 </div>
                 <div class="select-options">
-                    <div class="option" data-value="male">Male</div>
-                    <div class="option" data-value="female">Female</div>
+                    <div class="option" data-value="Male">Male</div>
+                    <div class="option" data-value="Female">Female</div>
                 </div>
             </div>
             <input type="hidden" name="sex" id="sexInput" value="{{ auth()->user()->sex }}">
@@ -199,11 +199,11 @@
                     <div class="arrow-icon"></div>
                 </div>
                 <div class="select-options">
-                    <div class="option" data-value="fisheries">BS Fisheries</div>
-                    <div class="option" data-value="cs">BS Computer Science</div>
-                    <div class="option" data-value="comm">AB Communication</div>
-                    <div class="option" data-value="auto">BS Automotive Technology</div>
-                    <div class="option" data-value="nursing">BS Nursing</div>
+                    <div class="option" data-value="BS Fisheries">BS Fisheries</div>
+                    <div class="option" data-value="BS Computer Science">BS Computer Science</div>
+                    <div class="option" data-value="AB Communication">AB Communication</div>
+                    <div class="option" data-value="BS Automotive Technology">BS Automotive Technology</div>
+                    <div class="option" data-value="BS Nursing">BS Nursing</div>
                 </div>
             </div>
             <input type="hidden" name="degree_program" id="degreeInput" value="{{ auth()->user()->degree_program }}">

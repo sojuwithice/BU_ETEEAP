@@ -9,6 +9,7 @@
 <link rel="stylesheet" href="{{ asset('css/requirements.css') }}">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/croppie/2.6.5/croppie.min.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/croppie/2.6.5/croppie.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 
@@ -115,8 +116,8 @@
             </tr>
         </thead>
         <tbody id="reqTableBody">
-    @foreach($requirements as $req)
-    <tr data-id="{{ $req->id }}">
+            @foreach($requirements as $req)
+            <tr data-id="{{ $req->id }}">
 
         <td class="req-name-cell">
             {{ $req->name }}
