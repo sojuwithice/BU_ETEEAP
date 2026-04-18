@@ -9,7 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0" />
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;800;900&family=Raleway:wght@400;700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.0/dist/sweetalert2.all.min.js"></script>
 
 
 <!-- HEADER -->
@@ -491,7 +491,7 @@ if (fileInput) {
     });
 }
 
-/* ================= SAVE BUTTON - WITH LOADING & NO RELOAD ================= */
+/* ================= SAVE BUTTON - FIXED ================= */
 if (uploadBtn) {
     uploadBtn.addEventListener('click', () => {
         if (!fileInput.files[0]) { 
@@ -509,65 +509,64 @@ if (uploadBtn) {
             icon: 'question',
             showCancelButton: true,
             confirmButtonColor: '#223381',
+            cancelButtonColor: '#ffffff',
             confirmButtonText: 'Yes, Upload',
             cancelButtonText: 'Cancel'
-        }).then(res => {
-            if (res.isConfirmed) {
-                // Show loading
-                Swal.fire({
-                    title: 'Uploading...',
-                    text: 'Please wait',
-                    allowOutsideClick: false,
-                    didOpen: () => {
-                        Swal.showLoading();
-                    }
-                });
+        }).then((result) => {
+            // Kapag Cancel, automatic magsasara ang modal
+            if (!result.isConfirmed) return;
+            
+            Swal.fire({
+                title: 'Uploading...',
+                text: 'Please wait',
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+            
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            formData.append('requirement_id', selectedRequirementId);
+            
+            fetch("{{ route('applicant.upload.save') }}", {
+                method: "POST",
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json'
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                Swal.close();
                 
-                const formData = new FormData();
-                formData.append('file', fileInput.files[0]);
-                formData.append('requirement_id', selectedRequirementId);
-                
-                fetch("{{ route('applicant.upload.save') }}", {
-                    method: "POST",
-                    headers: {
-                        'X-CSRF-TOKEN': csrfToken,
-                        'Accept': 'application/json'
-                    },
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    Swal.close(); // Close loading modal
+                if (data.success) {
+                    const filePath = data.file_path || `/storage/${data.path}`;
                     
-                    if (data.success) {
-                        const filePath = data.file_path || `/storage/${data.path}`;
-                        
-                        // Update UI without reload
-                        updateDocumentItemUI(currentDocItem, true, filePath);
-                        isRequirementCompleted = true;
-                        currentFilePath = filePath;
-                        
-                        uploadBtn.style.display = 'none';
-                        successActions.style.display = 'block';
-                        fileNameText.innerText = `Uploaded: ${currentFileName}`;
-                        
-                        updateRecentTable({
-                            requirement_name: currentFileName,
-                            upload_date: new Date().toISOString().split('T')[0],
-                            status: 'Pending',
-                            file_path: filePath
-                        });
-                        
-                        showToast("File uploaded successfully");
-                    } else {
-                        showToast(data.message || "Upload failed", "error");
-                    }
-                })
-                .catch(error => {
-                    Swal.close();
-                    showToast("Upload error. Please try again.", "error");
-                });
-            }
+                    updateDocumentItemUI(currentDocItem, true, filePath);
+                    isRequirementCompleted = true;
+                    currentFilePath = filePath;
+                    
+                    uploadBtn.style.display = 'none';
+                    successActions.style.display = 'block';
+                    fileNameText.innerText = `Uploaded: ${currentFileName}`;
+                    
+                    updateRecentTable({
+                        requirement_name: currentFileName,
+                        upload_date: new Date().toISOString().split('T')[0],
+                        status: 'Pending',
+                        file_path: filePath
+                    });
+                    
+                    showToast("File uploaded successfully");
+                } else {
+                    showToast(data.message || "Upload failed", "error");
+                }
+            })
+            .catch(error => {
+                Swal.close();
+                showToast("Upload error. Please try again.", "error");
+            });
         });
     });
 }
@@ -582,10 +581,12 @@ if (reuploadBtn) {
     });
 }
 
-/* ================= REMOVE BUTTON - WITH LOADING & NO RELOAD ================= */
+/* ================= REMOVE BUTTON - FIXED (Working Cancel) ================= */
 if (removeBtn) {
-    removeBtn.addEventListener('click', e => {
+    removeBtn.addEventListener('click', function(e) {
+        e.preventDefault();
         e.stopPropagation();
+        
         if (!selectedRequirementId) return;
         
         Swal.fire({
@@ -595,22 +596,23 @@ if (removeBtn) {
             showCancelButton: true,
             confirmButtonColor: '#d33',
             confirmButtonText: 'Yes, Delete',
-            cancelButtonText: 'Cancel'
-        }).then(async res => {
-            if (!res.isConfirmed) return;
-            
-            // Show loading
-            Swal.fire({
-                title: 'Deleting...',
-                text: 'Please wait',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
-            
-            try {
-                const response = await fetch("{{ route('applicant.upload.remove') }}", {
+            cancelButtonText: 'Cancel',
+            focusCancel: false,
+            focusConfirm: false
+        }).then((result) => {
+            // If cancel is clicked, result.isConfirmed will be false, modal closes automatically
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: 'Deleting...',
+                    text: 'Please wait',
+                    allowOutsideClick: false,
+                    showConfirmButton: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+                
+                fetch("{{ route('applicant.upload.remove') }}", {
                     method: "POST",
                     headers: {
                         'Content-Type': 'application/json',
@@ -618,39 +620,31 @@ if (removeBtn) {
                         'Accept': 'application/json'
                     },
                     body: JSON.stringify({ requirement_id: selectedRequirementId })
-                });
-                
-                if (response.status === 403) {
+                })
+                .then(response => response.json())
+                .then(data => {
                     Swal.close();
-                    showToast("Session expired. Please refresh the page.", "error");
-                    setTimeout(() => location.reload(), 1500);
-                    return;
-                }
-                
-                const data = await response.json();
-                Swal.close(); // Close loading modal
-                
-                if (data.success) {
-                    updateDocumentItemUI(currentDocItem, false);
-                    isRequirementCompleted = false;
-                    currentFilePath = '';
                     
-                    resetUploadUI();
-                    fileNameText.innerText = "Click to select: " + currentFileName;
-                    uploadBtn.style.display = 'inline-block';
-                    successActions.style.display = 'none';
-                    
-                    removeFromRecentTable(currentFileName);
-                    
-                    showToast("File removed successfully");
-                } else {
-                    showToast(data.message || "Remove failed", "error");
-                }
-            } catch (error) {
-                Swal.close();
-                console.error('Remove error:', error);
-                showToast("Error removing file", "error");
+                    if (data.success) {
+                        updateDocumentItemUI(currentDocItem, false);
+                        isRequirementCompleted = false;
+                        currentFilePath = '';
+                        resetUploadUI();
+                        fileNameText.innerText = "Click to select: " + currentFileName;
+                        uploadBtn.style.display = 'inline-block';
+                        successActions.style.display = 'none';
+                        removeFromRecentTable(currentFileName);
+                        showToast("File removed successfully");
+                    } else {
+                        showToast(data.message || "Remove failed", "error");
+                    }
+                })
+                .catch(error => {
+                    Swal.close();
+                    showToast("Error removing file", "error");
+                });
             }
+            // No need for else - Swal automatically closes on cancel
         });
     });
 }
@@ -866,7 +860,6 @@ if (onsiteBtn) {
             showToast("Your documents are already verified onsite", "error");
             return;
         }
-        
         if (isOnsiteMode) {
             showToast("Verification already requested. Please wait for staff confirmation.", "error");
             return;
@@ -874,21 +867,19 @@ if (onsiteBtn) {
         
         Swal.fire({
             title: 'Onsite Submission Request',
-            html: `
-                <div style="text-align: left;">
-                    <p><strong>Important Notice</strong></p>
-                    <p>By confirming below, you are declaring that you have submitted your documents <strong>ONSITE</strong> at the BU-ETEEAP office.</p>
-                    <br>
-                    <p><strong>What happens next:</strong></p>
-                    <ul style="text-align: left; margin: 5px 0 0 20px;">
-                        <li>Your document list and upload functions will be temporarily disabled</li>
-                        <li>A staff member will verify your onsite submission</li>
-                        <li>Once verified, everything will be enabled again</li>
-                    </ul>
-                    <br>
-                    <p><em>Are you sure you have submitted your documents onsite?</em></p>
-                </div>
-            `,
+            html: `<div style="text-align: left;">
+                <p><strong>Important Notice</strong></p>
+                <p>By confirming below, you are declaring that you have submitted your documents <strong>ONSITE</strong> at the BU-ETEEAP office.</p>
+                <br>
+                <p><strong>What happens next:</strong></p>
+                <ul style="text-align: left; margin: 5px 0 0 20px;">
+                    <li>Your document list and upload functions will be temporarily disabled</li>
+                    <li>A staff member will verify your onsite submission</li>
+                    <li>Once verified, everything will be enabled again</li>
+                </ul>
+                <br>
+                <p><em>Are you sure you have submitted your documents onsite?</em></p>
+            </div>`,
             icon: 'question',
             showCancelButton: true,
             confirmButtonColor: '#223381',
@@ -896,51 +887,49 @@ if (onsiteBtn) {
             confirmButtonText: 'Yes, Request Verification',
             cancelButtonText: 'Cancel'
         }).then((result) => {
-            if (result.isConfirmed) {
-                Swal.fire({
-                    title: 'Requesting Verification...',
-                    html: 'Please wait',
-                    allowOutsideClick: false,
-                    didOpen: () => {
-                        Swal.showLoading();
-                    },
-                    confirmButtonColor: '#223381'
-                });
+            // Kapag Cancel, automatic magsasara ang modal
+            if (!result.isConfirmed) return;
+            
+            Swal.fire({
+                title: 'Requesting Verification...',
+                text: 'Please wait',
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+            
+            fetch("{{ route('applicant.onsite.request') }}", {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ onsite_request: true })
+            })
+            .then(response => response.json())
+            .then(data => {
+                Swal.close();
                 
-                fetch("{{ route('applicant.onsite.request') }}", {
-                    method: "POST",
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken,
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({ onsite_request: true })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    Swal.close();
-                    
-                    if (data.success) {
-                        isOnsiteMode = true;
-                        setOnsiteMode(true);
-                        
-                        onsiteBtn.classList.add('pending');
-                        onsiteBtn.innerHTML = '<span class="material-symbols-outlined">schedule</span> Pending Verification';
-                        
-                        showToast("Onsite verification requested. Please wait for staff confirmation.", "success");
-                    } else {
-                        showToast(data.message || "Request failed", "error");
-                    }
-                })
-                .catch(error => {
-                    Swal.close();
-                    showToast("Error requesting verification", "error");
-                });
-            }
+                if (data.success) {
+                    isOnsiteMode = true;
+                    setOnsiteMode(true);
+                    onsiteBtn.classList.add('pending');
+                    onsiteBtn.innerHTML = '<span class="material-symbols-outlined">schedule</span> Pending Verification';
+                    showToast("Onsite verification requested. Please wait for staff confirmation.", "success");
+                } else {
+                    showToast(data.message || "Request failed", "error");
+                }
+            })
+            .catch(error => {
+                Swal.close();
+                showToast("Error requesting verification", "error");
+            });
         });
     });
 }
 
+// Staff function to confirm onsite submission
 // Staff function to confirm onsite submission
 window.confirmOnsiteSubmission = function() {
     Swal.fire({
@@ -953,48 +942,47 @@ window.confirmOnsiteSubmission = function() {
         confirmButtonText: 'Yes, Confirm Onsite',
         cancelButtonText: 'Cancel'
     }).then((result) => {
-        if (result.isConfirmed) {
-            Swal.fire({
-                title: 'Confirming...',
-                html: 'Please wait',
-                allowOutsideClick: false,
-                didOpen: () => { Swal.showLoading(); },
-                confirmButtonColor: '#223381'
-            });
+        // Kapag Cancel, automatic magsasara ang modal
+        if (!result.isConfirmed) return;
+        
+        Swal.fire({
+            title: 'Confirming...',
+            text: 'Please wait',
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
+        
+        fetch("{{ route('staff.confirm.onsite') }}", {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ confirmed: true })
+        })
+        .then(response => response.json())
+        .then(data => {
+            Swal.close();
             
-            fetch("{{ route('staff.confirm.onsite') }}", {
-                method: "POST",
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': csrfToken,
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({ confirmed: true })
-            })
-            .then(response => response.json())
-            .then(data => {
-                Swal.close();
-                
-                if (data.success) {
-                    isOnsiteMode = false;
-                    isVerified = true;
-                    setOnsiteMode(false);
-                    
-                    onsiteBtn.classList.remove('pending');
-                    onsiteBtn.classList.add('verified');
-                    onsiteBtn.innerHTML = '<span class="material-symbols-outlined">verified</span> Onsite Verified';
-                    onsiteBtn.disabled = true;
-                    
-                    showToast("Onsite submission confirmed! Document uploads are now enabled.", "success");
-                } else {
-                    showToast(data.message || "Confirmation failed", "error");
-                }
-            })
-            .catch(error => {
-                Swal.close();
-                showToast("Error confirming submission", "error");
-            });
-        }
+            if (data.success) {
+                isOnsiteMode = false;
+                isVerified = true;
+                setOnsiteMode(false);
+                onsiteBtn.classList.remove('pending');
+                onsiteBtn.classList.add('verified');
+                onsiteBtn.innerHTML = '<span class="material-symbols-outlined">verified</span> Onsite Verified';
+                onsiteBtn.disabled = true;
+                showToast("Onsite submission confirmed! Document uploads are now enabled.", "success");
+            } else {
+                showToast(data.message || "Confirmation failed", "error");
+            }
+        })
+        .catch(error => {
+            Swal.close();
+            showToast("Error confirming submission", "error");
+        });
     });
 };
 

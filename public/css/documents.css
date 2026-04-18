@@ -872,6 +872,7 @@ body {
     align-items: center;
 }
 
+/* SweetAlert Custom Styles - FIXED */
 .swal2-popup {
     border-radius: 20px !important;
     padding: 1.5rem !important;
@@ -913,12 +914,10 @@ body {
     font-weight: 600 !important;
     font-family: 'Raleway', sans-serif !important;
     box-shadow: none !important;
-    transition: all 0.2s ease !important;
 }
 
 .swal2-confirm:hover {
     background-color: #1a2866 !important;
-    transform: translateY(-1px) !important;
 }
 
 .swal2-cancel {
@@ -931,12 +930,10 @@ body {
     font-weight: 600 !important;
     font-family: 'Raleway', sans-serif !important;
     box-shadow: none !important;
-    transition: all 0.2s ease !important;
 }
 
 .swal2-cancel:hover {
     background-color: #f5f7ff !important;
-    transform: translateY(-1px) !important;
 }
 
 .swal2-icon {
@@ -951,30 +948,20 @@ body {
     font-size: 2rem !important;
 }
 
-.swal2-icon.swal2-warning {
-    border-color: #EF7631 !important;
-    color: #EF7631 !important;
+/* IMPORTANT: Fix for cancel button not closing */
+.swal2-cancel:active,
+.swal2-cancel:focus {
+    outline: none !important;
+    box-shadow: none !important;
 }
 
-.swal2-icon.swal2-question {
-    border-color: #223381 !important;
-    color: #223381 !important;
+/* Ensure modal closes properly */
+.swal2-container {
+    pointer-events: auto !important;
 }
 
-/* Modal animation */
-.swal2-popup {
-    animation: swal2-slidein 0.3s ease !important;
-}
-
-@keyframes swal2-slidein {
-    from {
-        opacity: 0;
-        transform: scale(0.95);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
+.swal2-backdrop {
+    pointer-events: auto !important;
 }
 
 
