@@ -72,6 +72,8 @@ Route::middleware(['auth'])->group(function () {
 Route::post('/task/{id}/complete', [DashboardController::class, 'completeTask'])->name('task.complete');
 Route::get('/applicant/messages', [DashboardController::class, 'getMessages'])->name('applicant.messages');
 
+Route::get('/applicant/progress', [DashboardController::class, 'getProgressData'])->name('applicant.progress');
+
 });
 
 Route::get('/verify-documents', function () {

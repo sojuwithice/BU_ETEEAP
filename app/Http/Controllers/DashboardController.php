@@ -19,6 +19,43 @@ class DashboardController extends Controller
         // Generate tasks automatically based on user's status
         $this->generateAutoTasks($user);
         
+        // Calculate Profile Progress
+        $profileFields = [
+            'first_name', 'last_name', 'email', 'birthdate', 'sex', 
+            'degree_program', 'permanent_address', 'current_address'
+        ];
+        
+        $filledCount = 0;
+        foreach ($profileFields as $field) {
+            if (!empty($user->$field)) {
+                $filledCount++;
+            }
+        }
+        $profileProgress = round(($filledCount / count($profileFields)) * 100);
+        
+        // Calculate Documents Progress
+        $totalRequirements = Requirement::count();
+        $uploadedDocs = DocumentUpload::where('user_id', $user->id)->count();
+        $documentsProgress = $totalRequirements > 0 ? round(($uploadedDocs / $totalRequirements) * 100) : 0;
+        
+        // Calculate Application Progress based on status steps
+        $statusSteps = [
+            'application_status' => ['approved', 'completed'],
+            'document_status' => ['verified', 'approved', 'completed'],
+            'interview_status' => ['completed', 'scheduled'],
+            'payment_status' => ['paid', 'completed'],
+            'final_status' => ['approved', 'completed']
+        ];
+        
+        $completedSteps = 0;
+        foreach ($statusSteps as $statusField => $completedValues) {
+            $userStatus = $user->$statusField ?? 'pending';
+            if (in_array(strtolower($userStatus), $completedValues)) {
+                $completedSteps++;
+            }
+        }
+        $applicationProgress = round(($completedSteps / count($statusSteps)) * 100);
+        
         // Get pending tasks
         $tasks = Task::where('user_id', $user->id)
             ->where('status', 'pending')
@@ -37,7 +74,15 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
         
-        return view('applicant_dashboard', compact('user', 'tasks', 'unreadMessagesCount', 'recentMessages'));
+        return view('applicant_dashboard', compact(
+            'user', 
+            'tasks', 
+            'unreadMessagesCount', 
+            'recentMessages',
+            'profileProgress',
+            'documentsProgress',
+            'applicationProgress'
+        ));
     }
     
     private function generateAutoTasks($user)
@@ -48,6 +93,7 @@ class DashboardController extends Controller
         if (empty($user->sex)) $missingFields[] = 'Sex';
         if (empty($user->degree_program)) $missingFields[] = 'Degree Program';
         if (empty($user->permanent_address)) $missingFields[] = 'Permanent Address';
+        if (empty($user->current_address)) $missingFields[] = 'Current Address';
         
         if (!empty($missingFields)) {
             Task::updateOrCreate(
@@ -110,32 +156,78 @@ class DashboardController extends Controller
     }
     
     public function getMessages()
-{
-    $user = auth()->user();
+    {
+        $user = auth()->user();
+        
+        // Mark all messages as read
+        Message::where('receiver_id', $user->id)
+            ->where('is_read', false)
+            ->update(['is_read' => true]);
+        
+        $messages = Message::where('receiver_id', $user->id)
+            ->with('sender')
+            ->orderBy('created_at', 'desc')
+            ->get();
+        
+        return response()->json([
+            'success' => true,
+            'messages' => $messages->map(function($msg) {
+                return [
+                    'id' => $msg->id,
+                    'message' => $msg->message,
+                    'sender_name' => $msg->sender->first_name . ' ' . $msg->sender->last_name,
+                    'created_at' => $msg->created_at->toISOString(),
+                    'created_at_formatted' => $msg->created_at->format('M d, Y h:i A'),
+                    'is_read' => $msg->is_read
+                ];
+            }),
+            'unread_count' => Message::where('receiver_id', $user->id)->where('is_read', false)->count()
+        ]);
+    }
     
-    // Mark all messages as read
-    Message::where('receiver_id', $user->id)
-        ->where('is_read', false)
-        ->update(['is_read' => true]);
-    
-    $messages = Message::where('receiver_id', $user->id)
-        ->with('sender')
-        ->orderBy('created_at', 'desc')
-        ->get();
-    
-    return response()->json([
-        'success' => true,
-        'messages' => $messages->map(function($msg) {
-            return [
-                'id' => $msg->id,
-                'message' => $msg->message,
-                'sender_name' => $msg->sender->first_name . ' ' . $msg->sender->last_name,
-                'created_at' => $msg->created_at->toISOString(), // Use ISO string for better parsing
-                'created_at_formatted' => $msg->created_at->format('M d, Y h:i A'),
-                'is_read' => $msg->is_read
-            ];
-        }),
-        'unread_count' => Message::where('receiver_id', $user->id)->where('is_read', false)->count()
-    ]);
-}
+    public function getProgressData()
+    {
+        $user = auth()->user();
+        
+        // Calculate Profile Progress
+        $profileFields = ['first_name', 'last_name', 'email', 'birthdate', 'sex', 'degree_program', 'permanent_address', 'current_address'];
+        $filledCount = 0;
+        foreach ($profileFields as $field) {
+            if (!empty($user->$field)) {
+                $filledCount++;
+            }
+        }
+        $profileProgress = round(($filledCount / count($profileFields)) * 100);
+        
+        // Calculate Documents Progress
+        $totalRequirements = Requirement::count();
+        $uploadedDocs = DocumentUpload::where('user_id', $user->id)->count();
+        $documentsProgress = $totalRequirements > 0 ? round(($uploadedDocs / $totalRequirements) * 100) : 0;
+        
+        // Calculate Application Progress
+        $statusSteps = ['application_status', 'document_status', 'interview_status', 'payment_status', 'final_status'];
+        $completedSteps = 0;
+        $approvedStatuses = ['approved', 'completed', 'verified', 'paid', 'scheduled'];
+        
+        foreach ($statusSteps as $statusField) {
+            $userStatus = strtolower($user->$statusField ?? 'pending');
+            if (in_array($userStatus, $approvedStatuses)) {
+                $completedSteps++;
+            }
+        }
+        $applicationProgress = round(($completedSteps / count($statusSteps)) * 100);
+        
+        return response()->json([
+            'success' => true,
+            'profile_progress' => $profileProgress,
+            'documents_progress' => $documentsProgress,
+            'application_progress' => $applicationProgress,
+            'profile_filled' => $filledCount,
+            'profile_total' => count($profileFields),
+            'documents_uploaded' => $uploadedDocs,
+            'documents_total' => $totalRequirements,
+            'steps_completed' => $completedSteps,
+            'steps_total' => count($statusSteps)
+        ]);
+    }
 }

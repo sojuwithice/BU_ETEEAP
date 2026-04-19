@@ -100,25 +100,31 @@
     <div class="dashboard-container">
         <!-- LEFT -->
         <div class="left">
-            <h2>Your Progress</h2>
-            <div class="progress-card">
-                <p>Profile Progress</p>
-                <h1>65%</h1>
-                <div class="progress"><span style="width:65%"></span></div>
-            </div>
-
-            <div class="progress-card">
-                <p>Documents Progress</p>
-                <h1>22%</h1>
-                <div class="progress"><span style="width:22%"></span></div>
-            </div>
-
-            <div class="progress-card">
-                <p>Application Progress</p>
-                <h1>0%</h1>
-                <div class="progress"><span style="width:0%"></span></div>
-            </div>
+    <h2>Your Progress</h2>
+    <div class="progress-card">
+        <p>Profile Progress</p>
+        <h1 id="profileProgress">{{ $profileProgress ?? 0 }}%</h1>
+        <div class="progress">
+            <span id="profileProgressBar" style="width: {{ $profileProgress ?? 0 }}%"></span>
         </div>
+    </div>
+
+    <div class="progress-card">
+        <p>Documents Progress</p>
+        <h1 id="documentsProgress">{{ $documentsProgress ?? 0 }}%</h1>
+        <div class="progress">
+            <span id="documentsProgressBar" style="width: {{ $documentsProgress ?? 0 }}%"></span>
+        </div>
+    </div>
+
+    <div class="progress-card">
+        <p>Application Progress</p>
+        <h1 id="applicationProgress">{{ $applicationProgress ?? 0 }}%</h1>
+        <div class="progress">
+            <span id="applicationProgressBar" style="width: {{ $applicationProgress ?? 0 }}%"></span>
+        </div>
+    </div>
+</div>
 
         <div class="center">
     <div class="center-content-wrapper">
