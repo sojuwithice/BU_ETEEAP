@@ -16,7 +16,7 @@
     display: flex;
     align-items: flex-start;
     gap: 12px;
-    padding: 12px 40px;
+    padding: 12px;
     border-radius: 10px;
     margin-bottom: 5px;
     cursor: pointer;
