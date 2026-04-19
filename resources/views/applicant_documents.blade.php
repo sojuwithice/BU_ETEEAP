@@ -10,7 +10,60 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0" />
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;800;900&family=Raleway:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.0/dist/sweetalert2.all.min.js"></script>
-
+<style>
+    /* Verification status styles */
+    .doc-status {
+        display: block;
+        font-size: 11px;
+        margin-top: 4px;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-weight: 600;
+    }
+    .doc-status.approved {
+        color: #25c14a;
+        background: #e8f5e9;
+    }
+    .doc-status.rejected {
+        color: #e03d4d;
+        background: #ffebee;
+    }
+    .doc-status.incomplete {
+        color: #EF7631;
+        background: #fff3e0;
+    }
+    .approved-badge {
+        background: #25c14a;
+        color: white;
+        padding: 8px 12px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        margin-top: 10px;
+    }
+    .verification-note {
+        display: block;
+        margin-top: 8px;
+        padding: 6px 10px;
+        background: #fff3e0;
+        border-radius: 6px;
+        font-size: 11px;
+        color: #EF7631;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    .upload-box.disabled {
+        pointer-events: none;
+        opacity: 0.6;
+    }
+</style>
+</head>
+<body>
 
 <!-- HEADER -->
 <div class="header">
@@ -34,11 +87,7 @@
             </div>
         </div>
         <div class="profile-wrapper" id="profileWrapper">
-            <img 
-                src="{{ auth()->user()->profile_image ? asset('storage/' . auth()->user()->profile_image) : asset('images/default-profile.png') }}" 
-                class="profile"
-                id="profileImg"
-            >
+            <img src="{{ auth()->user()->profile_image ? asset('storage/' . auth()->user()->profile_image) : asset('images/default-profile.png') }}" class="profile" id="profileImg">
             <div class="profile-dropdown" id="profileDropdown">
                 <div class="dropdown-header">
                     <img src="{{ auth()->user()->profile_image ? asset('storage/' . auth()->user()->profile_image) : asset('images/default-profile.png') }}" class="dropdown-avatar">
@@ -85,19 +134,41 @@
                 </div>
                 <ul class="docs-items">
                     @foreach($requirements as $req)
-                    <li class="doc-item {{ $req->userUpload ? 'completed' : '' }}" 
+                    @php
+                        $upload = $req->userUpload;
+                        $status = $upload ? $upload->status : null;
+                        $reason = $upload ? $upload->verification_reason : null;
+                    @endphp
+                    <li class="doc-item {{ $upload ? 'completed' : '' }}" 
                         data-id="{{ $req->id }}" 
                         data-name="{{ $req->name }}" 
                         data-note="{{ $req->note ?? '' }}"
-                        data-completed="{{ $req->userUpload ? 'true' : 'false' }}"
-                        data-filepath="{{ $req->userUpload ? asset('storage/' . $req->userUpload->file_path) : '' }}">
-                        <div class="{{ $req->userUpload ? 'check-icon' : 'circle-icon' }}">
-                            @if($req->userUpload) <span class="material-symbols-outlined">check</span> @endif
+                        data-completed="{{ $upload ? 'true' : 'false' }}"
+                        data-filepath="{{ $upload ? asset('storage/' . $upload->file_path) : '' }}"
+                        data-status="{{ $status }}"
+                        data-reason="{{ $reason }}">
+                        <div class="{{ $upload ? 'check-icon' : 'circle-icon' }}">
+                            @if($upload)
+                                @if($status == 'approved')
+                                    <span class="material-symbols-outlined" style="color: #25c14a;">check_circle</span>
+                                @elseif($status == 'rejected')
+                                    <span class="material-symbols-outlined" style="color: #e03d4d;">cancel</span>
+                                @else
+                                    <span class="material-symbols-outlined">check</span>
+                                @endif
+                            @endif
                         </div>
                         <div class="doc-content">
                             <span class="doc-name">{{ $req->name }}</span>
                             @if($req->note)
                             <small class="doc-note">{{ $req->note }}</small>
+                            @endif
+                            @if($upload && $status == 'approved')
+                            <small class="doc-status approved">✓ Verified</small>
+                            @elseif($upload && $status == 'rejected')
+                            <small class="doc-status rejected">✗ Rejected: {{ $reason }}</small>
+                            @elseif($upload && $status == 'incomplete')
+                            <small class="doc-status incomplete">⚠ Incomplete: {{ $reason }}</small>
                             @endif
                         </div>
                     </li>
@@ -134,8 +205,20 @@
                             @foreach($recentUploads as $upload)
                             <tr>
                                 <td>{{ $upload->requirement->name }}</td>
-                                <td>{{ $upload->created_at->format('Y-m-d') }}</td>
-                                <td class="status-verified">{{ $upload->status }}</td>
+                                <td class="upload-date-cell" data-timestamp="{{ $upload->created_at->toISOString() }}">
+                                        {{ $upload->created_at->diffForHumans() }}
+                                    </td>
+                                <td class="status-verified">
+                                    @if($upload->status == 'approved')
+                                        <span style="color: #25c14a;">✓ Approved</span>
+                                    @elseif($upload->status == 'rejected')
+                                        <span style="color: #e03d4d;">✗ Rejected</span>
+                                    @elseif($upload->status == 'incomplete')
+                                        <span style="color: #EF7631;">⚠ Incomplete</span>
+                                    @else
+                                        {{ $upload->status }}
+                                    @endif
+                                </td>
                                 <td><button class="btn-view" onclick="window.open('/storage/{{ $upload->file_path }}')">View</button></td>
                             </tr>
                             @endforeach
@@ -184,6 +267,9 @@ let isRequirementCompleted = false;
 let currentFileName = '';
 let currentFilePath = '';
 let currentDocItem = null;
+let currentDocStatus = '';
+let currentDocReason = '';
+let isReuploadingAction = false;
 
 const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
@@ -200,10 +286,8 @@ function showUploadSection() {
     }
 }
 
-// Initially hide upload section on all devices
 hideUploadSection();
 
-// On desktop, disable but show with opacity (optional)
 if (window.innerWidth > 1024 && uploadSection) {
     uploadSection.style.opacity = '0.5';
     uploadSection.style.pointerEvents = 'none';
@@ -364,6 +448,10 @@ function resetUploadUI() {
     successActions.style.display = 'none';
     uploadBtn.style.display = 'inline-block';
     uploadBox.classList.remove('has-file');
+    uploadBox.classList.remove('disabled');
+
+    const badges = uploadBox.querySelectorAll('.approved-badge, .verification-note');
+    badges.forEach(badge => badge.remove());
 }
 
 /* ================= UPDATE DOCUMENT ITEM UI ================= */
@@ -393,11 +481,24 @@ function updateDocumentItemUI(docItem, hasFile, filePath = null) {
 /* ================= UPDATE RECENT TABLE ================= */
 function updateRecentTable(newUpload) {
     if (!recentTableBody) return;
+    
+    const now = new Date();
+    const formattedDate = new Intl.DateTimeFormat('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+    }).format(now);
+
     const newRow = document.createElement('tr');
     newRow.innerHTML = `
         <td>${newUpload.requirement_name}</td>
-        <td>${newUpload.upload_date}</td>
-        <td class="status-verified">${newUpload.status}</td>
+        <td>${formattedDate}</td>
+        <td class="status-verified">
+            <span style="color: #EF7631;">Pending</span>
+        </td>
         <td><button class="btn-view" onclick="window.open('${newUpload.file_path}')">View</button></td>
     `;
     
@@ -405,10 +506,6 @@ function updateRecentTable(newUpload) {
         recentTableBody.insertBefore(newRow, recentTableBody.firstChild);
     } else {
         recentTableBody.appendChild(newRow);
-    }
-    
-    while (recentTableBody.children.length > 5) {
-        recentTableBody.removeChild(recentTableBody.lastChild);
     }
 }
 
@@ -435,29 +532,57 @@ document.querySelectorAll('.doc-item').forEach(item => {
         const name = this.dataset.name;
         const isDone = this.dataset.completed === 'true';
         const filePath = this.dataset.filepath || '';
+        const docStatus = this.dataset.status || '';
+        const docReason = this.dataset.reason || '';
         
         selectedRequirementId = id;
         isRequirementCompleted = isDone;
         currentFileName = name;
         currentFilePath = filePath;
         currentDocItem = this;
+        currentDocStatus = docStatus;
+        currentDocReason = docReason;
         
         resetUploadUI();
         
-        // SHOW the upload section when a document is clicked
         showUploadSection();
         
-        // On desktop, enable the upload section
         if (window.innerWidth > 1024 && uploadSection) {
             uploadSection.style.opacity = '1';
             uploadSection.style.pointerEvents = 'auto';
         }
         
         if (isDone && filePath) {
-            showFilePreview(null, true, filePath, name);
-            uploadBtn.style.display = 'none';
-            successActions.style.display = 'block';
-            fileNameText.innerText = `Uploaded: ${name}`;
+            if (docStatus === 'approved') {
+                uploadBox.classList.add('disabled');
+                showFilePreview(null, true, filePath, name);
+                uploadBtn.style.display = 'none';
+                successActions.style.display = 'none';
+                fileNameText.innerText = `✓ Approved: ${name}`;
+                
+                // Add approved badge
+                const approvedBadge = document.createElement('div');
+                approvedBadge.className = 'approved-badge';
+                approvedBadge.innerHTML = '<span class="material-symbols-outlined">verified</span> Document Verified and Approved';
+                uploadBox.appendChild(approvedBadge);
+            } 
+            else if (docStatus === 'rejected' || docStatus === 'incomplete') {
+                showFilePreview(null, true, filePath, name);
+                uploadBtn.style.display = 'none';
+                successActions.style.display = 'block';
+                fileNameText.innerText = `Uploaded: ${name}`;
+                
+                const note = document.createElement('div');
+                note.className = 'verification-note';
+                note.innerHTML = `<span class="material-symbols-outlined">info</span> ${docStatus.toUpperCase()}: ${docReason || 'Please re-upload the correct document'}`;
+                uploadBox.appendChild(note);
+            } 
+            else {
+                showFilePreview(null, true, filePath, name);
+                uploadBtn.style.display = 'none';
+                successActions.style.display = 'block';
+                fileNameText.innerText = `Uploaded: ${name}`;
+            }
         } else {
             fileNameText.innerText = "Click to select: " + name;
         }
@@ -472,6 +597,10 @@ if (uploadBox) {
             return; 
         }
         if (e.target.tagName === 'BUTTON') return;
+        if (isRequirementCompleted && currentDocStatus === 'approved') {
+            showToast("This document is already approved and verified. No changes allowed.", "error");
+            return;
+        }
         if (isRequirementCompleted) {
             showToast("This document already has a file. Use Re-upload to replace it.", "error");
             return;
@@ -513,7 +642,6 @@ if (uploadBtn) {
             confirmButtonText: 'Yes, Upload',
             cancelButtonText: 'Cancel'
         }).then((result) => {
-            // Kapag Cancel, automatic magsasara ang modal
             if (!result.isConfirmed) return;
             
             Swal.fire({
@@ -528,6 +656,12 @@ if (uploadBtn) {
             formData.append('file', fileInput.files[0]);
             formData.append('requirement_id', selectedRequirementId);
             
+            // --- ADDED LOGIC HERE ---
+            if (isReuploadingAction) {
+                formData.append('is_reuploaded', 'true');
+            }
+            // ------------------------
+            
             fetch("{{ route('applicant.upload.save') }}", {
                 method: "POST",
                 headers: {
@@ -541,11 +675,15 @@ if (uploadBtn) {
                 Swal.close();
                 
                 if (data.success) {
+                    
+                    isReuploadingAction = false; 
+
                     const filePath = data.file_path || `/storage/${data.path}`;
                     
                     updateDocumentItemUI(currentDocItem, true, filePath);
                     isRequirementCompleted = true;
                     currentFilePath = filePath;
+                    currentDocStatus = 'pending';
                     
                     uploadBtn.style.display = 'none';
                     successActions.style.display = 'block';
@@ -559,6 +697,7 @@ if (uploadBtn) {
                     });
                     
                     showToast("File uploaded successfully");
+                    setTimeout(() => location.reload(), 1000);
                 } else {
                     showToast(data.message || "Upload failed", "error");
                 }
@@ -576,12 +715,14 @@ if (reuploadBtn) {
     reuploadBtn.addEventListener('click', e => {
         e.stopPropagation();
         if (!selectedRequirementId) return;
+        
+        isReuploadingAction = true; 
         isRequirementCompleted = false;
         fileInput.click();
     });
 }
 
-/* ================= REMOVE BUTTON - FIXED (Working Cancel) ================= */
+/* ================= REMOVE BUTTON ================= */
 if (removeBtn) {
     removeBtn.addEventListener('click', function(e) {
         e.preventDefault();
@@ -600,7 +741,6 @@ if (removeBtn) {
             focusCancel: false,
             focusConfirm: false
         }).then((result) => {
-            // If cancel is clicked, result.isConfirmed will be false, modal closes automatically
             if (result.isConfirmed) {
                 Swal.fire({
                     title: 'Deleting...',
@@ -635,6 +775,7 @@ if (removeBtn) {
                         successActions.style.display = 'none';
                         removeFromRecentTable(currentFileName);
                         showToast("File removed successfully");
+                        setTimeout(() => location.reload(), 1000);
                     } else {
                         showToast(data.message || "Remove failed", "error");
                     }
@@ -644,68 +785,8 @@ if (removeBtn) {
                     showToast("Error removing file", "error");
                 });
             }
-            // No need for else - Swal automatically closes on cancel
         });
     });
-}
-
-/* ================= UPLOAD EXECUTION ================= */
-async function executeUpload(file) {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('requirement_id', selectedRequirementId);
-    
-    const originalBtnText = uploadBtn.innerText;
-    uploadBtn.innerText = 'Uploading...';
-    uploadBtn.disabled = true;
-    
-    try {
-        const response = await fetch("{{ route('applicant.upload.save') }}", {
-            method: "POST",
-            headers: {
-                'X-CSRF-TOKEN': csrfToken,
-                'Accept': 'application/json'
-            },
-            body: formData
-        });
-        
-        if (response.status === 403) {
-            showToast("Session expired. Please refresh the page.", "error");
-            setTimeout(() => location.reload(), 1500);
-            return;
-        }
-        
-        const data = await response.json();
-        if (data.success) {
-            const filePath = data.file_path || `/storage/${data.path}`;
-            
-            updateDocumentItemUI(currentDocItem, true, filePath);
-            isRequirementCompleted = true;
-            currentFilePath = filePath;
-            
-            uploadBtn.style.display = 'none';
-            successActions.style.display = 'block';
-            fileNameText.innerText = `Uploaded: ${currentFileName}`;
-            
-            updateRecentTable({
-                requirement_name: currentFileName,
-                upload_date: new Date().toISOString().split('T')[0],
-                status: 'Pending',
-                file_path: filePath
-            });
-            
-            showToast("File uploaded successfully");
-        } else {
-            showToast(data.message || "Upload failed", "error");
-            uploadBtn.innerText = originalBtnText;
-            uploadBtn.disabled = false;
-        }
-    } catch (error) {
-        console.error('Upload error:', error);
-        showToast("Upload error. Please try again.", "error");
-        uploadBtn.innerText = originalBtnText;
-        uploadBtn.disabled = false;
-    }
 }
 
 /* ================= PASSWORD UPDATE ================= */
@@ -717,12 +798,10 @@ async function updatePassword() {
         showToast("Please enter a new password", "error");
         return;
     }
-    
     if (newPassword !== confirmPassword) {
         showToast("Passwords do not match", "error");
         return;
     }
-    
     if (newPassword.length < 6) {
         showToast("Password must be at least 6 characters", "error");
         return;
@@ -774,14 +853,11 @@ window.addEventListener('beforeunload', function() {
     }
 });
 
-
-
 /* ================= ONSITE SUBMISSION VERIFICATION ================= */
 const onsiteBtn = document.querySelector('.onsite-btn');
 let isOnsiteMode = false;
 let isVerified = false;
 
-// Function to disable/enable document items and upload section
 function setOnsiteMode(disabled) {
     const allDocItems = document.querySelectorAll('.doc-item');
     const uploadBoxElem = document.getElementById('uploadBox');
@@ -823,7 +899,6 @@ function setOnsiteMode(disabled) {
     }
 }
 
-// Check initial status on page load
 function checkOnsiteStatus() {
     fetch("{{ route('applicant.onsite.status') }}", {
         method: "GET",
@@ -853,7 +928,6 @@ function checkOnsiteStatus() {
     .catch(error => console.error('Error checking onsite status:', error));
 }
 
-// Student clicks "Already Submitted Onsite" button
 if (onsiteBtn) {
     onsiteBtn.addEventListener('click', () => {
         if (isVerified) {
@@ -887,7 +961,6 @@ if (onsiteBtn) {
             confirmButtonText: 'Yes, Request Verification',
             cancelButtonText: 'Cancel'
         }).then((result) => {
-            // Kapag Cancel, automatic magsasara ang modal
             if (!result.isConfirmed) return;
             
             Swal.fire({
@@ -929,8 +1002,6 @@ if (onsiteBtn) {
     });
 }
 
-// Staff function to confirm onsite submission
-// Staff function to confirm onsite submission
 window.confirmOnsiteSubmission = function() {
     Swal.fire({
         title: 'Confirm Onsite Submission',
@@ -942,7 +1013,6 @@ window.confirmOnsiteSubmission = function() {
         confirmButtonText: 'Yes, Confirm Onsite',
         cancelButtonText: 'Cancel'
     }).then((result) => {
-        // Kapag Cancel, automatic magsasara ang modal
         if (!result.isConfirmed) return;
         
         Swal.fire({
@@ -986,10 +1056,23 @@ window.confirmOnsiteSubmission = function() {
     });
 };
 
-// Call on page load
 checkOnsiteStatus();
 
-</script>
+document.querySelectorAll('.upload-date-cell').forEach(cell => {
+    const timestamp = cell.getAttribute('data-timestamp');
+    if (timestamp) {
+        const date = new Date(timestamp);
+        cell.innerText = new Intl.DateTimeFormat('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true
+        }).format(date);
+    }
+});
 
+</script>
 </body>
 </html>

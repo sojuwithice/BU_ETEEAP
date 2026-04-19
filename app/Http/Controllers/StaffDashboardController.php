@@ -7,17 +7,16 @@ use App\Models\Requirement;
 use App\Models\DocumentUpload;  
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class StaffDashboardController extends Controller
 {
     public function index(Request $request)
     {
-        // Get all users with role 'applicant' or 'student'
         $query = User::where('role', 'applicant')
             ->orWhere('role', 'student')
             ->orderBy('created_at', 'desc');
         
-        // Search functionality
         if ($request->has('search') && !empty($request->search)) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
@@ -30,18 +29,15 @@ class StaffDashboardController extends Controller
         
         $applicants = $query->paginate(15);
         
-        // Get additional data for each applicant
         foreach ($applicants as $applicant) {
-            // Get latest document upload date
+
             $latestUpload = DocumentUpload::where('user_id', $applicant->id)
                 ->latest()
                 ->first();
             $applicant->last_update = $latestUpload ? $latestUpload->created_at : $applicant->updated_at;
             
-            // Get document upload count
             $applicant->upload_count = DocumentUpload::where('user_id', $applicant->id)->count();
             
-            // Determine status based on document submissions
             $requiredCount = Requirement::count();
             if ($applicant->upload_count == 0) {
                 $applicant->status = 'Not Started';
@@ -71,7 +67,6 @@ class StaffDashboardController extends Controller
     {
         $applicant = User::findOrFail($id);
         
-        // Format birthdate properly - use 'birthdate' not 'birth_date'
         $birthdate = 'Not specified';
         if ($applicant->birthdate && $applicant->birthdate != '0000-00-00') {
             try {
@@ -81,7 +76,6 @@ class StaffDashboardController extends Controller
             }
         }
         
-        // Get document uploads with requirement names
         $documents = DocumentUpload::where('user_id', $id)
             ->with('requirement')
             ->get()
@@ -183,11 +177,85 @@ class StaffDashboardController extends Controller
     public function viewApplicantDocuments($id)
     {
         $applicant = User::findOrFail($id);
-        $documents = DocumentUpload::where('user_id', $id)->with('requirement')->get();
         $requirements = Requirement::all();
         
-        return view('applicant_documents', compact('applicant', 'documents', 'requirements'));
+        // Get document uploads for this specific applicant
+        $documents = DocumentUpload::where('user_id', $id)
+            ->with('requirement')
+            ->get()
+            ->keyBy('requirement_id');
+        
+        // Get recent uploads for the recent table
+        $recentUploads = DocumentUpload::where('user_id', $id)
+            ->with('requirement')
+            ->latest()
+            ->take(5)
+            ->get();
+        
+        return view('document_verification', compact('applicant', 'requirements', 'documents', 'recentUploads'));
     }
+
+    public function getDocumentDetails($id, $requirementId)
+{
+    $document = DocumentUpload::where('user_id', $id)
+        ->where('requirement_id', $requirementId)
+        ->with('requirement')
+        ->first();
+    
+    if ($document) {
+        return response()->json([
+            'success' => true,
+            'document' => [
+                'id' => $document->id,
+                'file_path' => Storage::url($document->file_path),
+                'file_name' => $document->file_name,
+                'upload_date' => $document->created_at->toISOString(), // Use ISO string for consistent parsing
+                'status' => $document->status,
+                'verification_reason' => $document->verification_reason ?? null,
+                'verification_comment' => $document->verification_comment ?? null,
+                'is_reuploaded' => $document->is_reuploaded ?? false,
+                'reuploaded_at' => $document->reuploaded_at ? $document->reuploaded_at->toISOString() : null
+            ]
+        ]);
+    }
+    
+    return response()->json([
+        'success' => false,
+        'message' => 'No document uploaded yet'
+    ]);
+}
+
+    public function updateDocumentVerification(Request $request, $id)
+    {
+        $request->validate([
+            'requirement_id' => 'required|exists:requirements,id',
+            'status' => 'required|in:approved,incomplete,rejected',
+            'reason' => 'nullable|string',
+            'comment' => 'nullable|string'
+        ]);
+        
+        $document = DocumentUpload::where('user_id', $id)
+        ->where('requirement_id', $request->requirement_id)
+        ->first();
+    
+    if (!$document) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Document not found'
+        ]);
+    }
+    
+    $document->status = $request->status;
+    $document->verification_reason = $request->reason;
+    $document->verification_comment = $request->comment;
+    $document->is_reuploaded = false; 
+    $document->save();
+    
+    return response()->json([
+        'success' => true,
+        'message' => 'Verification updated successfully'
+    ]);
+}
 
     public function setInterview(Request $request, $id)
     {
@@ -203,8 +271,6 @@ class StaffDashboardController extends Controller
 
     public function sendMessage(Request $request, $id)
     {
-        // Store message logic here - you may need to create a Message model
-        // For now, just return success
         return response()->json(['success' => true, 'message' => 'Message sent successfully']);
     }
 }

@@ -737,7 +737,6 @@
         }
     }
     
-    // Close modals when clicking outside
     window.onclick = function(event) {
         const applicantModal = document.getElementById('applicantModal');
         const decisionModal = document.getElementById('decisionModal');
@@ -747,7 +746,6 @@
 
 
     function toggleMenu(menuId) {
-    // Isara muna ang ibang dropdowns bago buksan ang isa
     document.querySelectorAll('.menu-options').forEach(menu => {
         if(menu.id !== menuId) menu.classList.remove('active');
     });
@@ -755,23 +753,18 @@
 }
 
 function selectMenu(type, value, text) {
-    // 1. Palitan ang text na nakikita sa box
     document.getElementById('label' + type).innerText = text;
     
-    // 2. I-update ang hidden input value para sa filtering logic
     const hiddenInput = document.getElementById('filter' + type);
     hiddenInput.value = value;
     
-    // 3. Isara ang menu
     document.getElementById('options' + type).classList.remove('active');
     
-    // 4. Tawagin ang dati mong filter function para mag-update ang table
     if (typeof filterTable === "function") {
         filterTable(); 
     }
 }
 
-// Close menu kapag nag-click sa labas ng dropdown
 window.addEventListener('click', function(e) {
     if (!e.target.closest('.custom-menu-dropdown')) {
         document.querySelectorAll('.menu-options').forEach(menu => {
