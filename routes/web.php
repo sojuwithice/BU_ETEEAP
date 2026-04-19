@@ -67,6 +67,11 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/update-password', [AuthController::class, 'updatePassword']);
     Route::post('/profile/update', [AuthController::class, 'updateProfile'])->name('profile.update');
     Route::post('/profile/upload-image', [AuthController::class, 'uploadProfileImage'])->name('profile.upload.image');
+
+    // Add these routes inside your auth middleware group
+Route::post('/task/{id}/complete', [DashboardController::class, 'completeTask'])->name('task.complete');
+Route::get('/applicant/messages', [DashboardController::class, 'getMessages'])->name('applicant.messages');
+
 });
 
 Route::get('/verify-documents', function () {

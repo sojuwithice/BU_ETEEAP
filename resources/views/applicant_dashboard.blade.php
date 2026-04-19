@@ -124,35 +124,42 @@
     <div class="center-content-wrapper">
         
         <div class="center-column">
-            <h2>Incomplete Requirements</h2>
-            <div class="req-box">
-                <div class="task-header">
-                    <div class="task-badge">
-                        Tasks <span class="badge-num">10</span>
-                    </div>
-                    <div class="message-badge">
-                        Messages <span class="badge-num-gray">5</span>
-                    </div>
-                </div>
-
-                <h3 class="todo-title">To do</h3>
-
-                <div class="req-list">
-                    <div class="req-header">
-                        <span>Task</span>
-                    </div>
-                    <div class="req-item">
-                        <span>Complete Profile</span>
-                    </div>
-                    <div class="req-item">
-                        <span>Complete Profile</span>
-                    </div>
-                    <div class="req-item">
-                        <span>Upload Docs</span>
-                    </div>
-                </div>
+    <h2>Incomplete Requirements</h2>
+    <div class="req-box">
+        <div class="task-header">
+            <div class="task-badge">
+                Tasks <span class="badge-num" id="taskCount">{{ $tasks->count() }}</span>
+            </div>
+            <div class="message-badge" onclick="openMessagesModal()" style="cursor: pointer;">
+                Messages <span class="badge-num-gray" id="messageCount">{{ $unreadMessagesCount }}</span>
             </div>
         </div>
+
+        <h3 class="todo-title">To do</h3>
+
+        <div class="req-list" id="taskList">
+            <div class="req-header">
+                <span>Task</span>
+                <span>Action</span>
+            </div>
+            @forelse($tasks as $task)
+            <div class="req-item" data-task-id="{{ $task->id }}">
+                <div class="task-info">
+                    <span class="task-title">{{ $task->title }}</span>
+                    @if($task->description)
+                    <small class="task-desc">{{ $task->description }}</small>
+                    @endif
+                </div>
+                <a href="{{ $task->action_url }}" class="task-view-btn">View</a>
+            </div>
+            @empty
+            <div class="req-item">
+                <span>🎉 All tasks completed! Great job!</span>
+            </div>
+            @endforelse
+        </div>
+    </div>
+</div>
 
         <div class="center-column">
             <h2 class="rem-title-outside">Reminders</h2>
@@ -324,6 +331,20 @@
     <span id="toast-message"></span>
 </div>
 
+
+<!-- Messages Modal -->
+<div id="messagesModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Messages from Staff</h2>
+            <span class="close-btn" onclick="closeMessagesModal()">&times;</span>
+        </div>
+        <div class="messages-list" id="messagesList">
+            <div style="text-align: center; padding: 20px;">Loading messages...</div>
+        </div>
+    </div>
+</div>
+
 <script>
     // ================= TOAST NOTIFICATION =================
     function showToast(message, type = 'success') {
@@ -481,6 +502,250 @@
             saveBtn.innerText = "Save";
         }
     }
+
+
+    // ================= TASKS FUNCTIONS =================
+function completeTask(taskId) {
+    Swal.fire({
+        title: 'Complete Task?',
+        text: 'Mark this task as done?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#223381',
+        confirmButtonText: 'Yes, Complete',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/task/${taskId}/complete`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(data.message, "success");
+                    // Remove task from list
+                    const taskElement = document.querySelector(`.req-item[data-task-id="${taskId}"]`);
+                    if (taskElement) taskElement.remove();
+                    // Update task count
+                    const taskCountSpan = document.getElementById('taskCount');
+                    let currentCount = parseInt(taskCountSpan.innerText);
+                    taskCountSpan.innerText = currentCount - 1;
+                    
+                    // If no tasks left, show completion message
+                    if (currentCount - 1 === 0) {
+                        const taskList = document.getElementById('taskList');
+                        taskList.innerHTML = '<div class="req-item"><span>🎉 All tasks completed! Great job!</span></div>';
+                    }
+                } else {
+                    showToast(data.message || "Failed to complete task", "error");
+                }
+            })
+            .catch(error => showToast("Error completing task", "error"));
+        }
+    });
+}
+
+// ================= MESSAGES FUNCTIONS =================
+const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+let messageRefreshInterval = null;
+
+function formatMessageTime(dateString) {
+    if (!dateString) return 'Unknown date';
+    
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+    
+    if (diffMins < 1) {
+        return 'Just now';
+    } else if (diffMins < 60) {
+        return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+    } else if (diffHours < 24) {
+        return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    } else if (diffDays < 7) {
+        return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+    } else {
+        return date.toLocaleString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+        });
+    }
+}
+
+function loadMessages() {
+    console.log('Loading messages...');
+    
+    fetch('/applicant/messages', {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': csrfToken,
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Messages response:', data);
+        
+        if (data.success) {
+            // Update message count badge
+            const messageCountSpan = document.getElementById('messageCount');
+            if (messageCountSpan) {
+                messageCountSpan.innerText = data.unread_count || data.messages.length;
+            }
+            
+            // Store messages for modal display
+            window.messagesList = data.messages;
+            
+            // Also update the messages list in modal if it's open
+            const modal = document.getElementById('messagesModal');
+            if (modal && modal.style.display === 'flex') {
+                displayMessagesInModal();
+            }
+            
+            // Start real-time time refresh
+            startMessageTimeRefresh();
+        } else {
+            console.error('Failed to load messages:', data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error loading messages:', error);
+    });
+}
+
+function displayMessagesInModal() {
+    const messagesList = document.getElementById('messagesList');
+    
+    if (!messagesList) return;
+    
+    if (window.messagesList && window.messagesList.length > 0) {
+        messagesList.innerHTML = window.messagesList.map(msg => `
+            <div class="message-item">
+                <div class="message-sender">From: ${escapeHtml(msg.sender_name)}</div>
+                <div class="message-text">${escapeHtml(msg.message)}</div>
+                <div class="message-time">${formatMessageTime(msg.created_at)}</div>
+            </div>
+        `).join('');
+    } else {
+        messagesList.innerHTML = '<div style="text-align: center; padding: 20px;">No messages yet</div>';
+    }
+}
+
+function startMessageTimeRefresh() {
+    if (messageRefreshInterval) clearInterval(messageRefreshInterval);
+    
+    messageRefreshInterval = setInterval(() => {
+        const modal = document.getElementById('messagesModal');
+        // Only refresh if modal is open
+        if (modal && modal.style.display === 'flex' && window.messagesList) {
+            const messagesList = document.getElementById('messagesList');
+            if (messagesList) {
+                messagesList.innerHTML = window.messagesList.map(msg => `
+                    <div class="message-item">
+                        <div class="message-sender">From: ${escapeHtml(msg.sender_name)}</div>
+                        <div class="message-text">${escapeHtml(msg.message)}</div>
+                        <div class="message-time">${formatMessageTime(msg.created_at)}</div>
+                    </div>
+                `).join('');
+            }
+        }
+    }, 60000); // Update every minute
+}
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function openMessagesModal() {
+    const modal = document.getElementById('messagesModal');
+    if (!modal) return;
+    
+    // Show loading state
+    const messagesList = document.getElementById('messagesList');
+    if (messagesList) {
+        messagesList.innerHTML = '<div style="text-align: center; padding: 20px;">Loading messages...</div>';
+    }
+    
+    // First load fresh messages
+    fetch('/applicant/messages', {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': csrfToken,
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            window.messagesList = data.messages;
+            displayMessagesInModal();
+            modal.style.display = 'flex';
+            
+            // Update message count badge to 0 after viewing
+            const messageCountSpan = document.getElementById('messageCount');
+            if (messageCountSpan) {
+                messageCountSpan.innerText = '0';
+            }
+        } else {
+            if (messagesList) {
+                messagesList.innerHTML = '<div style="text-align: center; padding: 20px;">Error loading messages</div>';
+            }
+            modal.style.display = 'flex';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        const messagesListElem = document.getElementById('messagesList');
+        if (messagesListElem) {
+            messagesListElem.innerHTML = '<div style="text-align: center; padding: 20px;">Error loading messages</div>';
+        }
+        modal.style.display = 'flex';
+    });
+}
+
+function closeMessagesModal() {
+    const modal = document.getElementById('messagesModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+    // Stop refreshing when modal is closed
+    if (messageRefreshInterval) {
+        clearInterval(messageRefreshInterval);
+        messageRefreshInterval = null;
+    }
+}
+
+// Close modal on outside click
+window.onclick = function(event) {
+    const modal = document.getElementById('messagesModal');
+    if (event.target === modal) {
+        closeMessagesModal();
+    }
+}
+
+// Load messages every 30 seconds
+setInterval(loadMessages, 30000);
+// Load messages immediately on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadMessages();
+});
 </script>
 
 </body>

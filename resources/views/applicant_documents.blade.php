@@ -164,11 +164,11 @@
                             <small class="doc-note">{{ $req->note }}</small>
                             @endif
                             @if($upload && $status == 'approved')
-                            <small class="doc-status approved">✓ Verified</small>
+                            <small class="doc-status approved">Verified</small>
                             @elseif($upload && $status == 'rejected')
-                            <small class="doc-status rejected">✗ Rejected: {{ $reason }}</small>
+                            <small class="doc-status rejected">Rejected: {{ $reason }}</small>
                             @elseif($upload && $status == 'incomplete')
-                            <small class="doc-status incomplete">⚠ Incomplete: {{ $reason }}</small>
+                            <small class="doc-status incomplete">Incomplete: {{ $reason }}</small>
                             @endif
                         </div>
                     </li>
@@ -210,11 +210,11 @@
                                     </td>
                                 <td class="status-verified">
                                     @if($upload->status == 'approved')
-                                        <span style="color: #25c14a;">✓ Approved</span>
+                                        <span style="color: #25c14a;">Approved</span>
                                     @elseif($upload->status == 'rejected')
-                                        <span style="color: #e03d4d;">✗ Rejected</span>
+                                        <span style="color: #e03d4d;">Rejected</span>
                                     @elseif($upload->status == 'incomplete')
-                                        <span style="color: #EF7631;">⚠ Incomplete</span>
+                                        <span style="color: #EF7631;">Incomplete</span>
                                     @else
                                         {{ $upload->status }}
                                     @endif

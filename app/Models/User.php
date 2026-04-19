@@ -10,7 +10,7 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
-        protected $fillable = [
+    protected $fillable = [
         'first_name',
         'middle_name',
         'last_name',
@@ -43,4 +43,27 @@ class User extends Authenticatable
         'password' => 'hashed',
         'password_plain' => 'encrypted',
     ];
+    
+    /**
+     * Relationships
+     */
+    public function tasks()
+    {
+        return $this->hasMany(Task::class);
+    }
+    
+    public function sentMessages()
+    {
+        return $this->hasMany(Message::class, 'sender_id');
+    }
+    
+    public function receivedMessages()
+    {
+        return $this->hasMany(Message::class, 'receiver_id');
+    }
+    
+    public function documentUploads()
+    {
+        return $this->hasMany(DocumentUpload::class);
+    }
 }

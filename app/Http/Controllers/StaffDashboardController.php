@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Requirement;  
 use App\Models\DocumentUpload;  
 use Illuminate\Http\Request;
+use App\Models\Message;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
@@ -270,7 +271,29 @@ class StaffDashboardController extends Controller
     }
 
     public function sendMessage(Request $request, $id)
-    {
-        return response()->json(['success' => true, 'message' => 'Message sent successfully']);
+{
+    $request->validate([
+        'message' => 'required|string'
+    ]);
+    
+    // Create message from staff to applicant
+    $message = Message::create([
+        'sender_id' => auth()->id(),
+        'receiver_id' => $id,
+        'message' => $request->message,
+        'is_read' => false
+    ]);
+    
+    // If this is a document verification update, also store in document_uploads table
+    if ($request->has('document_name') && $request->has('status')) {
+        // You can also update the document_uploads table with the verification comment
+        // This is already handled by updateDocumentVerification method
     }
+    
+    return response()->json([
+        'success' => true,
+        'message' => 'Message sent successfully to applicant'
+    ]);
+}
+
 }

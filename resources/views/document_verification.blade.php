@@ -470,89 +470,6 @@ function selectDocument(element, requirementId, requirementName) {
         });
     });
 
-    // ================= UPDATE VERIFICATION =================
-function updateVerification() {
-    if (!currentRequirementId) {
-        showToast("Please select a document first", "error");
-        return;
-    }
-    
-    const selectedStatus = document.querySelector('input[name="status"]:checked');
-    if (!selectedStatus) {
-        showToast("Please select a verification status", "error");
-        return;
-    }
-    
-    const status = selectedStatus.value;
-    const reason = document.getElementById('reasonSelect').value;
-    const comment = document.getElementById('commentText').value;
-    
-    if ((status === 'rejected' || status === 'incomplete') && !reason) {
-        showToast("Please provide a reason for rejection/incomplete", "error");
-        return;
-    }
-    
-    Swal.fire({
-    title: 'Confirm Verification',
-    html: `Update <strong>"${currentRequirementName}"</strong> to <strong style="color: #EF7631;">${status.toUpperCase()}</strong>?`,
-    icon: 'question',
-    width: '400px', 
-    padding: '1rem', 
-    showCancelButton: true,
-    confirmButtonColor: '#223381',
-    cancelButtonColor: '#858585',
-    confirmButtonText: 'Yes, Update',
-    cancelButtonText: 'Cancel',
-    customClass: {
-        popup: 'swal-compact-popup',
-        icon: 'swal-compact-icon',
-        title: 'swal-title-custom',
-        confirmButton: 'swal-confirm-btn',
-        cancelButton: 'swal-cancel-btn'
-    }
-
-    }).then((result) => {
-        if (result.isConfirmed) {
-            Swal.fire({
-                title: 'Updating...',
-                width: '300px',
-                allowOutsideClick: false,
-                showConfirmButton: false,
-                didOpen: () => { Swal.showLoading(); }
-            });
-            
-            fetch(`/staff/applicant/${applicantId}/document-verification`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': csrfToken,
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({
-                    requirement_id: currentRequirementId,
-                    status: status,
-                    reason: reason,
-                    comment: comment
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                Swal.close();
-                if (data.success) {
-                    showToast(data.message, "success");
-                    updateDocumentStatusIcon(currentRequirementId, status);
-                } else {
-                    showToast(data.message || "Update failed", "error");
-                }
-            })
-            .catch(error => {
-                Swal.close();
-                showToast("Error updating verification", "error");
-            });
-        }
-    });
-}
-
     function updateDocumentStatusIcon(requirementId, status) {
     const docItem = document.querySelector(`.doc-item[data-id="${requirementId}"]`);
     if (docItem) {
@@ -580,17 +497,165 @@ function updateVerification() {
             iconSpan.style.color = statusColor;
         }
         
-        docItem.classList.remove('approved', 'rejected', 'incomplete', 'reuploaded');
-        if (statusClass) docItem.classList.add(statusClass);
-
-        // Remove re-upload badge if exists
-        const reuploadBadge = docItem.querySelector('.reupload-badge');
-        if (reuploadBadge) {
-            reuploadBadge.remove();
+        // Update the document item class
+        docItem.classList.remove('approved', 'rejected', 'incomplete');
+        if (statusClass) {
+            docItem.classList.add(statusClass);
         }
-
-        docItem.setAttribute('data-is-reuploaded', 'false');
+        
+        // Update the data-status attribute
+        docItem.setAttribute('data-status', status);
     }
+}
+
+    // ================= UPDATE VERIFICATION =================
+function updateVerification() {
+    if (!currentRequirementId) {
+        showToast("Please select a document first", "error");
+        return;
+    }
+    
+    const selectedStatus = document.querySelector('input[name="status"]:checked');
+    if (!selectedStatus) {
+        showToast("Please select a verification status", "error");
+        return;
+    }
+    
+    const status = selectedStatus.value;
+    const reason = document.getElementById('reasonSelect').value;
+    const comment = document.getElementById('commentText').value;
+    
+    if ((status === 'rejected' || status === 'incomplete') && !reason) {
+        showToast("Please provide a reason for rejection/incomplete", "error");
+        return;
+    }
+    
+    // Build the message that will be sent to student
+    let studentMessage = '';
+    if (status === 'approved') {
+        studentMessage = `Your document "${currentRequirementName}" has been APPROVED.`;
+    } else if (status === 'rejected') {
+        studentMessage = `Your document "${currentRequirementName}" has been REJECTED. Reason: ${reason}. ${comment ? ' Comment: ' + comment : ''}`;
+    } else if (status === 'incomplete') {
+        studentMessage = `Your document "${currentRequirementName}" is INCOMPLETE. Reason: ${reason}. ${comment ? ' Comment: ' + comment : ''}`;
+    }
+    
+    Swal.fire({
+        title: 'Confirm Verification',
+        html: `Update <strong>"${currentRequirementName}"</strong> to <strong style="color: #EF7631;">${status.toUpperCase()}</strong>?<br><br>${comment ? '<strong>Comment:</strong> ' + escapeHtml(comment) : ''}`,
+        icon: 'question',
+        width: '400px', 
+        padding: '1rem', 
+        showCancelButton: true,
+        confirmButtonColor: '#223381',
+        cancelButtonColor: '#858585',
+        confirmButtonText: 'Yes, Update',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.fire({
+                title: 'Updating...',
+                width: '300px',
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+            
+            // First, update the document verification
+            fetch(`/staff/applicant/${applicantId}/document-verification`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    requirement_id: currentRequirementId,
+                    status: status,
+                    reason: reason,
+                    comment: comment
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Then, send a message to the student about the update
+                    return fetch(`/staff/applicant/${applicantId}/message`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken,
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({ 
+                            message: studentMessage
+                        })
+                    });
+                } else {
+                    throw new Error(data.message || "Update failed");
+                }
+            })
+            .then(response => response.json())
+            .then(messageData => {
+                Swal.close();
+                showToast("Verification updated and notification sent to student!", "success");
+                updateDocumentStatusIcon(currentRequirementId, status);
+                
+                // Clear the comment box after successful update
+                document.getElementById('commentText').value = '';
+                document.getElementById('reasonSelect').value = '';
+                document.getElementById('selectedReasonLabel').innerText = 'Select a reason';
+                document.getElementById('reasonGroup').style.display = 'none';
+            })
+            .catch(error => {
+                Swal.close();
+                showToast(error.message || "Error updating verification", "error");
+            });
+        }
+    });
+}
+
+function updateDocumentStatusIcon(requirementId, status) {
+    const docItem = document.querySelector(`.doc-item[data-id="${requirementId}"]`);
+    if (docItem) {
+        const iconSpan = docItem.querySelector('.doc-status-icon .material-symbols-outlined');
+        let iconName = 'hourglass_empty';
+        let statusClass = '';
+        let statusColor = '#999';
+        
+        if (status === 'approved') {
+            iconName = 'check_circle';
+            statusClass = 'approved';
+            statusColor = '#25c14a';
+        } else if (status === 'rejected') {
+            iconName = 'cancel';
+            statusClass = 'rejected';
+            statusColor = '#e03d4d';
+        } else if (status === 'incomplete') {
+            iconName = 'pending';
+            statusClass = 'incomplete';
+            statusColor = '#EF7631';
+        }
+        
+        if (iconSpan) {
+            iconSpan.innerText = iconName;
+            iconSpan.style.color = statusColor;
+        }
+        
+        docItem.classList.remove('approved', 'rejected', 'incomplete');
+        if (statusClass) {
+            docItem.classList.add(statusClass);
+        }
+        
+        docItem.setAttribute('data-status', status);
+    }
+}
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
 
     // ================= MODAL CONTROLS =================
