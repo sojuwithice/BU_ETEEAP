@@ -11,56 +11,120 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;800;900&family=Raleway:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.0/dist/sweetalert2.all.min.js"></script>
 <style>
-    /* Verification status styles */
-    .doc-status {
-        display: block;
-        font-size: 11px;
-        margin-top: 4px;
-        padding: 2px 6px;
-        border-radius: 4px;
-        font-weight: 600;
-    }
-    .doc-status.approved {
-        color: #25c14a;
-        background: #e8f5e9;
-    }
-    .doc-status.rejected {
-        color: #e03d4d;
-        background: #ffebee;
-    }
-    .doc-status.incomplete {
-        color: #EF7631;
-        background: #fff3e0;
-    }
-    .approved-badge {
-        background: #25c14a;
-        color: white;
-        padding: 8px 12px;
-        border-radius: 8px;
-        font-size: 12px;
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 5px;
-        margin-top: 10px;
-    }
-    .verification-note {
-        display: block;
-        margin-top: 8px;
-        padding: 6px 10px;
-        background: #fff3e0;
-        border-radius: 6px;
-        font-size: 11px;
-        color: #EF7631;
-        display: flex;
-        align-items: center;
-        gap: 4px;
-    }
-    .upload-box.disabled {
-        pointer-events: none;
-        opacity: 0.6;
-    }
+    /* Document item styles */
+.doc-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 40px;
+    border-radius: 10px;
+    margin-bottom: 5px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-left: 3px solid transparent;
+}
+
+.doc-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.doc-name-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.doc-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #333;
+    line-height: 1.3;
+}
+
+/* Status badges with icon and text */
+.doc-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    white-space: nowrap;
+}
+
+.doc-status-badge .material-symbols-outlined {
+    font-size: 14px !important;
+}
+
+.doc-status-badge.approved {
+    color: #25c14a;
+    background: #e8f5e9;
+}
+
+.doc-status-badge.rejected {
+    color: #e03d4d;
+    background: #ffebee;
+}
+
+.doc-status-badge.incomplete {
+    color: #EF7631;
+    background: #fff3e0;
+}
+
+.doc-note {
+    font-size: 0.75rem;
+    color: #666;
+    line-height: 1.4;
+    margin: 0;
+}
+
+.doc-reason {
+    font-size: 0.7rem;
+    color: #EF7631;
+    line-height: 1.3;
+    margin-top: 2px;
+}
+
+/* Status badges for recent table */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    white-space: nowrap;
+}
+
+.status-badge .material-symbols-outlined {
+    font-size: 14px !important;
+}
+
+.status-badge.approved {
+    color: #25c14a;
+    background: #e8f5e9;
+}
+
+.status-badge.rejected {
+    color: #e03d4d;
+    background: #ffebee;
+}
+
+.status-badge.incomplete {
+    color: #EF7631;
+    background: #fff3e0;
+}
+
+.status-badge.pending {
+    color: #f47c20;
+    background: #fff8f0;
+}
 </style>
 </head>
 <body>
@@ -133,47 +197,60 @@
                     <button class="onsite-btn">Already Submitted Onsite</button>
                 </div>
                 <ul class="docs-items">
-                    @foreach($requirements as $req)
-                    @php
-                        $upload = $req->userUpload;
-                        $status = $upload ? $upload->status : null;
-                        $reason = $upload ? $upload->verification_reason : null;
-                    @endphp
-                    <li class="doc-item {{ $upload ? 'completed' : '' }}" 
-                        data-id="{{ $req->id }}" 
-                        data-name="{{ $req->name }}" 
-                        data-note="{{ $req->note ?? '' }}"
-                        data-completed="{{ $upload ? 'true' : 'false' }}"
-                        data-filepath="{{ $upload ? asset('storage/' . $upload->file_path) : '' }}"
-                        data-status="{{ $status }}"
-                        data-reason="{{ $reason }}">
-                        <div class="{{ $upload ? 'check-icon' : 'circle-icon' }}">
-                            @if($upload)
-                                @if($status == 'approved')
-                                    <span class="material-symbols-outlined" style="color: #25c14a;">check_circle</span>
-                                @elseif($status == 'rejected')
-                                    <span class="material-symbols-outlined" style="color: #e03d4d;">cancel</span>
-                                @else
-                                    <span class="material-symbols-outlined">check</span>
-                                @endif
-                            @endif
-                        </div>
-                        <div class="doc-content">
-                            <span class="doc-name">{{ $req->name }}</span>
-                            @if($req->note)
-                            <small class="doc-note">{{ $req->note }}</small>
-                            @endif
-                            @if($upload && $status == 'approved')
-                            <small class="doc-status approved">Verified</small>
-                            @elseif($upload && $status == 'rejected')
-                            <small class="doc-status rejected">Rejected: {{ $reason }}</small>
-                            @elseif($upload && $status == 'incomplete')
-                            <small class="doc-status incomplete">Incomplete: {{ $reason }}</small>
-                            @endif
-                        </div>
-                    </li>
-                    @endforeach
-                </ul>
+    @foreach($requirements as $req)
+    @php
+        $upload = $req->userUpload;
+        $status = $upload ? $upload->status : null;
+        $reason = $upload ? $upload->verification_reason : null;
+    @endphp
+    <li class="doc-item {{ $upload ? 'completed' : '' }}" 
+        data-id="{{ $req->id }}" 
+        data-name="{{ $req->name }}" 
+        data-note="{{ $req->note ?? '' }}"
+        data-completed="{{ $upload ? 'true' : 'false' }}"
+        data-filepath="{{ $upload ? asset('storage/' . $upload->file_path) : '' }}"
+        data-status="{{ $status }}"
+        data-reason="{{ $reason }}">
+        <div class="{{ $upload ? 'check-icon' : 'circle-icon' }}">
+            @if($upload)
+                @if($status == 'approved')
+                    <span class="material-symbols-outlined" style="color: #25c14a;">check_circle</span>
+                @elseif($status == 'rejected')
+                    <span class="material-symbols-outlined" style="color: #e03d4d;">cancel</span>
+                @elseif($status == 'incomplete')
+                    <span class="material-symbols-outlined" style="color: #EF7631;">pending</span>
+                @else
+                    <span class="material-symbols-outlined">check</span>
+                @endif
+            @endif
+        </div>
+        <div class="doc-content">
+            <div class="doc-name-wrapper">
+                <span class="doc-name">{{ $req->name }}</span>
+                @if($upload && $status == 'approved')
+                <span class="doc-status-badge approved">
+                    <span class="material-symbols-outlined">check_circle</span> Verified
+                </span>
+                @elseif($upload && $status == 'rejected')
+                <span class="doc-status-badge rejected">
+                    <span class="material-symbols-outlined">cancel</span> Rejected
+                </span>
+                @elseif($upload && $status == 'incomplete')
+                <span class="doc-status-badge incomplete">
+                    <span class="material-symbols-outlined">pending</span> Incomplete
+                </span>
+                @endif
+            </div>
+            @if($req->note)
+            <small class="doc-note">{{ $req->note }}</small>
+            @endif
+            @if($upload && ($status == 'rejected' || $status == 'incomplete') && $reason)
+            <small class="doc-reason">{{ $reason }}</small>
+            @endif
+        </div>
+    </li>
+    @endforeach
+</ul>
             </div>
 
             <div class="upload-section">
@@ -202,27 +279,35 @@
                             <tr><th>Name</th><th>Upload Date</th><th>Status</th><th>Actions</th></tr>
                         </thead>
                         <tbody id="recent-table-body">
-                            @foreach($recentUploads as $upload)
-                            <tr>
-                                <td>{{ $upload->requirement->name }}</td>
-                                <td class="upload-date-cell" data-timestamp="{{ $upload->created_at->toISOString() }}">
-                                        {{ $upload->created_at->diffForHumans() }}
-                                    </td>
-                                <td class="status-verified">
-                                    @if($upload->status == 'approved')
-                                        <span style="color: #25c14a;">Approved</span>
-                                    @elseif($upload->status == 'rejected')
-                                        <span style="color: #e03d4d;">Rejected</span>
-                                    @elseif($upload->status == 'incomplete')
-                                        <span style="color: #EF7631;">Incomplete</span>
-                                    @else
-                                        {{ $upload->status }}
-                                    @endif
-                                </td>
-                                <td><button class="btn-view" onclick="window.open('/storage/{{ $upload->file_path }}')">View</button></td>
-                            </tr>
-                            @endforeach
-                        </tbody>
+    @foreach($recentUploads as $upload)
+    <tr>
+        <td>{{ $upload->requirement->name }}</td>
+        <td class="upload-date-cell" data-timestamp="{{ $upload->created_at->toISOString() }}">
+            {{ $upload->created_at->diffForHumans() }}
+        </td>
+        <td class="status-verified">
+            @if($upload->status == 'approved')
+                <span class="status-badge approved">
+                    <span class="material-symbols-outlined">check_circle</span> Approved
+                </span>
+            @elseif($upload->status == 'rejected')
+                <span class="status-badge rejected">
+                    <span class="material-symbols-outlined">cancel</span> Rejected
+                </span>
+            @elseif($upload->status == 'incomplete')
+                <span class="status-badge incomplete">
+                    <span class="material-symbols-outlined">pending</span> Incomplete
+                </span>
+            @else
+                <span class="status-badge pending">
+                    <span class="material-symbols-outlined">hourglass_empty</span> Pending
+                </span>
+            @endif
+        </td>
+        <td><button class="btn-view" onclick="window.open('/storage/{{ $upload->file_path }}')">View</button></td>
+    </tr>
+    @endforeach
+</tbody>
                     </table>
                 </div>
             </div>

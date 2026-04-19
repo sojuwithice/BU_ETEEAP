@@ -509,6 +509,105 @@ body {
     align-items: center;
 }
 
+/* Upload box approved badge - Magandang styles */
+.approved-badge {
+    background: linear-gradient(135deg, #25c14a 0%, #1eb040 100%);
+    color: white;
+    padding: 10px 16px;
+    border-radius: 30px;
+    font-size: 13px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 15px;
+    width: auto;
+    box-shadow: 0 2px 8px rgba(37, 193, 74, 0.3);
+    animation: fadeInUp 0.3s ease;
+}
+
+.approved-badge .material-symbols-outlined {
+    font-size: 18px !important;
+}
+
+/* Verification note styles */
+.verification-note {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+    padding: 10px 15px;
+    background: #fff3e0;
+    border-left: 4px solid #EF7631;
+    border-radius: 10px;
+    font-size: 12px;
+    color: #EF7631;
+    font-weight: 600;
+}
+
+.verification-note .material-symbols-outlined {
+    font-size: 18px;
+}
+
+/* Upload status badge for non-approved */
+.upload-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 30px;
+    margin-top: 12px;
+    justify-content: center;
+    width: auto;
+}
+
+.upload-status-badge .material-symbols-outlined {
+    font-size: 16px !important;
+}
+
+.upload-status-badge.approved {
+    background: linear-gradient(135deg, #25c14a 0%, #1eb040 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(37, 193, 74, 0.3);
+}
+
+.upload-status-badge.rejected {
+    background: linear-gradient(135deg, #e03d4d 0%, #c72a3a 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(224, 61, 77, 0.3);
+}
+
+.upload-status-badge.incomplete {
+    background: linear-gradient(135deg, #EF7631 0%, #d66528 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(239, 118, 49, 0.3);
+}
+
+.upload-status-badge.pending {
+    background: linear-gradient(135deg, #f47c20 0%, #e06a10 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(244, 124, 32, 0.3);
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.upload-box.disabled {
+    pointer-events: none;
+    opacity: 0.6;
+}
+
 #previewContainer {
     flex: 1;
     overflow-y: auto;
