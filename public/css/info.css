@@ -1277,3 +1277,71 @@ body {
 .status-control {
     scroll-behavior: smooth;
 }
+
+/* Done button style */
+.btn-done {
+    background: #25c14a;
+    color: white;
+    border: none;
+    padding: 8px 25px;
+    border-radius: 25px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-done:hover {
+    background: #1eb040;
+    transform: translateY(-1px);
+}
+
+/* Action container flex layout */
+.action-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 15px;
+}
+
+/* Result selector inline */
+#interviewResultSelector {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: auto;
+}
+
+/* Done button style */
+.btn-done {
+    background: #25c14a;
+    color: white;
+    border: none;
+    padding: 8px 25px;
+    border-radius: 25px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-done:hover {
+    background: #1eb040;
+    transform: translateY(-1px);
+}
+
+/* Cancel button style */
+.btn-cancel {
+    background: white;
+    color: #e03d4d;
+    border: 2px solid #e03d4d;
+    padding: 8px 25px;
+    border-radius: 25px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-cancel:hover {
+    background: #e03d4d;
+    color: white;
+}

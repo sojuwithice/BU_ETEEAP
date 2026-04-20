@@ -67,6 +67,8 @@ Route::post('/staff/applicant/{id}/interview', [StaffDashboardController::class,
 Route::post('/staff/applicant/{id}/reschedule-interview', [StaffDashboardController::class, 'rescheduleInterview'])->name('staff.applicant.rescheduleInterview');
 Route::post('/staff/applicant/{id}/cancel-interview', [StaffDashboardController::class, 'cancelInterview'])->name('staff.applicant.cancelInterview');
 
+Route::post('/staff/applicant/{id}/interview-result', [StaffDashboardController::class, 'updateInterviewResult'])->name('staff.applicant.interview-result');
+
     Route::post('/staff/applicant/{id}/message', [StaffDashboardController::class, 'sendMessage'])->name('staff.applicant.message');
     
     // Password and profile routes

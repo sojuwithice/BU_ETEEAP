@@ -266,6 +266,7 @@ class StaffDashboardController extends Controller
     $applicant->interview_date = $request->date;
     $applicant->interview_time = $request->time;
     $applicant->interview_status = 'scheduled';
+    $applicant->interview_result = 'Pending'; // ADD THIS LINE
     
     // Save meeting link if provided
     if ($request->has('meeting_link')) {
@@ -322,4 +323,36 @@ public function cancelInterview(Request $request, $id)
         ]);
     }
 
+    public function updateInterviewResult(Request $request, $id)
+{
+    try {
+        $applicant = User::findOrFail($id);
+        
+        $request->validate([
+            'interview_result' => 'required|in:Pending,Passed,Failed'
+        ]);
+        
+        $applicant->interview_result = $request->interview_result;
+        
+        // If Passed or Failed, update interview_status to Completed
+        if (in_array($request->interview_result, ['Passed', 'Failed'])) {
+            $applicant->interview_status = 'Completed';
+        } else {
+            $applicant->interview_status = 'Scheduled';
+        }
+        
+        $applicant->save();
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Interview result updated successfully to ' . $request->interview_result
+        ]);
+        
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to update interview result: ' . $e->getMessage()
+        ], 500);
+    }
+}
 }

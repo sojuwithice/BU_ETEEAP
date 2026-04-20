@@ -218,28 +218,28 @@
                         </div>
                     </div>
                     <div class="status-row">
-                        <div class="timeline-col">
-                            <div class="dot {{ strtolower($user->interview_status ?? 'pending') == 'completed' || strtolower($user->interview_status ?? 'pending') == 'scheduled' ? 'active' : '' }}">3</div>
-                            <div class="line"></div>
-                        </div>
-                        <div class="status {{ strtolower($user->interview_status ?? 'pending') == 'completed' || strtolower($user->interview_status ?? 'pending') == 'scheduled' ? 'active' : '' }}">
-                            <p>Interview</p>
-                            <small class="status-text">
-                                @php
-                                    $interviewStatus = strtolower($user->interview_status ?? 'pending');
-                                @endphp
-                                @if($interviewStatus == 'completed')
-                                    <span class="text-approved">✓ Completed</span>
-                                @elseif($interviewStatus == 'scheduled')
-                                    <span class="text-scheduled">Scheduled</span>
-                                @elseif($interviewStatus == 'cancelled')
-                                    <span class="text-rejected">Cancelled</span>
-                                @else
-                                    <span class="text-pending">{{ ucfirst($user->interview_status ?? 'Pending') }}</span>
-                                @endif
-                            </small>
-                        </div>
-                    </div>
+    <div class="timeline-col">
+        <div class="dot {{ in_array(strtolower($user->interview_result ?? 'pending'), ['passed', 'failed']) ? 'active' : '' }}">3</div>
+        <div class="line"></div>
+    </div>
+    <div class="status {{ in_array(strtolower($user->interview_result ?? 'pending'), ['passed', 'failed']) ? 'active' : '' }}">
+        <p>Interview</p>
+        <small class="status-text">
+            @php
+                $interviewResult = strtolower($user->interview_result ?? 'pending');
+            @endphp
+            @if($interviewResult == 'passed')
+                <span class="text-approved">Passed</span>
+            @elseif($interviewResult == 'failed')
+                <span class="text-rejected">Failed</span>
+            @elseif($interviewResult == 'scheduled')
+                <span class="text-scheduled">Scheduled</span>
+            @else
+                <span class="text-pending">Pending</span>
+            @endif
+        </small>
+    </div>
+</div>
                     <div class="status-row">
                         <div class="timeline-col">
                             <div class="dot {{ strtolower($user->payment_status ?? 'pending') == 'paid' || strtolower($user->payment_status ?? 'pending') == 'completed' ? 'active' : '' }}">4</div>

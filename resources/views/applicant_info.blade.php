@@ -161,35 +161,88 @@
                     </div>
 
                     <div class="step-item" onclick="toggleStep(this, event)">
-                        <div class="step-number">3</div>
-                        <div class="step-content">
-                            <div class="step-header">
-                                <h3>Interview</h3>
-                                <span class="material-symbols-outlined arrow-icon">expand_more</span>
-                            </div>
-                            <div class="step-details">
-                                <div id="interviewInfo">
-                                    @if($applicant->interview_date)
-                                        <p class="interview-scheduled">
-                                            <strong>Scheduled:</strong> {{ date('F d, Y', strtotime($applicant->interview_date)) }}<br>
-                                            <strong>Time:</strong> {{ $applicant->interview_time }}<br>
-                                            <strong>Setup:</strong> {{ $applicant->interview_setup }}<br>
-                                            <strong>Location:</strong> {{ $applicant->interview_location }}
-                                        </p>
-                                    @else
-                                        <p>No interview scheduled yet.</p>
-                                    @endif
+    <div class="step-number">3</div>
+    <div class="step-content">
+        <div class="step-header">
+            <h3>Interview</h3>
+            <span class="material-symbols-outlined arrow-icon">expand_more</span>
+        </div>
+        <div class="step-details">
+            <div id="interviewInfo">
+                @if($applicant->interview_date)
+                    <p class="interview-scheduled">
+                        <strong>Scheduled:</strong> {{ date('F d, Y', strtotime($applicant->interview_date)) }}<br>
+                        <strong>Time:</strong> {{ $applicant->interview_time }}<br>
+                        <strong>Setup:</strong> {{ $applicant->interview_setup }}<br>
+                        <strong>Location:</strong> {{ $applicant->interview_location }}
+                    </p>
+                @else
+                    <p>No interview scheduled yet.</p>
+                @endif
+            </div>
+            
+            <!-- Container for buttons and result dropdown -->
+            <div id="interviewActionsContainer">
+                @if($applicant->interview_date)
+                    @php
+                        $hasResult = in_array(strtolower($applicant->interview_result ?? ''), ['passed', 'failed']);
+                    @endphp
+                    
+                    @if(!$hasResult)
+                        <!-- Buttons: Cancel on LEFT, Mark as Done on RIGHT -->
+                        <div class="action-buttons" id="actionButtons" style="display: flex; align-items: center; justify-content: space-between; margin-top: 15px;">
+                            <button class="btn-cancel" onclick="cancelInterview(event)">Cancel Interview</button>
+                            <button class="btn-done" id="btnDoneInterview" onclick="showResultDropdown()">Mark as Done</button>
+                        </div>
+                        <!-- Hidden Result Dropdown (will appear in place of Cancel button) -->
+                        <div id="resultDropdownArea" style="display: none; margin-top: 15px;">
+                            <div class="result-selector-wrapper" style="display: flex; align-items: center; gap: 10px;">
+                                <div class="status-selector">
+                                    <span>Result:</span>
+                                    <div class="custom-dropdown">
+                                        <div class="selected-option" onclick="toggleDropdown(this, event)">
+                                            <span class="selected-value">Select Result</span>
+                                            <span class="material-symbols-outlined dropdown-arrow">expand_more</span>
+                                        </div>
+                                        <div class="dropdown-menu">
+                                            <div class="option" onclick="saveInterviewResult(this, 'Passed')">Passed</div>
+                                            <div class="option" onclick="saveInterviewResult(this, 'Failed')">Failed</div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="action-container" id="interviewActions">
-                                    @if($applicant->interview_date)
-                                        <button class="btn-cancel" onclick="cancelInterview(event)">Cancel Interview</button>
-                                    @else
-                                        <button class="btn-interview" onclick="handleInterview(event)">Set an Interview</button>
-                                    @endif
-                                </div>
+                                <div style="flex: 1;"></div>
                             </div>
                         </div>
+                    @else
+                        <!-- Already has result - show result dropdown on LEFT -->
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 15px;">
+                            <div class="status-selector">
+                                <span>Result:</span>
+                                <div class="custom-dropdown">
+                                    <div class="selected-option" onclick="toggleDropdown(this, event)">
+                                        <span class="selected-value">{{ $applicant->interview_result ?? 'Pending' }}</span>
+                                        <span class="material-symbols-outlined dropdown-arrow">expand_more</span>
+                                    </div>
+                                    <div class="dropdown-menu">
+                                        <div class="option" onclick="updateInterviewResult(this, 'Pending')">Pending</div>
+                                        <div class="option" onclick="updateInterviewResult(this, 'Passed')">Passed</div>
+                                        <div class="option" onclick="updateInterviewResult(this, 'Failed')">Failed</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div></div>
+                        </div>
+                    @endif
+                @else
+                    <div style="margin-top: 15px;">
+                        <button class="btn-interview" onclick="handleInterview(event)">Set an Interview</button>
                     </div>
+                @endif
+            </div>
+        </div>
+    </div>
+</div>
+            
 
                     <div class="step-item" onclick="toggleStep(this, event)">
                         <div class="step-number">4</div>
@@ -997,10 +1050,10 @@ function cancelInterview(event) {
 // Helper function to update the UI with interview details
 function updateInterviewDisplay(interviewData) {
     const interviewInfoDiv = document.getElementById('interviewInfo');
-    const actionContainer = document.getElementById('interviewActions');
+    const container = document.getElementById('interviewActionsContainer');
     
     if (interviewData) {
-        // Has interview - show details and cancel button
+        // Has interview - show details
         interviewInfoDiv.innerHTML = `
             <p class="interview-scheduled">
                 <strong>Scheduled:</strong> ${interviewData.date}<br>
@@ -1010,15 +1063,41 @@ function updateInterviewDisplay(interviewData) {
             </p>
         `;
         
-        actionContainer.innerHTML = `
-            <button class="btn-cancel" onclick="cancelInterview(event)">Cancel Interview</button>
+        // Show Cancel and Done buttons (Cancel on LEFT, Mark as Done on RIGHT)
+        container.innerHTML = `
+            <div class="action-buttons" id="actionButtons" style="display: flex; align-items: center; justify-content: space-between; margin-top: 15px;">
+                <button class="btn-cancel" onclick="cancelInterview(event)">Cancel Interview</button>
+                <button class="btn-done" id="btnDoneInterview" onclick="showResultDropdown()">Mark as Done</button>
+            </div>
+            <div id="resultDropdownArea" style="display: none; margin-top: 15px;">
+                <div class="result-selector-wrapper" style="display: flex; align-items: center; gap: 10px;">
+                    <div class="status-selector">
+                        <span>Result:</span>
+                        <div class="custom-dropdown">
+                            <div class="selected-option" onclick="toggleDropdown(this, event)">
+                                <span class="selected-value">Select Result</span>
+                                <span class="material-symbols-outlined dropdown-arrow">expand_more</span>
+                            </div>
+                            <div class="dropdown-menu">
+                                <div class="option" onclick="saveInterviewResult(this, 'Passed')">Passed</div>
+                                <div class="option" onclick="saveInterviewResult(this, 'Failed')">Failed</div>
+                                <div class="option" onclick="saveInterviewResult(this, 'Pending')">Pending</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="flex: 1;"></div>
+                </div>
+            </div>
         `;
+        
     } else {
         // No interview - show message and set button
         interviewInfoDiv.innerHTML = `<p>No interview scheduled yet.</p>`;
         
-        actionContainer.innerHTML = `
-            <button class="btn-interview" onclick="handleInterview(event)">Set an Interview</button>
+        container.innerHTML = `
+            <div style="margin-top: 15px;">
+                <button class="btn-interview" onclick="handleInterview(event)">Set an Interview</button>
+            </div>
         `;
     }
 }
@@ -1210,6 +1289,93 @@ function updateInterviewDisplay(interviewData) {
         const calendarDays = document.getElementById('calendarDays');
         if (calendarDays) renderCalendar();
     });
+
+    function updateInterviewResult(element, value) {
+    const dropdown = element.closest('.custom-dropdown');
+    const display = dropdown.querySelector('.selected-value');
+    if (display) display.textContent = value;
+    dropdown.classList.remove('open');
+    
+    fetch(`/staff/applicant/${applicantId}/interview-result`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrfToken,
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({ interview_result: value })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast(data.message, "success");
+            // Refresh page or update UI as needed
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showToast(data.message || "Failed to update interview result", "error");
+        }
+    })
+    .catch(error => showToast("Error updating interview result", "error"));
+}
+
+
+// Show the result dropdown when Mark as Done is clicked
+function showResultDropdown() {
+    const actionButtons = document.getElementById('actionButtons');
+    const resultDropdownArea = document.getElementById('resultDropdownArea');
+    
+    if (actionButtons && resultDropdownArea) {
+        // Hide the buttons container
+        actionButtons.style.display = 'none';
+        
+        // Show the result dropdown area
+        resultDropdownArea.style.display = 'block';
+    }
+}
+
+// Save the interview result (Passed/Failed)
+function saveInterviewResult(element, value) {
+    // Close the dropdown
+    const dropdown = element.closest('.custom-dropdown');
+    if (dropdown) dropdown.classList.remove('open');
+    
+    // Show loading
+    Swal.fire({
+        title: 'Saving Result...',
+        text: 'Please wait',
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+    
+    fetch(`/staff/applicant/${applicantId}/interview-result`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrfToken,
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({ interview_result: value })
+    })
+    .then(response => response.json())
+    .then(data => {
+        Swal.close();
+        if (data.success) {
+            showToast(data.message, "success");
+            // Reload to show the updated UI
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showToast(data.message || "Failed to update interview result", "error");
+        }
+    })
+    .catch(error => {
+        Swal.close();
+        console.error('Error:', error);
+        showToast("Error updating interview result", "error");
+    });
+}
     </script>
 </body>
 </html>
