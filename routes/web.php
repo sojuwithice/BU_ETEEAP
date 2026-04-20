@@ -60,7 +60,13 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/staff/applicant/{id}/document-status', [StaffDashboardController::class, 'updateDocumentStatus'])->name('staff.applicant.document.status');
     Route::post('/staff/applicant/{id}/payment-status', [StaffDashboardController::class, 'updatePaymentStatus'])->name('staff.applicant.payment.status');
     Route::post('/staff/applicant/{id}/final-status', [StaffDashboardController::class, 'updateFinalStatus'])->name('staff.applicant.final.status');
-    Route::post('/staff/applicant/{id}/interview', [StaffDashboardController::class, 'setInterview'])->name('staff.applicant.interview');
+
+    // INTERVIEW ROUTES - FIXED: Changed from StaffController to StaffDashboardController
+    // Interview routes - Using StaffDashboardController (not StaffController)
+Route::post('/staff/applicant/{id}/interview', [StaffDashboardController::class, 'setInterview'])->name('staff.applicant.setInterview');
+Route::post('/staff/applicant/{id}/reschedule-interview', [StaffDashboardController::class, 'rescheduleInterview'])->name('staff.applicant.rescheduleInterview');
+Route::post('/staff/applicant/{id}/cancel-interview', [StaffDashboardController::class, 'cancelInterview'])->name('staff.applicant.cancelInterview');
+
     Route::post('/staff/applicant/{id}/message', [StaffDashboardController::class, 'sendMessage'])->name('staff.applicant.message');
     
     // Password and profile routes
@@ -69,11 +75,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/profile/upload-image', [AuthController::class, 'uploadProfileImage'])->name('profile.upload.image');
 
     // Add these routes inside your auth middleware group
-Route::post('/task/{id}/complete', [DashboardController::class, 'completeTask'])->name('task.complete');
-Route::get('/applicant/messages', [DashboardController::class, 'getMessages'])->name('applicant.messages');
-
-Route::get('/applicant/progress', [DashboardController::class, 'getProgressData'])->name('applicant.progress');
-
+    Route::post('/task/{id}/complete', [DashboardController::class, 'completeTask'])->name('task.complete');
+    Route::get('/applicant/messages', [DashboardController::class, 'getMessages'])->name('applicant.messages');
+    Route::get('/applicant/progress', [DashboardController::class, 'getProgressData'])->name('applicant.progress');
+    Route::get('/applicant/activities', [DashboardController::class, 'getActivities'])->name('applicant.activities');
 });
 
 Route::get('/verify-documents', function () {

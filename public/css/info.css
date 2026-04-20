@@ -812,8 +812,8 @@ body {
     outline: none;
 }
 
-/* --- INTERVIEW BUTTON --- */
-.btn-interview {
+/* --- RESCHEDULE & CANCEL BUTTONS --- */
+.btn-reschedule {
     background: white;
     color: #223381;
     border: 2px solid #223381;
@@ -822,11 +822,87 @@ body {
     font-weight: 700;
     cursor: pointer;
     transition: all 0.2s;
+    margin-right: 10px;
 }
 
-.btn-interview:hover { 
-    background: #223381; 
-    color: white; 
+.btn-reschedule:hover {
+    background: #223381;
+    color: white;
+}
+
+.btn-cancel {
+    background: white;
+    color: #e03d4d;
+    border: 2px solid #e03d4d;
+    padding: 8px 25px;
+    border-radius: 25px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-cancel:hover {
+    background: #e03d4d;
+    color: white;
+}
+
+.interview-scheduled {
+    background: #f8faff;
+    padding: 10px 15px;
+    border-radius: 12px;
+    margin-bottom: 15px;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.interview-scheduled strong {
+    color: #223381;
+}
+
+.btn-reschedule {
+    background: white;
+    color: #223381;
+    border: 2px solid #223381;
+    padding: 8px 25px;
+    border-radius: 25px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-right: 10px;
+}
+
+.btn-reschedule:hover {
+    background: #223381;
+    color: white;
+}
+
+.btn-cancel {
+    background: white;
+    color: #e03d4d;
+    border: 2px solid #e03d4d;
+    padding: 8px 25px;
+    border-radius: 25px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-cancel:hover {
+    background: #e03d4d;
+    color: white;
+}
+
+.interview-scheduled {
+    background: #f8faff;
+    padding: 10px 15px;
+    border-radius: 12px;
+    margin-bottom: 15px;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.interview-scheduled strong {
+    color: #223381;
 }
 /* --- MESSAGE SECTION --- */
 .message-section {
@@ -1118,35 +1194,86 @@ body {
 
 .toast {
     position: fixed;
-    top: -100px; 
+    top: 20px;
     left: 50%;
     transform: translateX(-50%);
     color: white;
-    padding: 12px 20px;
+    padding: 12px 24px;
     border-radius: 12px;
     display: flex;
     align-items: center;
     gap: 12px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     z-index: 10000;
-    transition: top 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
     font-weight: 500;
-    min-width: 280px; 
-    max-width: 90%;  
+    font-size: 14px;
+    white-space: nowrap;
+    max-width: 90%;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
 }
 
 .toast.show {
+    opacity: 1;
+    visibility: visible;
     top: 25px;
 }
 
 /* Success & Error Colors */
-.toast.success { background: #25c14a; }
-.toast.error { background: #e03d4d; }
+.toast.success { 
+    background: #25c14a; 
+}
+
+.toast.error { 
+    background: #e03d4d; 
+}
 
 /* Icon Styling */
 .toast .material-symbols-outlined {
-    font-size: 22px;
+    font-size: 20px;
     color: white; 
-    display: flex;
-    align-items: center;
+}
+
+/* ======================== SCROLLABLE STATUS CONTROL ======================== */
+.status-control {
+    max-height: 500px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: #223381 #e0e0e0;
+    padding-right: 10px;
+}
+
+.status-control::-webkit-scrollbar {
+    width: 8px;
+}
+
+.status-control::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.status-control::-webkit-scrollbar-thumb {
+    background: #223381;
+    border-radius: 10px;
+}
+
+.status-control::-webkit-scrollbar-thumb:hover {
+    background: #1a2a6e;
+}
+
+/* Responsive max-height */
+@media (max-width: 768px) {
+    .status-control { max-height: 400px; }
+}
+@media (min-width: 769px) and (max-width: 1024px) {
+    .status-control { max-height: 450px; }
+}
+@media (min-width: 1025px) {
+    .status-control { max-height: 500px; }
+}
+
+.status-control {
+    scroll-behavior: smooth;
 }

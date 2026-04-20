@@ -259,41 +259,67 @@ class StaffDashboardController extends Controller
 }
 
     public function setInterview(Request $request, $id)
-    {
-        $applicant = User::findOrFail($id);
-        $applicant->interview_setup = $request->setup;
-        $applicant->interview_location = $request->location;
-        $applicant->interview_date = $request->date;
-        $applicant->interview_time = $request->time;
-        $applicant->save();
-        
-        return response()->json(['success' => true, 'message' => 'Interview scheduled successfully']);
-    }
-
-    public function sendMessage(Request $request, $id)
 {
-    $request->validate([
-        'message' => 'required|string'
-    ]);
+    $applicant = User::findOrFail($id);
+    $applicant->interview_setup = $request->setup;
+    $applicant->interview_location = $request->location;
+    $applicant->interview_date = $request->date;
+    $applicant->interview_time = $request->time;
+    $applicant->interview_status = 'scheduled';
     
-    // Create message from staff to applicant
-    $message = Message::create([
-        'sender_id' => auth()->id(),
-        'receiver_id' => $id,
-        'message' => $request->message,
-        'is_read' => false
-    ]);
-    
-    // If this is a document verification update, also store in document_uploads table
-    if ($request->has('document_name') && $request->has('status')) {
-        // You can also update the document_uploads table with the verification comment
-        // This is already handled by updateDocumentVerification method
+    // Save meeting link if provided
+    if ($request->has('meeting_link')) {
+        $applicant->interview_meeting_link = $request->meeting_link;
     }
+    
+    $applicant->save();
     
     return response()->json([
-        'success' => true,
-        'message' => 'Message sent successfully to applicant'
+        'success' => true, 
+        'message' => 'Interview scheduled successfully'
     ]);
 }
+
+public function cancelInterview(Request $request, $id)
+{
+    $applicant = User::findOrFail($id);
+    $applicant->interview_setup = null;
+    $applicant->interview_location = null;
+    $applicant->interview_date = null;
+    $applicant->interview_time = null;
+    $applicant->interview_status = 'cancelled';  // ADD THIS LINE (or 'cancelled')
+    $applicant->save();
+    
+    return response()->json([
+        'success' => true, 
+        'message' => 'Interview cancelled successfully'
+    ]);
+}
+
+        public function sendMessage(Request $request, $id)
+    {
+        $request->validate([
+            'message' => 'required|string'
+        ]);
+        
+        // Create message from staff to applicant
+        $message = Message::create([
+            'sender_id' => auth()->id(),
+            'receiver_id' => $id,
+            'message' => $request->message,
+            'is_read' => false
+        ]);
+        
+        // If this is a document verification update, also store in document_uploads table
+        if ($request->has('document_name') && $request->has('status')) {
+            // You can also update the document_uploads table with the verification comment
+            // This is already handled by updateDocumentVerification method
+        }
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Message sent successfully to applicant'
+        ]);
+    }
 
 }

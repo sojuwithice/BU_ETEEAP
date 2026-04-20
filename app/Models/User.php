@@ -25,6 +25,18 @@ class User extends Authenticatable
         'degree_program',
         'permanent_address',
         'current_address',
+
+        'application_status',
+        'document_status',
+        'interview_status',
+        'payment_status',
+        'final_status',
+        'decision_notes',
+
+        'interview_setup',
+        'interview_location',
+        'interview_date',
+        'interview_time',
     ];
 
     /**

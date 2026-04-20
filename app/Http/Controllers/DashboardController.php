@@ -74,6 +74,29 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
         
+        // Fetch schedules from user's interview data - FIXED with correct column names
+        // Fetch schedules from user's interview data - FIXED with correct column names
+$schedules = [];
+
+// Check if user has interview scheduled (using correct column names: interview_date, interview_time, interview_location)
+if (!empty($user->interview_date) && strtolower($user->interview_status) == 'scheduled') {
+    // Check if interview date is today or future
+    $interviewDate = date('Y-m-d', strtotime($user->interview_date));
+    $today = date('Y-m-d');
+    
+    if ($interviewDate >= $today) {
+        $schedules[] = [
+            'date' => $interviewDate,
+            'title' => 'INTERVIEW',
+            'location' => $user->interview_location ?? 'BU Open University',
+            'time' => date('h:i A', strtotime($user->interview_time ?? '10:00 AM')),
+            'type' => 'interview',
+            'meeting_link' => $user->interview_meeting_link ?? null,  // ADD THIS
+            'setup' => $user->interview_setup ?? 'onsite'  // ADD THIS
+        ];
+    }
+}
+        
         return view('applicant_dashboard', compact(
             'user', 
             'tasks', 
@@ -81,7 +104,8 @@ class DashboardController extends Controller
             'recentMessages',
             'profileProgress',
             'documentsProgress',
-            'applicationProgress'
+            'applicationProgress',
+            'schedules'
         ));
     }
     
@@ -228,6 +252,49 @@ class DashboardController extends Controller
             'documents_total' => $totalRequirements,
             'steps_completed' => $completedSteps,
             'steps_total' => count($statusSteps)
+        ]);
+    }
+
+    public function getActivities()
+    {
+        $user = auth()->user();
+        $activities = [];
+        
+        // Get document upload activities
+        $recentUploads = DocumentUpload::where('user_id', $user->id)
+            ->with('requirement')
+            ->latest()
+            ->take(10)
+            ->get();
+        
+        foreach ($recentUploads as $upload) {
+            $activities[] = [
+                'date' => $upload->created_at->format('M d, Y | h:i A'),
+                'activity' => 'Uploaded: ' . $upload->requirement->name
+            ];
+        }
+        
+        // Get status update activities
+        if ($user->application_status == 'approved') {
+            $activities[] = [
+                'date' => $user->updated_at->format('M d, Y | h:i A'),
+                'activity' => 'Application has been approved'
+            ];
+        }
+        
+        if ($user->interview_status == 'scheduled') {
+            $activities[] = [
+                'date' => $user->updated_at->format('M d, Y | h:i A'),
+                'activity' => 'Interview has been scheduled'
+            ];
+        }
+        
+        // Sort by date descending
+        $activities = collect($activities)->sortByDesc('date')->take(10);
+        
+        return response()->json([
+            'success' => true,
+            'activities' => $activities->values()->all()
         ]);
     }
 }

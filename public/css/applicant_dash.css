@@ -683,8 +683,14 @@ body {
 
 .sched-title {
     font-size: 1.6rem;
-    margin: 10px 0 20px 0;
+    margin: 10px 0 0 0;
     color: #000;
+}
+
+.calendar-month {
+    text-align: left;
+    margin-left: 0;
+    margin-top: 0;
 }
 
 /* Calendar Layout */
@@ -695,6 +701,7 @@ body {
     background: rgba(255,255,255,0.2);
     padding: 10px;
     border-radius: 15px;
+    margin-top: -15px;
 }
 
 .cal-item {
@@ -789,7 +796,7 @@ body {
     display: flex;
     align-items: center; 
     gap: 20px;
-    margin-bottom: 15px; 
+    margin-bottom: 11px; 
 }
 
 
@@ -816,10 +823,64 @@ body {
     color: #2f3c8f;
 }
 
+/* Active dot styles */
 .dot.active {
     background: #2f3c8f;
-    color: #fff;
+    color: white;
+    border-color: #2f3c8f;
 }
+
+/* Active status border */
+.status.active {
+    border-color: #2f3c8f;
+    background: #f0f4ff;
+}
+
+.status.active p {
+    color: #2f3c8f;
+}
+
+.status.active small {
+    color: #2f3c8f;
+    font-weight: 600;
+}
+
+/* Status text colors */
+.status-text {
+    display: inline-block;
+    margin-top: 4px;
+}
+
+.text-approved {
+    color: #25c14a;
+    font-weight: 600;
+}
+
+.text-rejected {
+    color: #e03d4d;
+    font-weight: 600;
+}
+
+.text-pending {
+    color: #EF7631;
+    font-weight: 600;
+}
+
+.text-incomplete {
+    color: #EF7631;
+    font-weight: 600;
+}
+
+.text-scheduled {
+    color: #2196f3;
+    font-weight: 600;
+}
+
+.text-partial {
+    color: #9c27b0;
+    font-weight: 600;
+}
+
 
 /* Ang Vertical Line */
 .line {
@@ -1094,6 +1155,10 @@ body {
     align-items: center;
 }
 
+
+
+
+
 /* RESPONSIVE */
 @media (max-width: 992px) {
 
@@ -1141,7 +1206,7 @@ body {
     }
 
     .interview-box {
-        width: 90%;
+        width: 100%;
         min-width: unset;
     }
 
@@ -1256,6 +1321,10 @@ body {
 
     .dropdown-item .material-symbols-outlined {
         font-size: 20px !important;
+    }
+
+    .calendar-grid {
+    margin-top: 0;
     }
 }
 
