@@ -385,7 +385,7 @@ body {
 .req-box, .reminders-card {
     flex: 1; 
     min-height: 390px; 
-    
+    max-height: 390px;
     display: flex;
     flex-direction: column;
     justify-content: flex-start; 
@@ -397,13 +397,83 @@ body {
     border-radius: 25px;
     padding: 25px;
     border: 1px solid #223381;
+    overflow: hidden;
 }
 
-/* Tasks Pill Badge */
+/* Task header - hindi kasama sa scroll */
 .task-header {
     display: flex;
     gap: 10px;
     margin-bottom: 20px;
+    flex-shrink: 0;
+}
+
+.todo-title {
+    flex-shrink: 0;
+    margin: 0 0 10px 0;
+}
+
+.req-header {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 12px;
+    background: #f5f5f5;
+    font-weight: 700;
+    color: #223381;
+    border-radius: 8px;
+    margin-bottom: 5px;
+    flex-shrink: 0;
+}
+
+/* Task list container - scrollable ito */
+.req-list-container {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+}
+
+/* Scrollbar - on hover lang lalabas */
+.req-list-container {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+    transition: scrollbar-color 0.3s;
+}
+
+.req-list-container:hover {
+    scrollbar-color: #223381 #e0e0e0;
+}
+
+/* Webkit scrollbar (Chrome, Safari, Edge) */
+.req-list-container::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.req-list-container::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 10px;
+}
+
+.req-list-container::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: 10px;
+}
+
+.req-list-container:hover::-webkit-scrollbar-track {
+    background: #e0e0e0;
+}
+
+.req-list-container:hover::-webkit-scrollbar-thumb {
+    background: #223381;
+}
+
+.req-list-container:hover::-webkit-scrollbar-thumb:hover {
+    background: #1a2866;
+}
+
+/* Task list items */
+.req-list {
+    padding-right: 5px;
 }
 
 .task-badge {
@@ -485,6 +555,8 @@ body {
     text-decoration: none;
     transition: 0.2s;
     display: inline-block;
+    flex-shrink: 0;
+    margin-left: 10px;
 }
 
 .task-view-btn:hover {
@@ -498,17 +570,7 @@ body {
     align-items: center;
     padding: 12px;
     border-bottom: 1px solid #eee;
-}
-
-.req-header {
-    display: flex;
-    justify-content: space-between;
-    padding: 10px 12px;
-    background: #f5f5f5;
-    font-weight: 700;
-    color: #223381;
-    border-radius: 8px;
-    margin-bottom: 5px;
+    gap: 10px;
 }
 
 .task-badge, .message-badge {
@@ -543,6 +605,71 @@ body {
 .badge-num-gray {
     background: #f0f0f0;
     color: #666;
+}
+
+/* Scrollable container */
+.req-list-container {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+    max-height: 320px;
+}
+
+/* Scrollbar - on hover lang lalabas */
+.req-list-container {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+}
+
+.req-list-container:hover {
+    scrollbar-color: #223381 #e0e0e0;
+}
+
+/* Webkit scrollbar */
+.req-list-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.req-list-container::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 10px;
+}
+
+.req-list-container::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: 10px;
+}
+
+.req-list-container:hover::-webkit-scrollbar-track {
+    background: #e0e0e0;
+}
+
+.req-list-container:hover::-webkit-scrollbar-thumb {
+    background: #223381;
+}
+
+.req-list-container:hover::-webkit-scrollbar-thumb:hover {
+    background: #1a2866;
+}
+
+/* Para hindi mag-scroll ang header at title */
+.task-header {
+    flex-shrink: 0;
+}
+
+.todo-title {
+    flex-shrink: 0;
+}
+
+.req-header {
+    flex-shrink: 0;
+}
+
+/* Adjust req-box to use flex properly */
+.req-box {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 
 .modal {

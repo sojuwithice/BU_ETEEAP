@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use App\Models\Message;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Str;
 
 class StaffDashboardController extends Controller
 {
@@ -355,4 +357,50 @@ public function cancelInterview(Request $request, $id)
         ], 500);
     }
 }
+
+public function sendPaymentStub(Request $request, $id)
+{
+    try {
+        $applicant = User::findOrFail($id);
+        
+        // Generate reference number
+        $reference = 'PAY-' . strtoupper(Str::random(8));
+        
+        // Update payment status
+        $applicant->update([
+            'payment_status' => 'Pending',
+        ]);
+        
+        DB::table('tasks')->insert([
+            'user_id' => $id,
+            'title' => 'Complete Payment',
+            'description' => "Payment Reference: {$reference}\n\nClick View to see your payment stub.",
+            'action_url' => route('applicant.download-payment-stub', $id),
+            'status' => 'pending',
+            'type' => 'payment', // <<<------ ITO dapat 'payment' HINDI 'reupload'!
+            'created_at' => now(),
+            'updated_at' => now()
+        ]);
+        
+        // Create message
+        Message::create([
+            'sender_id' => auth()->id(),
+            'receiver_id' => $id,
+            'message' => "Payment instruction has been added to your Todo list.\n\nReference Number: {$reference}",
+            'is_read' => false
+        ]);
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Payment stub sent successfully!',
+        ]);
+        
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to send: ' . $e->getMessage()
+        ], 500);
+    }
+}
+
 }

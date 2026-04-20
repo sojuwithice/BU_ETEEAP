@@ -9,6 +9,8 @@ use App\Models\Task;
 use App\Models\Message;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Str;
 
 class DashboardController extends Controller
 {
@@ -297,4 +299,26 @@ if (!empty($user->interview_date) && strtolower($user->interview_status) == 'sch
             'activities' => $activities->values()->all()
         ]);
     }
+
+    public function downloadPaymentStub($id)
+{
+    // Make sure the logged-in user is downloading their own stub
+    if (auth()->id() != $id) {
+        abort(403, 'Unauthorized access.');
+    }
+    
+    $applicant = User::findOrFail($id);
+    
+    // Generate reference if wala
+    if (!$applicant->payment_reference) {
+        $applicant->save();
+    }
+    
+    // Load view with data
+    $pdf = Pdf::loadView('pdf.payment_stub', ['applicant' => $applicant]);
+    
+    // Download the PDF
+    return $pdf->download('Payment_Stub_' . $applicant->last_name . '.pdf');
+}
+    
 }

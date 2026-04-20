@@ -245,31 +245,25 @@
             
 
                     <div class="step-item" onclick="toggleStep(this, event)">
-                        <div class="step-number">4</div>
-                        <div class="step-content">
-                            <div class="step-header">
-                                <h3>Payment</h3>
-                                <span class="material-symbols-outlined arrow-icon">expand_more</span>
-                            </div>
-                            <div class="step-details">
-                                <p>Payment status: {{ $applicant->payment_status ?? 'Pending' }}</p>
-                                <div class="status-selector">
-                                    <span>Status:</span>
-                                    <div class="custom-dropdown">
-                                        <div class="selected-option" onclick="toggleDropdown(this, event)">
-                                            <span class="selected-value">{{ $applicant->payment_status ?? 'Pending' }}</span>
-                                            <span class="material-symbols-outlined dropdown-arrow">expand_more</span>
-                                        </div>
-                                        <div class="dropdown-menu">
-                                            <div class="option" onclick="updatePaymentStatus(this, 'Pending')">Pending</div>
-                                            <div class="option" onclick="updatePaymentStatus(this, 'Paid')">Paid</div>
-                                            <div class="option" onclick="updatePaymentStatus(this, 'Partial')">Partial</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+    <div class="step-number">4</div>
+    <div class="step-content">
+        <div class="step-header">
+            <h3>Payment</h3>
+            <span class="material-symbols-outlined arrow-icon">expand_more</span>
+        </div>
+        <div class="step-details">
+            <div style="display: flex; flex-direction: column; align-items: flex-start; width: 100%; gap: 15px;">
+                <p style="margin: 0; color: #333; line-height: 1.5;">
+                    Generate and send the payment instructions to the applicant to proceed with the transaction.
+                </p>
+                
+                <button type="button" class="btn-send-payment" onclick="sendPaymentStub('{{ $applicant->id }}', event)">
+                    Send a Payment Stub
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
                     <div class="step-item" onclick="toggleStep(this, event)">
                         <div class="step-number">5</div>
@@ -1374,6 +1368,47 @@ function saveInterviewResult(element, value) {
         Swal.close();
         console.error('Error:', error);
         showToast("Error updating interview result", "error");
+    });
+}
+
+
+
+
+function sendPaymentStub(id, event) {
+    if(event) event.stopPropagation();
+    
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    const btn = event.currentTarget;
+    const originalText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Sending...';
+    
+    fetch(`/staff/applicant/${id}/send-payment-stub`, {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': csrfToken,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if(data.success) {
+            showToast(data.message, "success");
+            // Remove the auto-download here
+            // window.location.href = data.download_url; // DELETE THIS LINE
+        } else {
+            showToast(data.message || "Failed to send payment stub", "error");
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast("Network error. Please try again.", "error");
+    })
+    .finally(() => {
+        btn.disabled = false;
+        btn.textContent = originalText;
     });
 }
     </script>

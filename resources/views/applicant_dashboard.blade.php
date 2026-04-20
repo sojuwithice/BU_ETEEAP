@@ -1,3 +1,6 @@
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -116,42 +119,61 @@
             </div>
 
             <div class="center">
-                <div class="center-content-wrapper">
-                    <div class="center-column">
-                        <h2>Incomplete Requirements</h2>
-                        <div class="req-box">
-                            <div class="task-header">
-                                <div class="task-badge">
-                                    Tasks <span class="badge-num" id="taskCount">{{ $tasks->count() }}</span>
-                                </div>
-                                <div class="message-badge" onclick="openMessagesModal()" style="cursor: pointer;">
-                                    Messages <span class="badge-num-gray" id="messageCount">{{ $unreadMessagesCount }}</span>
-                                </div>
-                            </div>
-                            <h3 class="todo-title">To do</h3>
-                            <div class="req-list" id="taskList">
-                                <div class="req-header">
-                                    <span>Task</span>
-                                    <span>Action</span>
-                                </div>
-                                @forelse($tasks as $task)
-                                <div class="req-item" data-task-id="{{ $task->id }}">
-                                    <div class="task-info">
-                                        <span class="task-title">{{ $task->title }}</span>
-                                        @if($task->description)
-                                        <small class="task-desc">{{ $task->description }}</small>
-                                        @endif
-                                    </div>
-                                    <a href="{{ $task->action_url }}" class="task-view-btn">View</a>
-                                </div>
-                                @empty
-                                <div class="req-item">
-                                    <span>🎉 All tasks completed! Great job!</span>
-                                </div>
-                                @endforelse
-                            </div>
-                        </div>
+    <div class="center-content-wrapper">
+        <div class="center-column">
+            <h2>Incomplete Requirements</h2>
+            <div class="req-box">
+                <div class="task-header">
+                    <div class="task-badge">
+                        Tasks <span class="badge-num" id="taskCount">{{ $tasks->count() }}</span>
                     </div>
+                    <div class="message-badge" onclick="openMessagesModal()" style="cursor: pointer;">
+                        Messages <span class="badge-num-gray" id="messageCount">{{ $unreadMessagesCount }}</span>
+                    </div>
+                </div>
+                <h3 class="todo-title">To do</h3>
+                <div class="req-header">
+                            <span>Task</span>
+                            <span>Action</span>
+                        </div>
+                <!-- I-wrap ang scrollable part dito -->
+                <div class="req-list-container">
+                    <div class="req-list" id="taskList">
+                        
+                        @forelse($tasks as $task)
+                        <div class="req-item" data-task-id="{{ $task->id }}" data-task-type="{{ $task->type }}">
+                            <div class="task-info">
+                                <span class="task-title">{{ $task->title }}</span>
+                                @if($task->description)
+                                    <small class="task-desc">{{ $task->description }}</small>
+                                @endif
+                            </div>
+
+                            @if($task->type == 'payment')
+                                <a href="{{ route('applicant.download-payment-stub', auth()->id()) }}"
+                                target="_blank"
+                                class="task-view-btn">
+                                    View
+                                </a>
+                            @else
+                                <a href="{{ $task->action_url }}"
+                                class="task-view-btn">
+                                    View
+                                </a>
+                            @endif
+                        </div>
+                        @empty
+                        <div class="req-item">
+                            <span>All tasks completed! Great job!</span>
+                        </div>
+                        @endforelse
+                    </div>
+                </div>
+                <!-- End of scrollable container -->
+                
+            
+                 </div>
+                                        </div>
 
                     <div class="center-column">
                         <h2 class="rem-title-outside">Reminders</h2>
@@ -357,6 +379,8 @@
         </div>
     </div>
 </div>
+
+
 
 <script>
     // ================= SCHEDULES FROM BACKEND =================
@@ -861,6 +885,9 @@
         loadMessages();
         setInterval(loadMessages, 30000);
     });
+
+
+    
 </script>
 
 </body>

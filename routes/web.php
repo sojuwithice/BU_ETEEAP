@@ -7,6 +7,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RequirementController;
 use App\Http\Controllers\ApplicantDocumentController;
 use App\Http\Controllers\StaffDashboardController;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 Route::get('/', function () { return view('landing'); });
 
@@ -70,6 +71,14 @@ Route::post('/staff/applicant/{id}/cancel-interview', [StaffDashboardController:
 Route::post('/staff/applicant/{id}/interview-result', [StaffDashboardController::class, 'updateInterviewResult'])->name('staff.applicant.interview-result');
 
     Route::post('/staff/applicant/{id}/message', [StaffDashboardController::class, 'sendMessage'])->name('staff.applicant.message');
+
+    Route::post('/staff/applicant/{id}/send-payment-stub', [StaffDashboardController::class, 'sendPaymentStub'])->name('staff.send-payment-stub');
+
+    Route::get('/payment-stub/{id}', [PaymentController::class, 'generatePdf'])
+    ->name('payment.stub');
+
+// Student download payment stub - MAKE SURE THIS EXISTS
+Route::get('/applicant/download-payment-stub/{id}', [DashboardController::class, 'downloadPaymentStub'])->name('applicant.download-payment-stub');
     
     // Password and profile routes
     Route::post('/update-password', [AuthController::class, 'updatePassword']);
@@ -86,3 +95,19 @@ Route::post('/staff/applicant/{id}/interview-result', [StaffDashboardController:
 Route::get('/verify-documents', function () {
     return view('document_verification');
 })->name('document.verification');
+
+
+Route::get('/payment-stub/{id}', function ($id) {
+
+    // sample data (palitan mo kung may table ka)
+    $data = [
+        'id' => $id,
+        'name' => auth()->user()->first_name . ' ' . auth()->user()->last_name,
+        'amount' => '1,000.00',
+        'date' => now()->format('F d, Y')
+    ];
+
+    $pdf = Pdf::loadView('pdf.payment_stub', $data);
+
+    return $pdf->stream('payment_stub.pdf');
+});

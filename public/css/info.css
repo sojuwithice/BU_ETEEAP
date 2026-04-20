@@ -577,10 +577,11 @@ body {
 .btn-interview {
     background: white;
     color: #223381;
-    border: 2px solid #223381;
+    border: 1.5px solid #223381;
     padding: 8px 25px;
     border-radius: 25px;
-    font-weight: 700;
+    font-weight: 600;
+    font-size: 14px;
     cursor: pointer;
     transition: all 0.2s;
 }
@@ -1345,3 +1346,51 @@ body {
     background: #e03d4d;
     color: white;
 }
+
+.btn-send-payment {
+        background-color: transparent;
+        color: #1a3a8a; /* Dark blue design */
+        border: 1.5px solid #1a3a8a;
+        padding: 8px 24px;
+        border-radius: 50px; /* Pill-shaped */
+        font-family: inherit;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        outline: none;
+    }
+
+    .btn-send-payment:hover {
+        background-color: #1a3a8a;
+        color: white;
+    }
+
+    .btn-send-payment:active {
+        transform: scale(0.97);
+    }
+
+.btn-send-payment {
+        background-color: transparent;
+        color: #1a3a8a;
+        border: 1.5px solid #1a3a8a;
+        padding: 8px 24px;
+        border-radius: 50px;
+        font-family: inherit;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        outline: none;
+        /* Sigurado tayong nakadikit sa kaliwa */
+        align-self: flex-start; 
+    }
+
+    .btn-send-payment:hover {
+        background-color: #1a3a8a;
+        color: white;
+    }
+
+    .btn-send-payment:active {
+        transform: scale(0.97);
+    }
