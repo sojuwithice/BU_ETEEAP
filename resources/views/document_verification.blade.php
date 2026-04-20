@@ -113,11 +113,7 @@
                 $statusClass = 'rejected';
                 $statusIcon = 'cancel';
                 $statusColor = '#e03d4d';
-            } elseif ($upload->status == 'incomplete') {
-                $statusClass = 'incomplete';
-                $statusIcon = 'pending';
-                $statusColor = '#EF7631';
-            }
+            } 
         }
     @endphp
     <div class="doc-item {{ $loop->first ? 'active' : '' }} {{ $statusClass }}" 
@@ -148,10 +144,6 @@
                     <label class="radio-item">
                         <input type="radio" name="status" value="approved">
                         <span class="custom-radio"></span> Approved
-                    </label>
-                    <label class="radio-item">
-                        <input type="radio" name="status" value="incomplete">
-                        <span class="custom-radio"></span> Incomplete
                     </label>
                     <label class="radio-item">
                         <input type="radio" name="status" value="rejected">
