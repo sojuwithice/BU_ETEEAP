@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth; 
 
 class StaffDashboardController extends Controller
 {
@@ -520,4 +521,157 @@ public function uploadPaymentProof(Request $request, $id)
     }
 }
 
+public function getOnsiteStatus($id)
+{
+    $applicant = User::findOrFail($id);
+    
+    return response()->json([
+        'success' => true,
+        'onsite_verification_pending' => (bool) $applicant->onsite_verification_pending,
+        'onsite_verified' => (bool) $applicant->onsite_verified,
+        'requested_at' => $applicant->onsite_requested_at
+    ]);
+}
+
+/**
+ * Confirm onsite submission for an applicant (staff)
+ */
+public function confirmOnsiteSubmission(Request $request)
+{
+    try {
+        $request->validate([
+            'applicant_id' => 'required|exists:users,id'
+        ]);
+        
+        $staff = Auth::user();
+        $applicant = User::findOrFail($request->applicant_id);
+        
+        // Check if already verified
+        if ($applicant->onsite_verified) {
+            return response()->json([
+                'success' => false,
+                'message' => 'This applicant is already verified onsite.'
+            ], 400);
+        }
+        
+        // Check if there's a pending request
+        if (!$applicant->onsite_verification_pending) {
+            return response()->json([
+                'success' => false,
+                'message' => 'This applicant has not requested onsite verification.'
+            ], 400);
+        }
+        
+        // Update applicant
+        $applicant->onsite_verified = true;
+        $applicant->onsite_verification_pending = false;
+        $applicant->onsite_verified_at = now();
+        $applicant->onsite_verified_by = $staff->id;
+        $applicant->save();
+        
+        // Notify applicant
+        Message::create([
+            'sender_id' => $staff->id,
+            'receiver_id' => $applicant->id,
+            'message' => "✅ Your onsite submission has been verified by staff. You can now proceed with your application.",
+            'is_read' => false
+        ]);
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Onsite submission confirmed successfully.'
+        ]);
+        
+    } catch (\Exception $e) {
+        \Log::error('Onsite confirmation error: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Confirmation failed: ' . $e->getMessage()
+        ], 500);
+    }
+
+}
+
+public function uploadDocumentForStudent(Request $request, $id)
+{
+    try {
+        $request->validate([
+            'file' => 'required|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
+            'requirement_id' => 'required|exists:requirements,id'
+        ]);
+        
+        $staff = Auth::user();
+        $applicant = User::findOrFail($id);
+        
+        // Check if onsite verified
+        if (!$applicant->onsite_verified) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Onsite submission not verified yet.'
+            ], 403);
+        }
+        
+        $requirementId = $request->requirement_id;
+        
+        // Check if document already approved
+        $existingUpload = DocumentUpload::where('user_id', $applicant->id)
+            ->where('requirement_id', $requirementId)
+            ->first();
+            
+        if ($existingUpload && $existingUpload->status === 'approved') {
+            return response()->json([
+                'success' => false,
+                'message' => 'This document is already approved and cannot be modified.'
+            ], 403);
+        }
+        
+        // Handle file upload
+        $file = $request->file('file');
+        $originalName = $file->getClientOriginalName();
+        $directory = 'documents/' . $applicant->id;
+        $filename = $requirementId . '_' . time() . '_staff_' . preg_replace('/[^a-zA-Z0-9._-]/', '_', $originalName);
+        $path = $file->storeAs($directory, $filename, 'public');
+        
+        $uploadData = [
+            'user_id' => $applicant->id,
+            'requirement_id' => $requirementId,
+            'file_path' => $path,
+            'original_filename' => $originalName,
+            'file_size' => $file->getSize(),
+            'mime_type' => $file->getMimeType(),
+            'uploaded_by_staff' => true,
+            'uploaded_by' => $staff->id
+        ];
+        
+        if ($existingUpload) {
+            // Delete old file
+            if (Storage::disk('public')->exists($existingUpload->file_path)) {
+                Storage::disk('public')->delete($existingUpload->file_path);
+            }
+            $existingUpload->update($uploadData);
+        } else {
+            DocumentUpload::create($uploadData);
+        }
+        
+        // Notify student
+        $requirement = Requirement::find($requirementId);
+        Message::create([
+            'sender_id' => $staff->id,
+            'receiver_id' => $applicant->id,
+            'message' => "Staff has uploaded your document: {$requirement->name}. Please wait for verification.",
+            'is_read' => false
+        ]);
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Document uploaded successfully'
+        ]);
+        
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Upload failed: ' . $e->getMessage()
+        ], 500);
+    }
+}
 }

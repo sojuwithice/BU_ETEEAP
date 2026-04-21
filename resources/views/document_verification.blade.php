@@ -84,6 +84,34 @@
         <p>{{ $applicant->first_name }} {{ $applicant->last_name }}</p>
     </div>
 
+    <!-- ONSITE REQUEST SECTION - MAS MAGANDANG UI 
+    <div class="onsite-request-card" id="onsiteRequestCard" style="display: none;">
+        <div class="onsite-status-container">
+            <div class="onsite-status-icon pending-icon">
+                <span class="material-symbols-outlined">pending_actions</span>
+            </div>
+            <div class="onsite-status-content">
+                <div class="onsite-status-header">
+                    <span class="onsite-status-badge pending-badge">Pending Verification</span>
+                    <span class="onsite-request-date" id="onsiteRequestDate"></span>
+                </div>
+                <h3>Onsite Submission Request</h3>
+                <p>This student claims to have submitted their documents <strong>ONSITE</strong> at the BU-ETEEAP office.</p>
+                <div class="onsite-action-buttons">
+                    <button class="btn-confirm-onsite" onclick="confirmOnsiteSubmission()">
+                        <span class="material-symbols-outlined">verified</span>
+                        Confirm Onsite Submission
+                    </button>
+                    <button class="btn-view-details" onclick="viewOnsiteDetails()">
+                        <span class="material-symbols-outlined">info</span>
+                        View Details
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div> -->
+
+
     <div class="tab-container">
         <a href="{{ route('staff.applicant.info', $applicant->id) }}" class="tab-btn blue-tab">
             Application
@@ -95,39 +123,42 @@
 
     <div class="docs-content-card">
         <div class="docs-list-column">
-            <h2>Documents List</h2>
-            <div class="doc-items" id="docItemsList">
-    @foreach($requirements as $requirement)
-    @php
-        $upload = $documents[$requirement->id] ?? null;
-        $statusClass = '';
-        $statusIcon = 'hourglass_empty';
-        $statusColor = '#999';
-        
-        if ($upload) {
-            if ($upload->status == 'approved') {
-                $statusClass = 'approved';
-                $statusIcon = 'check_circle';
-                $statusColor = '#25c14a';
-            } elseif ($upload->status == 'rejected') {
-                $statusClass = 'rejected';
-                $statusIcon = 'cancel';
-                $statusColor = '#e03d4d';
-            } 
-        }
-    @endphp
-    <div class="doc-item {{ $loop->first ? 'active' : '' }} {{ $statusClass }}" 
-         data-id="{{ $requirement->id }}" 
-         data-name="{{ addslashes($requirement->name) }}"
-         onclick="selectDocument(this, {{ $requirement->id }}, '{{ addslashes($requirement->name) }}')">
-        <span class="doc-status-icon">
-            <span class="material-symbols-outlined" style="font-size: 20px; color: {{ $statusColor }};">{{ $statusIcon }}</span>
-        </span>
-        <span class="doc-name">{{ $requirement->name }}</span>
+    <div class="docs-list-header">
+        <h2>Documents List</h2>
+        <div id="onsiteBadgeContainer"></div>
     </div>
-    @endforeach
-</div>
+    <div class="doc-items" id="docItemsList">
+        @foreach($requirements as $requirement)
+        @php
+            $upload = $documents[$requirement->id] ?? null;
+            $statusClass = '';
+            $statusIcon = 'hourglass_empty';
+            $statusColor = '#999';
+            
+            if ($upload) {
+                if ($upload->status == 'approved') {
+                    $statusClass = 'approved';
+                    $statusIcon = 'check_circle';
+                    $statusColor = '#25c14a';
+                } elseif ($upload->status == 'rejected') {
+                    $statusClass = 'rejected';
+                    $statusIcon = 'cancel';
+                    $statusColor = '#e03d4d';
+                } 
+            }
+        @endphp
+        <div class="doc-item {{ $loop->first ? 'active' : '' }} {{ $statusClass }}" 
+             data-id="{{ $requirement->id }}" 
+             data-name="{{ addslashes($requirement->name) }}"
+             onclick="selectDocument(this, {{ $requirement->id }}, '{{ addslashes($requirement->name) }}')">
+            <span class="doc-status-icon">
+                <span class="material-symbols-outlined" style="font-size: 20px; color: {{ $statusColor }};">{{ $statusIcon }}</span>
+            </span>
+            <span class="doc-name">{{ $requirement->name }}</span>
         </div>
+        @endforeach
+    </div>
+</div>
 
         <div class="verification-column">
             <h2>Verification</h2>
@@ -139,6 +170,26 @@
                         <p style="margin-top: 10px;">Select a document to verify</p>
                     </div>
                 </div>
+
+                <!-- STAFF UPLOAD SECTION - For onsite submissions -->
+<div class="staff-upload-section" id="staffUploadSection" style="display: none; margin-bottom: 20px;">
+    <div class="upload-header">
+        <span class="material-symbols-outlined">cloud_upload</span>
+        <h4>Upload Document for Student</h4>
+    </div>
+    <div class="upload-area" id="staffUploadArea">
+        <input type="file" id="staffFileInput" style="display: none;" accept="image/*,application/pdf,.doc,.docx">
+        <div class="upload-box-staff" onclick="document.getElementById('staffFileInput').click()">
+            <span class="material-symbols-outlined">upload_file</span>
+            <p>Click to upload file</p>
+            <small id="staffFileName">No file selected</small>
+        </div>
+        <button class="btn-upload-staff" id="staffUploadBtn" style="display: none;" onclick="uploadStaffDocument()">
+            <span class="material-symbols-outlined">publish</span>
+            Upload Document
+        </button>
+    </div>
+</div>
                 
                 <div class="radio-group">
                     <label class="radio-item">
@@ -270,6 +321,9 @@
     <span id="toast-icon" class="material-symbols-outlined"></span>
     <span id="toast-message"></span>
 </div>
+
+
+
 
 <script>
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
@@ -825,6 +879,310 @@ function startRealTimeRefresh(doc) {
         }
     }, 60000); // Update every minute
 }
+
+// ================= ONSITE VERIFICATION FUNCTIONS =================
+
+function checkOnsiteRequest() {
+    fetch(`/staff/applicant/${applicantId}/onsite-status`, {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': csrfToken
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const badgeContainer = document.getElementById('onsiteBadgeContainer');
+        
+        if (data.success) {
+            if (data.onsite_verification_pending && !data.onsite_verified) {
+                // Show pending badge
+                if (badgeContainer) {
+                    badgeContainer.innerHTML = `
+                        <div class="onsite-pending-badge" onclick="confirmOnsiteSubmission()">
+                            <span class="material-symbols-outlined">pending_actions</span>
+                            Onsite Request Pending
+                        </div>
+                    `;
+                }
+            } else if (data.onsite_verified) {
+                // Show verified badge
+                if (badgeContainer) {
+                    badgeContainer.innerHTML = `
+                        <div class="onsite-verified-badge">
+                            <span class="material-symbols-outlined">verified</span>
+                            Onsite Verified
+                        </div>
+                    `;
+                }
+            } else {
+                // No request - hide badge
+                if (badgeContainer) {
+                    badgeContainer.innerHTML = '';
+                }
+            }
+        }
+    })
+    .catch(error => console.error('Error checking onsite request:', error));
+}
+
+function confirmOnsiteSubmission() {
+    Swal.fire({
+        title: 'Confirm Onsite Submission',
+        html: `
+            <div style="text-align: left;">
+                <p><strong>Are you sure this student has submitted their documents ONSITE?</strong></p>
+                <br>
+                <p><strong>What happens after confirmation:</strong></p>
+                <ul style="text-align: left; margin: 5px 0 0 20px;">
+                    <li>The student will be notified via message</li>
+                    <li>All document uploads will be enabled for the student</li>
+                    <li>The student can proceed with their application</li>
+                </ul>
+            </div>
+        `,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#EF7631',
+        cancelButtonColor: '#858585',
+        confirmButtonText: 'Yes, Confirm Onsite',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (!result.isConfirmed) return;
+        
+        Swal.fire({
+            title: 'Confirming...',
+            text: 'Please wait',
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
+        
+        fetch(`/staff/confirm/onsite`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ 
+                applicant_id: applicantId,
+                confirmed: true 
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            Swal.close();
+            
+            if (data.success) {
+                Swal.fire({
+                    title: 'Success!',
+                    text: 'Onsite submission confirmed successfully!',
+                    icon: 'success',
+                    confirmButtonColor: '#25c14a',
+                    timer: 2000
+                });
+                // Refresh the UI
+                checkOnsiteRequest();
+            } else {
+                Swal.fire({
+                    title: 'Error',
+                    text: data.message || 'Confirmation failed',
+                    icon: 'error',
+                    confirmButtonColor: '#e03d4d'
+                });
+            }
+        })
+        .catch(error => {
+            Swal.close();
+            Swal.fire({
+                title: 'Error',
+                text: 'Error confirming submission',
+                icon: 'error',
+                confirmButtonColor: '#e03d4d'
+            });
+        });
+    });
+}
+
+// ================= PAGE LOAD =================
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Page loaded - checking onsite status...');
+    
+    // ITO ANG KULANG - Call onsite check agad!
+    checkOnsiteRequest();
+    
+    const firstDoc = document.querySelector('.doc-item');
+    if (firstDoc) {
+        const id = firstDoc.getAttribute('data-id');
+        const name = firstDoc.getAttribute('data-name');
+        selectDocument(firstDoc, id, name);
+    }
+});
+
+// ================= STAFF UPLOAD FOR ONSITE =================
+let selectedStaffFile = null;
+let currentOnsiteDocumentId = null;
+
+// Show/hide staff upload section based on onsite status
+function updateStaffUploadVisibility() {
+    fetch(`/staff/applicant/${applicantId}/onsite-status`, {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': csrfToken
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const staffUploadSection = document.getElementById('staffUploadSection');
+        if (data.success && data.onsite_verified) {
+            // Show staff upload section for verified onsite submissions
+            if (staffUploadSection) {
+                staffUploadSection.style.display = 'block';
+            }
+        } else {
+            if (staffUploadSection) {
+                staffUploadSection.style.display = 'none';
+            }
+        }
+    })
+    .catch(error => console.error('Error checking onsite status for staff upload:', error));
+}
+
+// Handle file selection
+document.getElementById('staffFileInput')?.addEventListener('change', function(e) {
+    if (e.target.files && e.target.files[0]) {
+        selectedStaffFile = e.target.files[0];
+        document.getElementById('staffFileName').innerText = selectedStaffFile.name;
+        document.getElementById('staffUploadBtn').style.display = 'flex';
+    }
+});
+
+// Upload document as staff
+function uploadStaffDocument() {
+    if (!currentRequirementId) {
+        showToast("Please select a document first", "error");
+        return;
+    }
+    
+    if (!selectedStaffFile) {
+        showToast("Please select a file to upload", "error");
+        return;
+    }
+    
+    Swal.fire({
+        title: 'Upload Document for Student',
+        html: `Are you sure you want to upload "${selectedStaffFile.name}" for <strong>${currentRequirementName}</strong>?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#223381',
+        cancelButtonColor: '#858585',
+        confirmButtonText: 'Yes, Upload',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (!result.isConfirmed) return;
+        
+        Swal.fire({
+            title: 'Uploading...',
+            text: 'Please wait',
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
+        
+        const formData = new FormData();
+        formData.append('file', selectedStaffFile);
+        formData.append('requirement_id', currentRequirementId);
+        formData.append('uploaded_by_staff', 'true');
+        
+        fetch(`/staff/applicant/${applicantId}/upload-document`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json'
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            Swal.close();
+            
+            if (data.success) {
+                showToast("Document uploaded successfully!", "success");
+                // Reset file input
+                document.getElementById('staffFileInput').value = '';
+                selectedStaffFile = null;
+                document.getElementById('staffFileName').innerText = 'No file selected';
+                document.getElementById('staffUploadBtn').style.display = 'none';
+                // Refresh the document view
+                selectDocument(document.querySelector('.doc-item.active'), currentRequirementId, currentRequirementName);
+            } else {
+                showToast(data.message || "Upload failed", "error");
+            }
+        })
+        .catch(error => {
+            Swal.close();
+            showToast("Error uploading document", "error");
+        });
+    });
+}
+
+// Modify selectDocument to show/hide staff upload section based on document status
+const originalSelectDocument = selectDocument;
+window.selectDocument = function(element, requirementId, requirementName) {
+    originalSelectDocument(element, requirementId, requirementName);
+    
+    // After loading document, check if we should show staff upload section
+    setTimeout(() => {
+        fetch(`/staff/applicant/${applicantId}/document/${requirementId}`, {
+            headers: {
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': csrfToken
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            const staffUploadSection = document.getElementById('staffUploadSection');
+            if (staffUploadSection) {
+                if (data.success && data.document && data.document.status === 'approved') {
+                    // If document is approved, hide staff upload
+                    staffUploadSection.style.display = 'none';
+                } else if (data.success && data.document && data.document.status === 'rejected') {
+                    // If rejected, show staff upload for re-upload
+                    staffUploadSection.style.display = 'block';
+                } else {
+                    // Check onsite status
+                    fetch(`/staff/applicant/${applicantId}/onsite-status`, {
+                        headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken }
+                    })
+                    .then(res => res.json())
+                    .then(onsiteData => {
+                        if (onsiteData.success && onsiteData.onsite_verified) {
+                            staffUploadSection.style.display = 'block';
+                        } else {
+                            staffUploadSection.style.display = 'none';
+                        }
+                    });
+                }
+            }
+        });
+    }, 100);
+};
+
+// Call updateStaffUploadVisibility on page load
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Page loaded - checking onsite status...');
+    checkOnsiteRequest();
+    updateStaffUploadVisibility(); // Add this line
+    
+    const firstDoc = document.querySelector('.doc-item');
+    if (firstDoc) {
+        const id = firstDoc.getAttribute('data-id');
+        const name = firstDoc.getAttribute('data-name');
+        selectDocument(firstDoc, id, name);
+    }
+});
 
 </script>
 </body>

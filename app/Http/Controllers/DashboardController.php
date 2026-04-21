@@ -390,4 +390,197 @@ public function getPaymentProof()
         'payment_status' => $user->payment_status
     ]);
 }
+
+public function checkOnsiteStatus()
+    {
+        $user = Auth::user();
+        
+        return response()->json([
+            'success' => true,
+            'verified' => (bool) $user->onsite_verified,
+            'pending_verification' => (bool) $user->onsite_verification_pending
+        ]);
+    }
+
+    /**
+     * Request onsite verification
+     * Student clicks "Already Submitted Onsite" button
+     */
+    public function requestOnsiteVerification(Request $request)
+    {
+        try {
+            $user = Auth::user();
+            
+            // Check if already verified
+            if ($user->onsite_verified) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Your documents are already verified onsite.'
+                ], 400);
+            }
+            
+            // Check if already pending
+            if ($user->onsite_verification_pending) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Verification already requested. Please wait for staff confirmation.'
+                ], 400);
+            }
+            
+            // Update user - set pending verification
+            $user->onsite_verification_pending = true;
+            $user->save();
+            
+            // Notify staff (optional - if you want to notify)
+            $staff = User::where('role', 'staff')->first();
+            if ($staff) {
+                Message::create([
+                    'sender_id' => $user->id,
+                    'receiver_id' => $staff->id,
+                    'message' => "Applicant {$user->first_name} {$user->last_name} has requested onsite submission verification.",
+                    'is_read' => false
+                ]);
+            }
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Onsite verification requested successfully. Please wait for staff confirmation.'
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Request failed: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function saveUpload(Request $request)
+    {
+        try {
+            $request->validate([
+                'file' => 'required|file|mimes:pdf,jpg,jpeg,png,doc,docx,txt|max:10240',
+                'requirement_id' => 'required|exists:requirements,id'
+            ]);
+            
+            $user = Auth::user();
+            $requirementId = $request->requirement_id;
+            $isReupload = $request->has('is_reuploaded') && $request->is_reuploaded == 'true';
+            
+            // Check if document exists and is approved
+            $existingUpload = DocumentUpload::where('user_id', $user->id)
+                ->where('requirement_id', $requirementId)
+                ->first();
+                
+            // If document is approved, cannot modify
+            if ($existingUpload && $existingUpload->status === 'approved') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This document is already approved and cannot be modified.'
+                ], 403);
+            }
+            
+            // Handle file upload
+            $file = $request->file('file');
+            $originalName = $file->getClientOriginalName();
+            
+            // Create directory if not exists
+            $directory = 'documents/' . $user->id;
+            $filename = $requirementId . '_' . time() . '_' . preg_replace('/[^a-zA-Z0-9._-]/', '_', $originalName);
+            $path = $file->storeAs($directory, $filename, 'public');
+            
+            $uploadData = [
+                'user_id' => $user->id,
+                'requirement_id' => $requirementId,
+                'file_path' => $path,
+                'original_filename' => $originalName,
+                'file_size' => $file->getSize(),
+                'mime_type' => $file->getMimeType(),
+            ];
+            
+            if ($existingUpload) {
+                // Delete old file
+                if (Storage::disk('public')->exists($existingUpload->file_path)) {
+                    Storage::disk('public')->delete($existingUpload->file_path);
+                }
+                
+                // Update existing - reset status to pending
+                $existingUpload->update(array_merge($uploadData, [
+                    'status' => 'pending',
+                    'verification_reason' => null,
+                    'verified_by' => null,
+                    'verified_at' => null
+                ]));
+                $upload = $existingUpload;
+            } else {
+                $uploadData['status'] = 'pending';
+                $upload = DocumentUpload::create($uploadData);
+            }
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'File uploaded successfully',
+                'file_path' => Storage::url($path),
+                'path' => $path,
+                'upload_id' => $upload->id
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Upload error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Upload failed: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Remove uploaded document
+     */
+    public function removeUpload(Request $request)
+    {
+        try {
+            $request->validate([
+                'requirement_id' => 'required|exists:requirements,id'
+            ]);
+            
+            $user = Auth::user();
+            
+            $upload = DocumentUpload::where('user_id', $user->id)
+                ->where('requirement_id', $request->requirement_id)
+                ->first();
+                
+            if (!$upload) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No upload found for this document'
+                ], 404);
+            }
+            
+            if ($upload->status === 'approved') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Cannot delete an approved document'
+                ], 403);
+            }
+            
+            // Delete file
+            if (Storage::disk('public')->exists($upload->file_path)) {
+                Storage::disk('public')->delete($upload->file_path);
+            }
+            
+            $upload->delete();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'File removed successfully'
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Remove failed: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

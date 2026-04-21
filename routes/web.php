@@ -42,6 +42,12 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/applicant/onsite/status', [ApplicantDocumentController::class, 'getOnsiteStatus'])->name('applicant.onsite.status');
     Route::post('/staff/confirm/onsite', [ApplicantDocumentController::class, 'confirmOnsiteSubmission'])->name('staff.confirm.onsite');
 
+    // BAGONG routes - staff side (StaffDashboardController)
+Route::post('/staff/confirm/onsite', [StaffDashboardController::class, 'confirmOnsiteSubmission'])->name('staff.confirm.onsite');
+Route::get('/staff/applicant/{id}/onsite-status', [StaffDashboardController::class, 'getOnsiteStatus'])->name('staff.applicant.onsite-status');
+
+Route::post('/staff/applicant/{id}/upload-document', [StaffDashboardController::class, 'uploadDocumentForStudent'])->name('staff.applicant.upload-document');
+
     // Requirements routes (STAFF SIDE - requirements management)
     Route::get('/requirements', [RequirementController::class, 'index'])->name('requirements.index');
     Route::post('/requirements', [RequirementController::class, 'store']);
