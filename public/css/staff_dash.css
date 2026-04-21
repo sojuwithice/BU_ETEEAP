@@ -415,10 +415,30 @@ body {
     text-decoration: none;
 }
 
-.btn-decision { display: inline-flex; align-items: center; gap: 5px; }
-.btn-decision span { font-size: 16px; }
-.btn-view:hover, .btn-decision:hover { background: #223381; color: #fff; }
+.btn-decision {
+    padding: 6px 12px;
+    border-radius: 15px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    background: #fff;
+    border: 1.5px solid #223381;
+    color: #223381;
+    transition: 0.2s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
 
+.btn-decision:hover {
+    background: #223381;
+    color: #fff;
+}
+
+.btn-decision span {
+    display: none; /* Hide the icon if it's still there */
+}
 
 /* Container ng dropdown at icon */
 .custom-select-wrapper {
@@ -884,21 +904,458 @@ body {
 /* Croppie specific UI overrides */
 .cr-viewport { border: 3px solid #223381 !important; box-shadow: 0 0 0 1000px rgba(0,0,0,0.5) !important; }
 
+/* Toast notification styles - TOP position */
 .toast {
     position: fixed;
-    top: -100px; 
+    top: -100px;
     left: 50%;
     transform: translateX(-50%);
     color: white;
-    padding: 12px 20px;
+    padding: 12px 24px;
     border-radius: 12px;
     display: flex;
     align-items: center;
     gap: 12px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.2);
     z-index: 10000;
-    transition: top 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
     font-weight: 500;
-    min-width: 280px; 
-    max-width: 90%;  
+    font-size: 14px;
+    min-width: 280px;
+    max-width: 90%;
+    transition: top 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
+
+.toast.show {
+    top: 25px;
+}
+
+/* Success & Error Colors */
+.toast.success { 
+    background: #25c14a; 
+}
+
+.toast.error { 
+    background: #e03d4d; 
+}
+
+/* Icon Styling */
+.toast .material-symbols-outlined {
+    font-size: 20px;
+    color: white; 
+}
+
+/* ======================== ADDITIONAL STATUS BADGE COLORS ======================== */
+
+/* Green badge for Approved */
+.status-badge.green {
+    background: #10b981;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+/* Red badge for Rejected */
+.status-badge.red {
+    background: #ef4444;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+/* Blue badge for Transmitted to Admission */
+.status-badge.transmitted {
+    background: #3b82f6;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+/* Gray badge for Case Closed */
+.status-badge.closed {
+    background: #6b7280;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+/* Dark red badge for Will Not Push Through */
+.status-badge.not-push {
+    background: #dc2626;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+/* Yellow/Pending badge */
+.status-badge.pending {
+    background: #f59e0b;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+/* Not Started badge */
+.status-badge.not-started {
+    background: #9ca3af;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+/* On Going badge */
+.status-badge.ongoing {
+    background: #f47c20;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+/* Completed badge */
+.status-badge.completed {
+    background: #059669;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+/* ======================== DECISION MODAL STYLES ======================== */
+
+/* Modal Overlay */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+}
+
+/* Modal Box */
+.modal-box {
+    background: white;
+    border-radius: 20px;
+    width: 450px;
+    max-width: 90%;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    animation: modalFadeIn 0.3s ease;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Modal Header */
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 24px;
+    border-bottom: 2px solid #223381;
+    background: #223381;
+    border-radius: 20px 20px 0 0;
+}
+
+.modal-header h2 {
+    margin: 0;
+    color: white;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.close-modal-btn {
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    color: white;
+    transition: 0.2s;
+}
+
+.close-modal-btn:hover {
+    color: #f47c20;
+}
+
+/* Modal Content */
+#decisionContent {
+    padding: 24px;
+}
+
+/* Form Group */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    color: #223381;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.form-group label span {
+    font-weight: 800;
+    color: #f47c20;
+}
+
+/* Select Dropdown */
+.form-control {
+    width: 100%;
+    padding: 12px 15px;
+    border-radius: 12px;
+    border: 1.5px solid #e0e0e0;
+    font-size: 14px;
+    font-family: 'Raleway', sans-serif;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #223381;
+}
+
+/* Textarea */
+textarea.form-control {
+    resize: vertical;
+    min-height: 80px;
+}
+
+/* Modal Footer */
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid #eee;
+}
+
+/* Modal Buttons */
+.modal-footer .btn-cancel {
+    background: #f5f5f5;
+    color: #666;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 25px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.modal-footer .btn-cancel:hover {
+    background: #e0e0e0;
+}
+
+.modal-footer .btn-save {
+    background: #223381;
+    color: white;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 25px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.modal-footer .btn-save:hover {
+    background: #1a2a6e;
+    transform: translateY(-1px);
+}
+
+/* Applicant Details Modal */
+#applicantDetailsContent {
+    padding: 20px;
+}
+
+#applicantDetailsContent .form-group {
+    margin-bottom: 15px;
+}
+
+#applicantDetailsContent .form-group label {
+    font-weight: 700;
+    color: #223381;
+    font-size: 13px;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+}
+
+#applicantDetailsContent .form-group p {
+    margin: 0;
+    padding: 8px 12px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    font-size: 14px;
+    color: #333;
+}
+
+/* Status badge in modal */
+#applicantDetailsContent .status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+
+/* Custom Select Dropdown for Decision Modal */
+.custom-select-dropdown {
+    position: relative;
+    width: 100%;
+    user-select: none;
+}
+
+.select-trigger {
+    background: white;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 12px 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+    transition: all 0.2s;
+}
+
+.select-trigger:hover {
+    border-color: #223381;
+}
+
+.select-trigger .dropdown-arrow {
+    font-size: 20px;
+    color: #666;
+    transition: transform 0.2s;
+}
+
+.custom-select-dropdown.open .select-trigger .dropdown-arrow {
+    transform: rotate(180deg);
+}
+
+.select-options {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 12px;
+    margin-top: 5px;
+    z-index: 100;
+    display: none;
+    max-height: 250px;
+    overflow-y: auto;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.custom-select-dropdown.open .select-options {
+    display: block;
+    animation: dropdownFade 0.2s ease;
+}
+
+@keyframes dropdownFade {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.select-option {
+    padding: 12px 15px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    color: #333;
+}
+
+.select-option:hover {
+    background-color: #f5f5f5;
+}
+
+.select-option.selected {
+    background-color: #e8f0fe;
+    color: #223381;
+    font-weight: 600;
+}
+
+.status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+/* Scrollbar for dropdown options */
+.select-options::-webkit-scrollbar {
+    width: 6px;
+}
+
+.select-options::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.select-options::-webkit-scrollbar-thumb {
+    background: #223381;
+    border-radius: 10px;
+}
+
+/* Base Style */
+.status-badge {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    color: white;
+    display: inline-block;
+    white-space: nowrap;
+}
+
+/* Specific Colors */
+.status-badge.approved { background-color: #10b981; } /* Green */
+.status-badge.pending { background-color: #f59e0b; } /* Orange */
+.status-badge.rejected { background-color: #ef4444; } /* Red */
+.status-badge.on-going { background-color: #3b82f6; } /* Blue */
+.status-badge.completed { background-color: #8b5cf6; } /* Purple */
+.status-badge.not-started { background-color: #6b7280; } /* Gray */
+.status-badge.transmitted-to-admission { background-color: #06b6d4; } /* Cyan */
+.status-badge.case-closed { background-color: #374151; } /* Dark Gray */
+.status-badge.will-not-push-through { background-color: #b91c1c; } /* Deep Red */

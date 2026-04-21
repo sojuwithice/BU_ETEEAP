@@ -101,6 +101,10 @@ Route::get('/applicant/get-payment-proof', [DashboardController::class, 'getPaym
     Route::get('/applicant/messages', [DashboardController::class, 'getMessages'])->name('applicant.messages');
     Route::get('/applicant/progress', [DashboardController::class, 'getProgressData'])->name('applicant.progress');
     Route::get('/applicant/activities', [DashboardController::class, 'getActivities'])->name('applicant.activities');
+
+Route::post('/staff/applicant/{id}/update-status', [StaffDashboardController::class, 'updateApplicantStatus'])
+    ->name('staff.applicant.update-status');
+    
 });
 
 Route::get('/verify-documents', function () {

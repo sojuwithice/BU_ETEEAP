@@ -15,56 +15,51 @@ use Illuminate\Support\Str;
 class StaffDashboardController extends Controller
 {
     public function index(Request $request)
-    {
-        $query = User::where('role', 'applicant')
-            ->orWhere('role', 'student')
-            ->orderBy('created_at', 'desc');
-        
-        if ($request->has('search') && !empty($request->search)) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('first_name', 'like', "%{$search}%")
-                  ->orWhere('last_name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere(DB::raw("CONCAT(first_name, ' ', last_name)"), 'like', "%{$search}%");
-            });
-        }
-        
-        $applicants = $query->paginate(15);
-        
-        foreach ($applicants as $applicant) {
+{
+    $query = User::whereIn('role', ['applicant', 'student'])
+        ->orderBy('created_at', 'desc');
+    
+    if ($request->has('search') && !empty($request->search)) {
+        $search = $request->search;
+        $query->where(function($q) use ($search) {
+            $q->where('first_name', 'like', "%{$search}%")
+              ->orWhere('last_name', 'like', "%{$search}%")
+              ->orWhere('email', 'like', "%{$search}%")
+              ->orWhere(DB::raw("CONCAT(first_name, ' ', last_name)"), 'like', "%{$search}%");
+        });
+    }
+    
+    $applicants = $query->paginate(15);
+    $requiredCount = Requirement::count();
 
-            $latestUpload = DocumentUpload::where('user_id', $applicant->id)
-                ->latest()
-                ->first();
-            $applicant->last_update = $latestUpload ? $latestUpload->created_at : $applicant->updated_at;
-            
-            $applicant->upload_count = DocumentUpload::where('user_id', $applicant->id)->count();
-            
-            $requiredCount = Requirement::count();
+    foreach ($applicants as $applicant) {
+        $latestUpload = DocumentUpload::where('user_id', $applicant->id)->latest()->first();
+        $applicant->last_update = $latestUpload ? $latestUpload->created_at : $applicant->updated_at;
+        
+        $applicant->upload_count = DocumentUpload::where('user_id', $applicant->id)->count();
+        
+        // FIX: Kung wala pang manual status na naka-set, doon lang tayo mag-aassign ng system status
+        if (empty($applicant->application_status)) {
             if ($applicant->upload_count == 0) {
-                $applicant->status = 'Not Started';
-                $applicant->status_color = 'gray';
+                $applicant->application_status = 'Not Started';
             } elseif ($applicant->upload_count < $requiredCount) {
-                $applicant->status = 'On Going';
-                $applicant->status_color = 'orange';
+                $applicant->application_status = 'On Going';
             } else {
-                $applicant->status = 'Completed';
-                $applicant->status_color = 'green';
+                $applicant->application_status = 'Completed';
             }
         }
-        
-        // Get statistics
-        $stats = [
-            'pending_reviews' => DocumentUpload::where('status', 'Pending')->count(),
-            'new_applications' => User::where('role', 'applicant')
-                ->where('created_at', '>=', now()->subDays(7))
-                ->count(),
-            'document_issues' => DocumentUpload::where('status', 'Rejected')->count(),
-        ];
-        
-        return view('staff_dash', compact('applicants', 'stats'));
     }
+    
+    $stats = [
+        'pending_reviews' => DocumentUpload::where('status', 'Pending')->count(),
+        'new_applications' => User::where('role', 'applicant')
+            ->where('created_at', '>=', now()->subDays(7))
+            ->count(),
+        'document_issues' => DocumentUpload::where('status', 'Rejected')->count(),
+    ];
+    
+    return view('staff_dash', compact('applicants', 'stats'));
+}
     
     public function getApplicantDetails($id)
     {
@@ -115,22 +110,36 @@ class StaffDashboardController extends Controller
     }
     
     public function updateApplicantStatus(Request $request, $id)
-    {
+{
+    try {
         $request->validate([
             'status' => 'required|string',
             'decision' => 'nullable|string'
         ]);
         
         $applicant = User::findOrFail($id);
+        
+        // Update the application_status field (this is what displays in the table)
         $applicant->application_status = $request->status;
         $applicant->decision_notes = $request->decision;
         $applicant->save();
         
+        \Log::info('Status updated for user ' . $id . ' to ' . $request->status);
+        \Log::info('Remarks: ' . $request->decision);
+        
         return response()->json([
             'success' => true,
-            'message' => 'Status updated successfully'
+            'message' => 'Status updated successfully to ' . $request->status
         ]);
+        
+    } catch (\Exception $e) {
+        \Log::error('Error updating status: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to update status: ' . $e->getMessage()
+        ], 500);
     }
+}
 
     public function updateApplicationStatus(Request $request, $id)
     {
