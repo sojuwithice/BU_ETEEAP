@@ -304,23 +304,25 @@ if (!empty($user->interview_date) && strtolower($user->interview_status) == 'sch
 
     public function downloadPaymentStub($id)
 {
-    // Make sure the logged-in user is downloading their own stub
     if (auth()->id() != $id) {
         abort(403, 'Unauthorized access.');
     }
     
     $applicant = User::findOrFail($id);
     
-    // Generate reference if wala
     if (!$applicant->payment_reference) {
         $applicant->save();
     }
     
-    // Load view with data
-    $pdf = Pdf::loadView('pdf.payment_stub', ['applicant' => $applicant]);
+    $pdf = Pdf::loadView('pdf.payment_stub', [
+        'applicant' => $applicant,
+        'authorizedName' => 'Sanny Shine F. Zoilo'
+    ]);
     
-    // Download the PDF
-    return $pdf->download('Payment_Stub_' . $applicant->last_name . '.pdf');
+    // Set custom paper size (1/4 ng A4)
+    $pdf->setPaper([0, 0, 300, 420], 'portrait'); // width, height in points
+    
+    return $pdf->stream('Payment_Stub_' . $applicant->last_name . '.pdf');
 }
     
 

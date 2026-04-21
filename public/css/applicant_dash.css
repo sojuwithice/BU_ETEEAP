@@ -1644,8 +1644,7 @@ body {
 
 /* ========== BUTTON ALIGNMENT FIX - Move non-payment task buttons to right ========== */
 
-/* Make all task actions container align buttons to the right */
-/* Make all task actions container align buttons to the right */
+
 .task-actions {
     display: flex;
     gap: 10px;
@@ -1728,6 +1727,7 @@ body {
 }
 
 /* Responsive - stack payment buttons on mobile */
+/* Responsive - stack payment buttons on mobile */
 @media (max-width: 768px) {
     .req-item.payment-task {
         flex-direction: column;
@@ -1743,14 +1743,16 @@ body {
         flex-direction: row !important; /* Keep buttons side by side */
         justify-content: flex-start;
         width: 100%;
-        gap: 10px;
+        gap: 8px;  /* PINALIIT ANG GAP */
     }
     
     .req-item.payment-task .task-view-btn,
     .req-item.payment-task .task-upload-btn {
         width: auto;
-        min-width: 120px;
+        min-width: 80px;  /* PINALIIT FROM 120px TO 80px */
         white-space: nowrap;
+        padding: 5px 10px;  /* DINAGDAGAN - PINALIIT ANG PADDING */
+        font-size: 10px;  /* DINAGDAGAN - PINALIIT ANG FONT */
     }
     
     /* Non-payment tasks - button stays next to text on same row */
@@ -1769,14 +1771,15 @@ body {
         flex-direction: row;
         justify-content: flex-end;
         margin-top: 0;
-        width: auto;
+        width: auto;  /* PINALITAN FROM 50px TO auto */
     }
     
     .req-item:not(.payment-task) .task-view-btn {
         width: auto;
         white-space: nowrap;
+        padding: 4px 10px;  /* DINAGDAGAN */
+        font-size: 10px;  /* DINAGDAGAN */
     }
-
 }
 
 /* ========== END OF BUTTON ALIGNMENT FIX ========== */
@@ -1985,13 +1988,13 @@ body {
 
     .req-item.payment-task .task-view-btn,
     .req-item.payment-task .task-upload-btn {
-        min-width: 100px;
-        padding: 6px 10px;
-        font-size: 11px;
+        min-width: 70px;  /* PINALIIT FROM 100px TO 70px */
+        padding: 4px 8px;  /* PINALIIT ANG PADDING */
+        font-size: 9px;  /* PINALIIT ANG FONT */
     }
     
     .req-item:not(.payment-task) .task-view-btn {
-        font-size: 10px;
-        padding: 5px 12px;
+        font-size: 9px;
+        padding: 4px 8px;
     }
 }

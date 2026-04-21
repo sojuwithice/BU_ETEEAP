@@ -122,3 +122,16 @@ Route::get('/payment-stub/{id}', function ($id) {
 
     return $pdf->stream('payment_stub.pdf');
 });
+
+Route::get('/preview-payment-stub', function () {
+    $applicant = Auth::user(); // or use a specific user ID
+    // Or for testing specific applicant:
+    // $applicant = User::find(5); // change to actual ID
+    
+    $pdf = Pdf::loadView('pdf.payment_stub', [
+        'applicant' => $applicant,
+        'authorizedName' => 'Sanny Shine F. Zoilo'
+    ]);
+    
+    return $pdf->stream('payment_stub_preview.pdf');
+})->middleware('auth');
