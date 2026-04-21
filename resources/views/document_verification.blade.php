@@ -84,40 +84,15 @@
         <p>{{ $applicant->first_name }} {{ $applicant->last_name }}</p>
     </div>
 
-    <!-- ONSITE REQUEST SECTION - MAS MAGANDANG UI 
-    <div class="onsite-request-card" id="onsiteRequestCard" style="display: none;">
-        <div class="onsite-status-container">
-            <div class="onsite-status-icon pending-icon">
-                <span class="material-symbols-outlined">pending_actions</span>
-            </div>
-            <div class="onsite-status-content">
-                <div class="onsite-status-header">
-                    <span class="onsite-status-badge pending-badge">Pending Verification</span>
-                    <span class="onsite-request-date" id="onsiteRequestDate"></span>
-                </div>
-                <h3>Onsite Submission Request</h3>
-                <p>This student claims to have submitted their documents <strong>ONSITE</strong> at the BU-ETEEAP office.</p>
-                <div class="onsite-action-buttons">
-                    <button class="btn-confirm-onsite" onclick="confirmOnsiteSubmission()">
-                        <span class="material-symbols-outlined">verified</span>
-                        Confirm Onsite Submission
-                    </button>
-                    <button class="btn-view-details" onclick="viewOnsiteDetails()">
-                        <span class="material-symbols-outlined">info</span>
-                        View Details
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div> -->
-
-
     <div class="tab-container">
         <a href="{{ route('staff.applicant.info', $applicant->id) }}" class="tab-btn blue-tab">
             Application
         </a>
         <a href="{{ route('staff.applicant.documents', $applicant->id) }}" class="tab-btn orange-tab">
             Document
+        </a>
+        <a href="{{ route('staff.dashboard') }}" class="tab-btn back-btn">
+            <span class="material-symbols-outlined" style="font-size: 18px;">arrow_back</span> Back to Dashboard
         </a>
     </div>
 
