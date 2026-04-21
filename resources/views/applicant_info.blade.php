@@ -541,95 +541,132 @@
         }, 5000);
     }
 
-    // ======================== PAYMENT VERIFICATION FUNCTIONS ========================
-    function previewPaymentProof(proofUrl) {
-        const modal = document.getElementById('paymentProofModal');
-        const proofImage = document.getElementById('proofImage');
-        const proofPDF = document.getElementById('proofPDF');
-        const noProofMsg = document.getElementById('noProofMsg');
-        
-        if (proofUrl) {
-            const fileExt = proofUrl.split('.').pop().toLowerCase();
-            if (fileExt === 'pdf') {
-                proofPDF.style.display = 'block';
-                proofImage.style.display = 'none';
-                noProofMsg.style.display = 'none';
-                proofPDF.src = proofUrl;
-            } else if (['jpg', 'jpeg', 'png'].includes(fileExt)) {
-                proofImage.style.display = 'block';
-                proofPDF.style.display = 'none';
-                noProofMsg.style.display = 'none';
-                proofImage.src = proofUrl;
-            } else {
-                proofImage.style.display = 'none';
-                proofPDF.style.display = 'none';
-                noProofMsg.style.display = 'block';
-            }
+// ======================== PAYMENT VERIFICATION FUNCTIONS ========================
+function previewPaymentProof(proofUrl) {
+    const modal = document.getElementById('paymentProofModal');
+    const proofImage = document.getElementById('proofImage');
+    const proofPDF = document.getElementById('proofPDF');
+    const noProofMsg = document.getElementById('noProofMsg');
+    
+    if (proofUrl && proofUrl !== 'null') {
+        const fileExt = proofUrl.split('.').pop().toLowerCase();
+        if (fileExt === 'pdf') {
+            proofPDF.style.display = 'block';
+            proofImage.style.display = 'none';
+            noProofMsg.style.display = 'none';
+            proofPDF.src = proofUrl;
+        } else if (['jpg', 'jpeg', 'png'].includes(fileExt)) {
+            proofImage.style.display = 'block';
+            proofPDF.style.display = 'none';
+            noProofMsg.style.display = 'none';
+            proofImage.src = proofUrl;
         } else {
             proofImage.style.display = 'none';
             proofPDF.style.display = 'none';
             noProofMsg.style.display = 'block';
         }
-        
-        modal.style.display = 'flex';
+    } else {
+        proofImage.style.display = 'none';
+        proofPDF.style.display = 'none';
+        noProofMsg.style.display = 'block';
     }
+    
+    modal.style.display = 'flex';
+}
 
-    function closePaymentProofModal() {
-        document.getElementById('paymentProofModal').style.display = 'none';
-    }
+function closePaymentProofModal() {
+    document.getElementById('paymentProofModal').style.display = 'none';
+}
 
-    function verifyPayment(status) {
-        const note = status === 'rejected' ? prompt('Please provide a reason for rejection:') : null;
-        
-        if (status === 'rejected' && !note) return;
-        
+function verifyPayment(status) {
+    let verificationNote = null;
+    
+    if (status === 'rejected') {
         Swal.fire({
-            title: status === 'paid' ? 'Verify Payment' : 'Reject Payment',
-            text: status === 'paid' ? 'Are you sure you want to mark this payment as paid?' : 'Are you sure you want to reject this payment proof?',
+            title: 'Reject Payment Proof',
+            input: 'textarea',
+            inputLabel: 'Reason for Rejection',
+            inputPlaceholder: 'Please provide a reason why this payment proof is being rejected...',
+            inputAttributes: {
+                'aria-label': 'Type your reason here'
+            },
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            confirmButtonText: 'Yes, Reject',
+            cancelButtonText: 'Cancel',
+            inputValidator: (value) => {
+                if (!value || value.trim() === '') {
+                    return 'Please provide a reason for rejection!';
+                }
+                return null;
+            }
+        }).then((result) => {
+            if (result.isConfirmed && result.value) {
+                verificationNote = result.value;
+                processPaymentVerification(status, verificationNote);
+            }
+        });
+    } else {
+        Swal.fire({
+            title: 'Verify Payment',
+            text: 'Are you sure you want to mark this payment as PAID?',
             icon: 'question',
             showCancelButton: true,
-            confirmButtonColor: status === 'paid' ? '#223381' : '#ef4444',
-            confirmButtonText: status === 'paid' ? 'Yes, Mark as Paid' : 'Yes, Reject',
+            confirmButtonColor: '#223381',
+            confirmButtonText: 'Yes, Mark as Paid',
             cancelButtonText: 'Cancel'
         }).then((result) => {
             if (result.isConfirmed) {
-                Swal.fire({
-                    title: 'Processing...',
-                    text: 'Please wait',
-                    allowOutsideClick: false,
-                    showConfirmButton: false,
-                    didOpen: () => { Swal.showLoading(); }
-                });
-                
-                fetch(`/staff/applicant/${applicantId}/verify-payment`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken
-                    },
-                    body: JSON.stringify({
-                        payment_status: status,
-                        verification_note: note
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    Swal.close();
-                    if (data.success) {
-                        showToast(data.message, 'success');
-                        setTimeout(() => location.reload(), 1500);
-                    } else {
-                        showToast(data.message, 'error');
-                    }
-                })
-                .catch(error => {
-                    Swal.close();
-                    console.error('Error:', error);
-                    showToast('Failed to verify payment', 'error');
-                });
+                processPaymentVerification(status, null);
             }
         });
     }
+}
+
+function processPaymentVerification(status, note) {
+    Swal.fire({
+        title: 'Processing...',
+        text: 'Please wait',
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        didOpen: () => { Swal.showLoading(); }
+    });
+    
+    fetch(`/staff/applicant/${applicantId}/verify-payment`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrfToken,
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+            payment_status: status,
+            verification_note: note
+        })
+    })
+    .then(async response => {
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.message || 'Request failed');
+        }
+        return data;
+    })
+    .then(data => {
+        Swal.close();
+        if (data.success) {
+            showToast(data.message, 'success');
+            // Reload after 1.5 seconds to show updated status
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showToast(data.message || 'Failed to verify payment', 'error');
+        }
+    })
+    .catch(error => {
+        Swal.close();
+        console.error('Error:', error);
+        showToast(error.message || 'Failed to verify payment. Please try again.', 'error');
+    });
+}
 
     // ======================== CLOCK LOGIC ========================
     function updateClock() {
