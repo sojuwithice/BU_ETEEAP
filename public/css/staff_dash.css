@@ -436,6 +436,10 @@ body {
     color: #fff;
 }
 
+.btn-view:hover{
+    background: #223381;
+    color: #fff;
+}
 .btn-decision span {
     display: none; /* Hide the icon if it's still there */
 }
@@ -1359,3 +1363,44 @@ textarea.form-control {
 .status-badge.transmitted-to-admission { background-color: #06b6d4; } /* Cyan */
 .status-badge.case-closed { background-color: #374151; } /* Dark Gray */
 .status-badge.will-not-push-through { background-color: #b91c1c; } /* Deep Red */
+
+/* Mode of Application Badges */
+.mode-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.mode-badge .material-symbols-outlined {
+    font-size: 14px;
+}
+
+.mode-online {
+    background: #e3f2fd;
+    color: #1565c0;
+    border: 1px solid #90caf9;
+}
+
+.mode-onsite-pending {
+    background: #fff3e0;
+    color: #EF7631;
+    border: 1px solid #ffcc80;
+    animation: pulsePending 2s infinite;
+}
+
+.mode-onsite-verified {
+    background: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #a5d6a7;
+}
+
+@keyframes pulsePending {
+    0% { box-shadow: 0 0 0 0 rgba(239, 118, 49, 0.2); }
+    70% { box-shadow: 0 0 0 4px rgba(239, 118, 49, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(239, 118, 49, 0); }
+}

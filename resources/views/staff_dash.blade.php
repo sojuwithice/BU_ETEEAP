@@ -151,77 +151,107 @@
             </div>
 
             <div class="applicant-list-container">
-                <div class="table-wrapper">
-                    <table class="applicant-table" id="applicantTable">
-                        <thead>
-                            <tr>
-                                <th>Fullname</th>
-                                <th>Sex</th>
-                                <th>Degree Program</th>
-                                <th>Last Update</th>
-                                <th>Current Status</th>
-                                <th>Remarks</th>
-                                <th class="text-center">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="applicantTableBody">
-                            @forelse($applicants as $applicant)
-                            @php
-                                $currentStatus = $applicant->application_status ?? 'Pending';
-                                $statusClass = 'orange';
-                                if($currentStatus == 'Approved') $statusClass = 'green';
-                                elseif($currentStatus == 'Rejected') $statusClass = 'red';
-                                elseif($currentStatus == 'Transmitted to Admission') $statusClass = 'transmitted';
-                                elseif($currentStatus == 'Case Closed') $statusClass = 'closed';
-                                elseif($currentStatus == 'Will Not Push Through') $statusClass = 'not-push';
-                                elseif($currentStatus == 'Pending') $statusClass = 'pending';
-                                elseif($currentStatus == 'Not Started') $statusClass = 'not-started';
-                                elseif($currentStatus == 'On Going') $statusClass = 'ongoing';
-                                elseif($currentStatus == 'Completed') $statusClass = 'completed';
-                            @endphp
-                            <tr data-id="{{ $applicant->id }}"
-                                data-fullname="{{ $applicant->first_name }} {{ $applicant->last_name }}"
-                                data-sex="{{ $applicant->sex ?? 'N/A' }}"
-                                data-degree="{{ $applicant->degree_program ?? 'Not specified' }}"
-                                data-status="{{ $applicant->application_status ?? 'Pending' }}"
-                                data-remarks="{{ $applicant->decision_notes ?? '' }}">
-                                <td><b>{{ $applicant->first_name }} {{ $applicant->last_name }}</b></td>
-                                <td>{{ $applicant->sex ?? 'N/A' }}</td>
-                                <td><b>{{ $applicant->degree_program ?? 'Not specified' }}</b></td>
-                                <td>{{ $applicant->last_update ? $applicant->last_update->format('m/d/Y | h:i A') : $applicant->created_at->format('m/d/Y | h:i A') }}</td>
-                                <td><span class="status-badge {{ $statusClass }}">{{ $applicant->application_status ?? 'Pending' }}</span></td>
-                                <td class="remarks-cell" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                                    <span title="{{ $applicant->decision_notes ?? '' }}">{{ Str::limit($applicant->decision_notes ?? 'No remarks', 30) }}</span>
-                                </td>
-                                <td class="action-buttons">
-                                    <a href="{{ route('staff.applicant.info', $applicant->id) }}" class="btn-view">View</a>
-                                    <button class="btn-decision" onclick="showDecisionModal({{ $applicant->id }}, '{{ $applicant->first_name }} {{ $applicant->last_name }}', '{{ addslashes($applicant->decision_notes ?? '') }}')">
-                                        Decision
-                                    </button>
-                                </td>
-                            </tr>
-                            @empty
-                            <tr>
-                                <td colspan="7" style="text-align: center; padding: 50px; color: #223381;">
-                                    No applicant recorded in the system.
-                                </td>
-                            </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+    <div class="table-wrapper">
+        <table class="applicant-table" id="applicantTable">
+            <thead>
+                <tr>
+                    <th>Fullname</th>
+                    <th>Sex</th>
+                    <th>Degree Program</th>
+                    <th>Mode of Application</th>  <!-- BAGONG COLUMN -->
+                    <th>Last Update</th>
+                    <th>Current Status</th>
+                    <th>Remarks</th>
+                    <th class="text-center">Action</th>
+                </tr>
+            </thead>
+            <tbody id="applicantTableBody">
+                @forelse($applicants as $applicant)
+                @php
+                    $currentStatus = $applicant->application_status ?? 'Pending';
+                    $statusClass = 'orange';
+                    if($currentStatus == 'Approved') $statusClass = 'green';
+                    elseif($currentStatus == 'Rejected') $statusClass = 'red';
+                    elseif($currentStatus == 'Transmitted to Admission') $statusClass = 'transmitted';
+                    elseif($currentStatus == 'Case Closed') $statusClass = 'closed';
+                    elseif($currentStatus == 'Will Not Push Through') $statusClass = 'not-push';
+                    elseif($currentStatus == 'Pending') $statusClass = 'pending';
+                    elseif($currentStatus == 'Not Started') $statusClass = 'not-started';
+                    elseif($currentStatus == 'On Going') $statusClass = 'ongoing';
+                    elseif($currentStatus == 'Completed') $statusClass = 'completed';
                     
-                    <div id="noResultsMessage" style="display:none;">
-                        <span class="material-symbols-outlined" style="font-size: 48px; display: block; margin-bottom: 10px;">search_off</span>
-                        No applicants found matching your criteria.
-                    </div>
-                </div>
+                    // Determine mode of application
+                    $modeOfApplication = 'Online'; // Default
+                    if($applicant->onsite_verified) {
+                        $modeOfApplication = 'Onsite (Verified)';
+                    } elseif($applicant->onsite_verification_pending) {
+                        $modeOfApplication = 'Onsite (Pending)';
+                    } else {
+                        $modeOfApplication = 'Online';
+                    }
+                    
+                    $modeClass = '';
+                    if($modeOfApplication == 'Onsite (Verified)') $modeClass = 'mode-onsite-verified';
+                    elseif($modeOfApplication == 'Onsite (Pending)') $modeClass = 'mode-onsite-pending';
+                    else $modeClass = 'mode-online';
+                @endphp
+                <tr data-id="{{ $applicant->id }}"
+                    data-fullname="{{ $applicant->first_name }} {{ $applicant->last_name }}"
+                    data-sex="{{ $applicant->sex ?? 'N/A' }}"
+                    data-degree="{{ $applicant->degree_program ?? 'Not specified' }}"
+                    data-status="{{ $applicant->application_status ?? 'Pending' }}"
+                    data-remarks="{{ $applicant->decision_notes ?? '' }}">
+                    <td><b>{{ $applicant->first_name }} {{ $applicant->last_name }}</b></td>
+                    <td>{{ $applicant->sex ?? 'N/A' }}</td>
+                    <td><b>{{ $applicant->degree_program ?? 'Not specified' }}</b></td>
+                    <td>
+                        <span class="mode-badge {{ $modeClass }}">
+                            <span class="material-symbols-outlined">
+                                @if($modeOfApplication == 'Onsite (Verified)')
+                                    verified
+                                @elseif($modeOfApplication == 'Onsite (Pending)')
+                                    pending_actions
+                                @else
+                                    computer
+                                @endif
+                            </span>
+                            {{ $modeOfApplication }}
+                        </span>
+                    </td>
+                    <td>{{ $applicant->last_update ? $applicant->last_update->format('m/d/Y | h:i A') : $applicant->created_at->format('m/d/Y | h:i A') }}</td>
+                    <td><span class="status-badge {{ $statusClass }}">{{ $applicant->application_status ?? 'Pending' }}</span></td>
+                    <td class="remarks-cell" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                        <span title="{{ $applicant->decision_notes ?? '' }}">{{ Str::limit($applicant->decision_notes ?? 'No remarks', 30) }}</span>
+                    </td>
+                    <td class="action-buttons">
+                        <a href="{{ route('staff.applicant.info', $applicant->id) }}" class="btn-view">View</a>
+                        <button class="btn-decision" onclick="showDecisionModal({{ $applicant->id }}, '{{ $applicant->first_name }} {{ $applicant->last_name }}', '{{ addslashes($applicant->decision_notes ?? '') }}')">
+                            Decision
+                        </button>
+                    </td>
+                </tr>
+                @empty
+                <tr>
+                    <td colspan="8" style="text-align: center; padding: 50px; color: #223381;">
+                        No applicant recorded in the system.
+                    </td>
+                </tr>
+                @endforelse
+            </tbody>
+        </table>
+        
+        <div id="noResultsMessage" style="display:none;">
+            <span class="material-symbols-outlined" style="font-size: 48px; display: block; margin-bottom: 10px;">search_off</span>
+            No applicants found matching your criteria.
+        </div>
+    </div>
 
-                @if(method_exists($applicants, 'links'))
-                <div class="pagination-container">
-                    {{ $applicants->links() }}
-                </div>
-                @endif
-            </div>
+    @if(method_exists($applicants, 'links'))
+    <div class="pagination-container">
+        {{ $applicants->links() }}
+    </div>
+    @endif
+</div>
         </div>
     </div>
 
