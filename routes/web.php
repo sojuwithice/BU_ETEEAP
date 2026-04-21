@@ -40,13 +40,15 @@ Route::middleware(['auth'])->group(function () {
     // Onsite verification routes
     Route::post('/applicant/onsite/request', [ApplicantDocumentController::class, 'requestOnsiteVerification'])->name('applicant.onsite.request');
     Route::get('/applicant/onsite/status', [ApplicantDocumentController::class, 'getOnsiteStatus'])->name('applicant.onsite.status');
-    Route::post('/staff/confirm/onsite', [ApplicantDocumentController::class, 'confirmOnsiteSubmission'])->name('staff.confirm.onsite');
-
+   
     // BAGONG routes - staff side (StaffDashboardController)
 Route::post('/staff/confirm/onsite', [StaffDashboardController::class, 'confirmOnsiteSubmission'])->name('staff.confirm.onsite');
 Route::get('/staff/applicant/{id}/onsite-status', [StaffDashboardController::class, 'getOnsiteStatus'])->name('staff.applicant.onsite-status');
 
 Route::post('/staff/applicant/{id}/upload-document', [StaffDashboardController::class, 'uploadDocumentForStudent'])->name('staff.applicant.upload-document');
+
+Route::post('/applicant/messages/mark-read', [MessageController::class, 'markAsRead'])->middleware('auth');
+
 
     // Requirements routes (STAFF SIDE - requirements management)
     Route::get('/requirements', [RequirementController::class, 'index'])->name('requirements.index');
@@ -77,6 +79,9 @@ Route::post('/staff/applicant/{id}/cancel-interview', [StaffDashboardController:
 Route::post('/staff/applicant/{id}/interview-result', [StaffDashboardController::class, 'updateInterviewResult'])->name('staff.applicant.interview-result');
 
     Route::post('/staff/applicant/{id}/message', [StaffDashboardController::class, 'sendMessage'])->name('staff.applicant.message');
+
+    // Add this inside your auth middleware group
+Route::post('/applicant/messages/delete', [DashboardController::class, 'deleteMessages'])->name('applicant.messages.delete');
 
     Route::post('/staff/applicant/{id}/send-payment-stub', [StaffDashboardController::class, 'sendPaymentStub'])->name('staff.send-payment-stub');
 

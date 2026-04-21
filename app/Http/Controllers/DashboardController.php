@@ -583,4 +583,46 @@ public function checkOnsiteStatus()
             ], 500);
         }
     }
+
+    /**
+ * Delete selected messages
+ */
+public function deleteMessages(Request $request)
+{
+    try {
+        $request->validate([
+            'message_ids' => 'required|array',
+            'message_ids.*' => 'integer|exists:messages,id'
+        ]);
+        
+        $user = auth()->user();
+        
+        // Delete only messages that belong to this user (as receiver)
+        $deletedCount = Message::where('receiver_id', $user->id)
+            ->whereIn('id', $request->message_ids)
+            ->delete();
+        
+        if ($deletedCount > 0) {
+            return response()->json([
+                'success' => true,
+                'message' => $deletedCount . ' message(s) deleted successfully',
+                'deleted_count' => $deletedCount
+            ]);
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => 'No messages were deleted'
+            ], 400);
+        }
+        
+    } catch (\Exception $e) {
+        \Log::error('Delete messages error: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to delete messages: ' . $e->getMessage()
+        ], 500);
+    }
+}
+
+
 }

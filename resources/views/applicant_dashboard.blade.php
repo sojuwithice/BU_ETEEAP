@@ -129,7 +129,7 @@
         Tasks <span class="badge-num" id="taskCount">{{ $tasks->count() }}</span>
     </div>
     <div class="message-badge" onclick="openMessagesModal()" style="cursor: pointer;">
-        Messages <span class="badge-num-gray" id="messageCount">{{ $unreadMessagesCount }}</span>
+        Messages <span class="badge-num" id="messageCount">{{ $unreadMessagesCount }}</span>
     </div>
 </div>
 <h3 class="todo-title">To do</h3>
@@ -394,11 +394,34 @@
     <span id="toast-message"></span>
 </div>
 
+
 <div id="messagesModal" class="modal" style="display: none;">
     <div class="modal-content">
         <div class="modal-header">
             <h2>Messages from Staff</h2>
-            <span class="close-btn" onclick="closeMessagesModal()">&times;</span>
+            <div class="modal-header-actions">
+                <button id="selectModeBtn" class="header-btn">
+                    <span class="material-symbols-outlined">select_check_box</span> Select
+                </button>
+                <button id="selectAllBtn" class="header-btn" style="display: none;">
+                    <span class="material-symbols-outlined">select_all</span> Select All
+                </button>
+                <button id="deleteSelectedBtn" class="header-btn delete-btn" style="display: none;">
+                    <span class="material-symbols-outlined">delete</span> Delete
+                </button>
+                <button id="cancelSelectBtn" class="header-btn cancel-select-btn" style="display: none;">
+                    <span class="material-symbols-outlined">close</span> Cancel
+                </button>
+                <span class="close-btn" onclick="closeMessagesModal()">&times;</span>
+            </div>
+        </div>
+        <div class="messages-toolbar" id="messagesToolbar" style="display: none;">
+            <div class="selection-info">
+                <span id="selectedCount">0</span> message(s) selected
+            </div>
+            <button id="deleteSelectedToolbarBtn" class="delete-selected-btn">
+                <span class="material-symbols-outlined">delete</span> Delete Selected
+            </button>
         </div>
         <div class="messages-list" id="messagesList">
             <div style="text-align: center; padding: 20px;">Loading messages...</div>
@@ -487,62 +510,50 @@
     }
     
     function generateCalendar() {
-    const today = getToday();
-    const year = today.year;
-    const month = today.month;
-    const currentDate = today.date;
-    
-    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-    document.getElementById('calendarMonth').innerText = `${monthNames[month]} ${year}`;
-    
-    const firstDayOfMonth = getFirstDayOfMonth(year, month);
-    const daysInMonth = getDaysInMonth(year, month);
-    
-    // Get the date of the Sunday of the current week
-    const todayObj = new Date(year, month, currentDate);
-    const currentDayOfWeek = todayObj.getDay(); // 0 = Sunday
-    const sundayDate = currentDate - currentDayOfWeek;
-    
-    let calendarHTML = '';
-    const dayNames = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
-    
-    // Generate 7 days (current week)
-    for (let i = 0; i < 7; i++) {
-        let dateValue = sundayDate + i;
-        let displayDate = dateValue;
-        let isValidDate = true;
+        const today = getToday();
+        const year = today.year;
+        const month = today.month;
+        const currentDate = today.date;
         
-        // Check if date is within current month
-        if (dateValue < 1) {
-            // Show previous month's date
-            const prevMonth = month - 1;
-            const prevMonthYear = prevMonth < 0 ? year - 1 : year;
-            const prevMonthIndex = prevMonth < 0 ? 11 : prevMonth;
-            const daysInPrevMonth = getDaysInMonth(prevMonthYear, prevMonthIndex);
-            displayDate = daysInPrevMonth + dateValue;
-            isValidDate = true;
-        } else if (dateValue > daysInMonth) {
-            // Show next month's date
-            displayDate = dateValue - daysInMonth;
-            isValidDate = true;
+        const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        document.getElementById('calendarMonth').innerText = `${monthNames[month]} ${year}`;
+        
+        const firstDayOfMonth = getFirstDayOfMonth(year, month);
+        const daysInMonth = getDaysInMonth(year, month);
+        
+        const todayObj = new Date(year, month, currentDate);
+        const currentDayOfWeek = todayObj.getDay();
+        const sundayDate = currentDate - currentDayOfWeek;
+        
+        let calendarHTML = '';
+        const dayNames = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+        
+        for (let i = 0; i < 7; i++) {
+            let dateValue = sundayDate + i;
+            let displayDate = dateValue;
+            
+            if (dateValue < 1) {
+                const prevMonth = month - 1;
+                const prevMonthYear = prevMonth < 0 ? year - 1 : year;
+                const prevMonthIndex = prevMonth < 0 ? 11 : prevMonth;
+                const daysInPrevMonth = getDaysInMonth(prevMonthYear, prevMonthIndex);
+                displayDate = daysInPrevMonth + dateValue;
+            } else if (dateValue > daysInMonth) {
+                displayDate = dateValue - daysInMonth;
+            }
+            
+            const isToday = (dateValue === currentDate);
+            const activeClass = isToday ? 'active-cal' : '';
+            
+            calendarHTML += `
+                <div class="cal-item ${activeClass}">
+                    <span>${dayNames[i]}</span>
+                    <strong>${displayDate}</strong>
+                </div>
+            `;
         }
         
-        const isToday = (dateValue === currentDate);
-        const activeClass = isToday ? 'active-cal' : '';
-        
-        calendarHTML += `
-            <div class="cal-item ${activeClass}">
-                <span>${dayNames[i]}</span>
-                <strong>${displayDate}</strong>
-            </div>
-        `;
-    }
-    
-    document.getElementById('calendarGrid').innerHTML = calendarHTML;
-}
-    
-    function getScheduleForDate(dateStr) {
-        return schedules.find(s => s.date === dateStr);
+        document.getElementById('calendarGrid').innerHTML = calendarHTML;
     }
     
     function getUpcomingSchedules() {
@@ -570,129 +581,99 @@
         return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
     }
     
-    function formatRelativeDate(dateStr) {
-        const today = getToday();
-        const targetDate = new Date(dateStr);
-        const todayDate = new Date(today.year, today.month, today.date);
-        const diffTime = targetDate - todayDate;
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        
-        if (diffDays === 0) return "Today";
-        if (diffDays === 1) return "Tomorrow";
-        if (diffDays === 2) return "In 2 days";
-        if (diffDays <= 7) return `In ${diffDays} days`;
-        
-        const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-        return `${months[targetDate.getMonth()]} ${targetDate.getDate()}`;
-    }
-    
     function updateScheduleDisplay() {
-    const scheduleDisplay = document.getElementById('scheduleDisplay');
-    
-    if (hasTodaySchedule()) {
-        const todaySchedule = getTodaySchedule();
-        if (todaySchedule) {
-            // Check if location contains Zoom (case insensitive) or is a URL
-            const isZoomLink = todaySchedule.location && 
-                (todaySchedule.location.toLowerCase().includes('zoom') || 
-                 todaySchedule.location.toLowerCase().includes('zoom.us') ||
-                 todaySchedule.location.startsWith('http'));
-            
-            // Choose icon based on whether it's Zoom/online
-            const locationIcon = isZoomLink ? 'videocam' : 'location_on';
-            
-            // Make location clickable if it's a Zoom link or URL
-            let locationDisplay;
-            if (isZoomLink && (todaySchedule.location.startsWith('http') || todaySchedule.location.includes('zoom.us'))) {
-                locationDisplay = `<a href="${todaySchedule.location}" target="_blank" style="color: #0066cc; text-decoration: none; display: inline-flex; align-items: flex-start; gap: 8px; width: 100%;">
-                                        <span class="material-symbols-outlined" style="flex-shrink: 0;">${locationIcon}</span> 
-                                        <span style="text-decoration: underline; word-wrap: break-word; overflow-wrap: break-word; word-break: break-all; white-space: normal; flex: 1;">${todaySchedule.location}</span>
-                                    </a>`;
-            } else {
-                locationDisplay = `<span style="display: inline-flex; align-items: flex-start; gap: 8px; width: 100%;">
-                                       <span class="material-symbols-outlined" style="flex-shrink: 0;">${locationIcon}</span> 
-                                       <span style="word-wrap: break-word; overflow-wrap: break-word; word-break: break-all; white-space: normal; flex: 1;">${todaySchedule.location}</span>
-                                   </span>`;
-            }
-            
-            scheduleDisplay.innerHTML = `
-                <div class="interview-box">
-                    <div class="blue-line"></div>
-                    <div class="interview-info">
-                        <h4>${todaySchedule.title}</h4>
-                        <p style="margin: 5px 0; display: flex; align-items: flex-start; gap: 8px;">
-                            ${locationDisplay}
-                        </p>
-                        <p style="margin: 5px 0; display: flex; align-items: center; gap: 8px;">
-                            <span class="material-symbols-outlined" style="flex-shrink: 0;">calendar_month</span> 
-                            <span>${formatDisplayDate(todaySchedule.date)} | ${todaySchedule.time}</span>
-                        </p>
-                    </div>
-                </div>
-            `;
-        }
-    } else {
-        const upcoming = getUpcomingSchedules();
-        if (upcoming.length > 0) {
-            // Display ALL upcoming schedules
-            let upcomingHTML = '';
-            upcoming.forEach((schedule, index) => {
-                // Check if location contains Zoom or is a URL
-                const isZoomLink = schedule.location && 
-                    (schedule.location.toLowerCase().includes('zoom') || 
-                     schedule.location.toLowerCase().includes('zoom.us') ||
-                     schedule.location.startsWith('http'));
+        const scheduleDisplay = document.getElementById('scheduleDisplay');
+        
+        if (hasTodaySchedule()) {
+            const todaySchedule = getTodaySchedule();
+            if (todaySchedule) {
+                const isZoomLink = todaySchedule.location && 
+                    (todaySchedule.location.toLowerCase().includes('zoom') || 
+                     todaySchedule.location.toLowerCase().includes('zoom.us') ||
+                     todaySchedule.location.startsWith('http'));
                 
                 const locationIcon = isZoomLink ? 'videocam' : 'location_on';
-                
-                // Make location clickable if it's a Zoom link or URL
                 let locationDisplay;
-                if (isZoomLink && (schedule.location.startsWith('http') || schedule.location.includes('zoom.us'))) {
-                    locationDisplay = `<a href="${schedule.location}" target="_blank" style="color: #0066cc; text-decoration: none; display: inline-flex; align-items: flex-start; gap: 8px; flex-wrap: wrap;">
+                
+                if (isZoomLink && (todaySchedule.location.startsWith('http') || todaySchedule.location.includes('zoom.us'))) {
+                    locationDisplay = `<a href="${todaySchedule.location}" target="_blank" style="color: #0066cc; text-decoration: none; display: inline-flex; align-items: flex-start; gap: 8px; width: 100%;">
                                             <span class="material-symbols-outlined" style="flex-shrink: 0;">${locationIcon}</span> 
-                                            <span style="flex: 1; word-wrap: break-word; overflow-wrap: break-word; white-space: normal; text-decoration: underline;">${schedule.location}</span>
+                                            <span style="text-decoration: underline; word-wrap: break-word; overflow-wrap: break-word; word-break: break-all; white-space: normal; flex: 1;">${todaySchedule.location}</span>
                                         </a>`;
                 } else {
-                    locationDisplay = `<span style="display: inline-flex; align-items: flex-start; gap: 8px; flex-wrap: wrap;">
+                    locationDisplay = `<span style="display: inline-flex; align-items: flex-start; gap: 8px; width: 100%;">
                                            <span class="material-symbols-outlined" style="flex-shrink: 0;">${locationIcon}</span> 
-                                           <span style="flex: 1; word-wrap: break-word; overflow-wrap: break-word; white-space: normal;">${schedule.location}</span>
+                                           <span style="word-wrap: break-word; overflow-wrap: break-word; word-break: break-all; white-space: normal; flex: 1;">${todaySchedule.location}</span>
                                        </span>`;
                 }
                 
-                upcomingHTML += `
-                    <div class="interview-box" style="margin-bottom: ${index < upcoming.length - 1 ? '15px' : '0'};">
+                scheduleDisplay.innerHTML = `
+                    <div class="interview-box">
                         <div class="blue-line"></div>
-                        <div class="interview-info" style="flex: 1; min-width: 0; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word;">
-                            <h4 style="margin: 0 0 8px 0;">UPCOMING: ${schedule.title}</h4>
-                            <p style="margin: 5px 0;">
-                                ${locationDisplay}
-                            </p>
+                        <div class="interview-info">
+                            <h4>${todaySchedule.title}</h4>
+                            <p style="margin: 5px 0; display: flex; align-items: flex-start; gap: 8px;">${locationDisplay}</p>
                             <p style="margin: 5px 0; display: flex; align-items: center; gap: 8px;">
                                 <span class="material-symbols-outlined" style="flex-shrink: 0;">calendar_month</span> 
-                                <span>${formatDisplayDate(schedule.date)} | ${schedule.time}</span>
+                                <span>${formatDisplayDate(todaySchedule.date)} | ${todaySchedule.time}</span>
                             </p>
                         </div>
                     </div>
                 `;
-            });
-            scheduleDisplay.innerHTML = upcomingHTML;
+            }
         } else {
-            scheduleDisplay.innerHTML = `
-                <div class="interview-box" style="
-                background: #fff3e0; 
-                border-width: 1px; 
-                border-style: solid; 
-                border-color: #EF7631;">
-                    <div class="interview-info">
-                        <h4 style="color: #EF7631;">No Scheduled Events</h4>
-                        <p>No interviews or events scheduled at this time.</p>
-                        <p style="margin-top: 5px; font-size: 0.7rem;">Check back later for updates!</p>
+            const upcoming = getUpcomingSchedules();
+            if (upcoming.length > 0) {
+                let upcomingHTML = '';
+                upcoming.forEach((schedule, index) => {
+                    const isZoomLink = schedule.location && 
+                        (schedule.location.toLowerCase().includes('zoom') || 
+                         schedule.location.toLowerCase().includes('zoom.us') ||
+                         schedule.location.startsWith('http'));
+                    
+                    const locationIcon = isZoomLink ? 'videocam' : 'location_on';
+                    let locationDisplay;
+                    
+                    if (isZoomLink && (schedule.location.startsWith('http') || schedule.location.includes('zoom.us'))) {
+                        locationDisplay = `<a href="${schedule.location}" target="_blank" style="color: #0066cc; text-decoration: none; display: inline-flex; align-items: flex-start; gap: 8px; flex-wrap: wrap;">
+                                                <span class="material-symbols-outlined" style="flex-shrink: 0;">${locationIcon}</span> 
+                                                <span style="flex: 1; word-wrap: break-word; overflow-wrap: break-word; white-space: normal; text-decoration: underline;">${schedule.location}</span>
+                                            </a>`;
+                    } else {
+                        locationDisplay = `<span style="display: inline-flex; align-items: flex-start; gap: 8px; flex-wrap: wrap;">
+                                               <span class="material-symbols-outlined" style="flex-shrink: 0;">${locationIcon}</span> 
+                                               <span style="flex: 1; word-wrap: break-word; overflow-wrap: break-word; white-space: normal;">${schedule.location}</span>
+                                           </span>`;
+                    }
+                    
+                    upcomingHTML += `
+                        <div class="interview-box" style="margin-bottom: ${index < upcoming.length - 1 ? '15px' : '0'};">
+                            <div class="blue-line"></div>
+                            <div class="interview-info" style="flex: 1; min-width: 0; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word;">
+                                <h4 style="margin: 0 0 8px 0;">UPCOMING: ${schedule.title}</h4>
+                                <p style="margin: 5px 0;">${locationDisplay}</p>
+                                <p style="margin: 5px 0; display: flex; align-items: center; gap: 8px;">
+                                    <span class="material-symbols-outlined" style="flex-shrink: 0;">calendar_month</span> 
+                                    <span>${formatDisplayDate(schedule.date)} | ${schedule.time}</span>
+                                </p>
+                            </div>
+                        </div>
+                    `;
+                });
+                scheduleDisplay.innerHTML = upcomingHTML;
+            } else {
+                scheduleDisplay.innerHTML = `
+                    <div class="interview-box" style="background: #fff3e0; border-width: 1px; border-style: solid; border-color: #EF7631;">
+                        <div class="interview-info">
+                            <h4 style="color: #EF7631;">No Scheduled Events</h4>
+                            <p>No interviews or events scheduled at this time.</p>
+                            <p style="margin-top: 5px; font-size: 0.7rem;">Check back later for updates!</p>
+                        </div>
                     </div>
-                </div>
-            `;
+                `;
+            }
         }
     }
-}
 
     // ================= TOAST NOTIFICATION =================
     function showToast(message, type = 'success') {
@@ -702,9 +683,7 @@
         toast.className = `toast show ${type}`;
         msg.innerText = message;
         icon.innerText = type === 'success' ? 'check_circle' : 'error';
-        setTimeout(() => {
-            toast.classList.remove("show");
-        }, 3000);
+        setTimeout(() => toast.classList.remove("show"), 3000);
     }
 
     // ================= CLOCK LOGIC =================
@@ -734,7 +713,6 @@
         document.getElementById('cur-month').innerText = months[now.getMonth()];
         document.getElementById('cur-day').innerText = now.getDate();
         
-        // Update calendar and schedule every minute
         generateCalendar();
         updateScheduleDisplay();
     }
@@ -839,7 +817,10 @@
 
     // ================= MESSAGES FUNCTIONS =================
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-    let messageRefreshInterval = null;
+    
+    // SELECTION MODE VARIABLES - DECLARED ONCE ONLY
+    let isSelectionMode = false;
+    let selectedMessageIds = new Set();
 
     function formatMessageTime(dateString) {
         if (!dateString) return 'Unknown date';
@@ -858,209 +839,393 @@
     }
 
     function loadMessages() {
-        fetch('/applicant/messages', {
-            method: 'GET',
-            headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'Content-Type': 'application/json' }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                const messageCountSpan = document.getElementById('messageCount');
-                if (messageCountSpan) messageCountSpan.innerText = data.unread_count || data.messages.length;
-                window.messagesList = data.messages;
+    fetch('/applicant/messages', {
+        method: 'GET',
+        headers: { 
+            'Accept': 'application/json', 
+            'X-CSRF-TOKEN': csrfToken, 
+            'Content-Type': 'application/json' 
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const messageCountSpan = document.getElementById('messageCount');
+            if (messageCountSpan) {
+                const unreadCount = data.unread_count || 0;
+                const oldCount = parseInt(messageCountSpan.getAttribute('data-count') || '0');
+                
+                // Store current count
+                messageCountSpan.setAttribute('data-count', unreadCount);
+                
+                // Update the display
+                messageCountSpan.innerText = unreadCount;
+                
+                // Show notification for new messages (only if modal is not open)
                 const modal = document.getElementById('messagesModal');
-                if (modal && modal.style.display === 'flex') displayMessagesInModal();
+                if (unreadCount > oldCount && oldCount > 0 && (!modal || modal.style.display !== 'flex')) {
+                    showToast(`📬 You have ${unreadCount - oldCount} new message(s)!`, 'info');
+                    // Optional: Play sound
+                    // playNotificationSound();
+                }
+                
+                // Update visual styling
+                if (unreadCount > 0) {
+                    messageCountSpan.classList.add('has-unread');
+                    messageCountSpan.style.animation = 'pulse 1s infinite';
+                } else {
+                    messageCountSpan.classList.remove('has-unread');
+                    messageCountSpan.style.animation = 'none';
+                }
             }
-        })
-        .catch(error => console.error('Error loading messages:', error));
-    }
+            
+            window.messagesList = data.messages;
+            window.unreadCount = data.unread_count || 0;
+            
+            const modal = document.getElementById('messagesModal');
+            if (modal && modal.style.display === 'flex') {
+                displayMessagesInModal();
+            }
+        }
+    })
+    .catch(error => console.error('Error loading messages:', error));
+}
 
-    function displayMessagesInModal() {
-        const messagesList = document.getElementById('messagesList');
-        if (!messagesList) return;
-        if (window.messagesList && window.messagesList.length > 0) {
-            messagesList.innerHTML = window.messagesList.map(msg => `
-                <div class="message-item">
+// Initial load with retry mechanism
+function initializeMessageCount() {
+    loadMessages();
+    // Try again after 2 seconds if count is 0 (to ensure it loads)
+    setTimeout(() => {
+        const countSpan = document.getElementById('messageCount');
+        if (countSpan && countSpan.innerText === '0') {
+            loadMessages();
+        }
+    }, 2000);
+}
+
+function displayMessagesInModal() {
+    const messagesList = document.getElementById('messagesList');
+    if (!messagesList) return;
+    
+    if (window.messagesList && window.messagesList.length > 0) {
+        messagesList.innerHTML = window.messagesList.map(msg => `
+            <div class="message-item ${!msg.is_read ? 'unread' : ''} ${selectedMessageIds.has(msg.id) ? 'selected' : ''}" 
+                 data-message-id="${msg.id}" 
+                 onclick="toggleMessageSelection(${msg.id}, event)">
+                <div class="message-checkbox" style="display: ${isSelectionMode ? 'flex' : 'none'}">
+                    <input type="checkbox" 
+                        class="message-checkbox"
+                        value="${msg.id}"
+                        ${selectedMessageIds.has(msg.id) ? 'checked' : ''}
+                        onclick="event.stopPropagation(); toggleMessageCheckbox(${msg.id})">
+                </div>
+                <div class="message-content">
                     <div class="message-sender">From: ${escapeHtml(msg.sender_name)}</div>
                     <div class="message-text">${escapeHtml(msg.message)}</div>
                     <div class="message-time">${formatMessageTime(msg.created_at)}</div>
+                    ${!msg.is_read ? '<span class="unread-badge">New</span>' : ''}
                 </div>
-            `).join('');
-        } else {
-            messagesList.innerHTML = '<div style="text-align: center; padding: 20px;">No messages yet</div>';
+            </div>
+        `).join('');
+    } else {
+        messagesList.innerHTML = '<div style="text-align: center; padding: 20px;">No messages yet</div>';
+    }
+}
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function openMessagesModal() {
+    const modal = document.getElementById('messagesModal');
+    const messagesList = document.getElementById('messagesList');
+    if (messagesList) messagesList.innerHTML = '<div style="text-align: center; padding: 20px;">Loading messages...</div>';
+    
+    // Reset selection mode when opening modal
+    isSelectionMode = false;
+    selectedMessageIds.clear();
+    
+    fetch('/applicant/messages', {
+        method: 'GET',
+        headers: { 
+            'Accept': 'application/json', 
+            'X-CSRF-TOKEN': csrfToken, 
+            'Content-Type': 'application/json' 
         }
-    }
-
-    function escapeHtml(text) {
-        if (!text) return '';
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-
-    function openMessagesModal() {
-        const modal = document.getElementById('messagesModal');
-        const messagesList = document.getElementById('messagesList');
-        if (messagesList) messagesList.innerHTML = '<div style="text-align: center; padding: 20px;">Loading messages...</div>';
-        
-        fetch('/applicant/messages', {
-            method: 'GET',
-            headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'Content-Type': 'application/json' }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                window.messagesList = data.messages;
-                displayMessagesInModal();
-                modal.style.display = 'flex';
-                const messageCountSpan = document.getElementById('messageCount');
-                if (messageCountSpan) messageCountSpan.innerText = '0';
-            } else {
-                if (messagesList) messagesList.innerHTML = '<div style="text-align: center; padding: 20px;">Error loading messages</div>';
-                modal.style.display = 'flex';
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            window.messagesList = data.messages;
+            window.unreadCount = data.unread_count || 0;
+            displayMessagesInModal();
+            modal.style.display = 'flex';
+            
+            // Mark messages as read when modal is opened
+            markMessagesAsRead();
+            
+            // Update the count badge
+            const messageCountSpan = document.getElementById('messageCount');
+            if (messageCountSpan) {
+                messageCountSpan.innerText = '0';
+                messageCountSpan.setAttribute('data-count', '0');
+                messageCountSpan.classList.remove('has-unread');
+                messageCountSpan.style.animation = 'none';
             }
-        })
-        .catch(error => {
-            console.error('Error:', error);
+            
+            // Hide selection buttons initially
+            const selectAllBtn = document.getElementById('selectAllBtn');
+            const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
+            const cancelSelectBtn = document.getElementById('cancelSelectBtn');
+            const messagesToolbar = document.getElementById('messagesToolbar');
+            
+            if (selectAllBtn) selectAllBtn.style.display = 'none';
+            if (deleteSelectedBtn) deleteSelectedBtn.style.display = 'none';
+            if (cancelSelectBtn) cancelSelectBtn.style.display = 'none';
+            if (messagesToolbar) messagesToolbar.style.display = 'none';
+        } else {
             if (messagesList) messagesList.innerHTML = '<div style="text-align: center; padding: 20px;">Error loading messages</div>';
             modal.style.display = 'flex';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        if (messagesList) messagesList.innerHTML = '<div style="text-align: center; padding: 20px;">Error loading messages</div>';
+        modal.style.display = 'flex';
+    });
+}
+
+// Mark messages as read function
+function markMessagesAsRead() {
+    fetch('/applicant/messages/mark-read', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrfToken
+        },
+        body: JSON.stringify({})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log('Messages marked as read');
+            if (window.messagesList) {
+                window.messagesList.forEach(msg => {
+                    msg.is_read = true;
+                });
+                window.unreadCount = 0;
+                displayMessagesInModal();
+            }
+        }
+    })
+    .catch(error => console.error('Error marking messages as read:', error));
+}
+
+function closeMessagesModal() {
+    const modal = document.getElementById('messagesModal');
+    if (modal) modal.style.display = 'none';
+    isSelectionMode = false;
+    selectedMessageIds.clear();
+}
+
+window.onclick = function(event) {
+    const modal = document.getElementById('messagesModal');
+    if (event.target === modal) closeMessagesModal();
+}
+
+// ================= SELECTION & DELETE FUNCTIONS =================
+function toggleSelectionMode() {
+    isSelectionMode = !isSelectionMode;
+    
+    const selectAllBtn = document.getElementById('selectAllBtn');
+    const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
+    const cancelSelectBtn = document.getElementById('cancelSelectBtn');
+    const messagesToolbar = document.getElementById('messagesToolbar');
+    
+    if (isSelectionMode) {
+        if (selectAllBtn) selectAllBtn.style.display = 'inline-flex';
+        if (deleteSelectedBtn) deleteSelectedBtn.style.display = 'inline-flex';
+        if (cancelSelectBtn) cancelSelectBtn.style.display = 'inline-flex';
+        if (messagesToolbar) messagesToolbar.style.display = 'flex';
+    } else {
+        if (selectAllBtn) selectAllBtn.style.display = 'none';
+        if (deleteSelectedBtn) deleteSelectedBtn.style.display = 'none';
+        if (cancelSelectBtn) cancelSelectBtn.style.display = 'none';
+        if (messagesToolbar) messagesToolbar.style.display = 'none';
+        selectedMessageIds.clear();
+    }
+    
+    displayMessagesInModal();
+}
+
+function toggleMessageSelection(messageId, event) {
+    if (event.target.type === 'checkbox') return;
+    
+    if (!isSelectionMode) {
+        toggleSelectionMode();
+    }
+    
+    if (selectedMessageIds.has(messageId)) {
+        selectedMessageIds.delete(messageId);
+    } else {
+        selectedMessageIds.add(messageId);
+    }
+    
+    updateSelectionUI();
+    displayMessagesInModal();
+}
+
+function toggleMessageCheckbox(messageId) {
+    if (selectedMessageIds.has(messageId)) {
+        selectedMessageIds.delete(messageId);
+    } else {
+        selectedMessageIds.add(messageId);
+    }
+    updateSelectionUI();
+    displayMessagesInModal();
+}
+
+function toggleSelectAll() {
+    if (!window.messagesList) return;
+    
+    if (selectedMessageIds.size === window.messagesList.length) {
+        selectedMessageIds.clear();
+    } else {
+        window.messagesList.forEach(msg => {
+            selectedMessageIds.add(msg.id);
         });
     }
+    updateSelectionUI();
+    displayMessagesInModal();
+}
 
-    function closeMessagesModal() {
-        const modal = document.getElementById('messagesModal');
-        if (modal) modal.style.display = 'none';
-        if (messageRefreshInterval) { clearInterval(messageRefreshInterval); messageRefreshInterval = null; }
+function cancelSelection() {
+    isSelectionMode = false;
+    selectedMessageIds.clear();
+    updateSelectionUI();
+    displayMessagesInModal();
+    
+    const selectAllBtn = document.getElementById('selectAllBtn');
+    const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
+    const cancelSelectBtn = document.getElementById('cancelSelectBtn');
+    const messagesToolbar = document.getElementById('messagesToolbar');
+    
+    if (selectAllBtn) selectAllBtn.style.display = 'none';
+    if (deleteSelectedBtn) deleteSelectedBtn.style.display = 'none';
+    if (cancelSelectBtn) cancelSelectBtn.style.display = 'none';
+    if (messagesToolbar) messagesToolbar.style.display = 'none';
+}
+
+function updateSelectionUI() {
+    const selectedCountSpan = document.getElementById('selectedCount');
+    const selectAllBtn = document.getElementById('selectAllBtn');
+    
+    if (selectedCountSpan) {
+        selectedCountSpan.innerText = selectedMessageIds.size;
+    }
+    
+    if (selectAllBtn && window.messagesList) {
+        if (selectedMessageIds.size === window.messagesList.length && window.messagesList.length > 0) {
+            selectAllBtn.innerHTML = '<span class="material-symbols-outlined">deselect</span> Deselect All';
+        } else {
+            selectAllBtn.innerHTML = '<span class="material-symbols-outlined">select_all</span> Select All';
+        }
+    }
+}
+
+function deleteSelectedMessages() {
+    if (selectedMessageIds.size === 0) {
+        showToast('Please select messages to delete', 'error');
+        return;
     }
 
-    window.onclick = function(event) {
-        const modal = document.getElementById('messagesModal');
-        if (event.target === modal) closeMessagesModal();
-    }
-
-    function loadActivities() {
-        fetch('/applicant/activities', {
-            method: 'GET',
-            headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'Content-Type': 'application/json' }
+    fetch('/applicant/messages/delete', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify({
+            message_ids: Array.from(selectedMessageIds)
         })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success && data.activities.length > 0) {
-                const activityList = document.getElementById('activityList');
-                activityList.innerHTML = data.activities.map(activity => `<div class="activity">${activity.date} : ${activity.activity}</div>`).join('');
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            showToast(data.message || 'Messages deleted successfully', 'success');
+            
+            selectedMessageIds.forEach(id => {
+                const el = document.querySelector(`[data-message-id="${id}"]`);
+                if (el) el.remove();
+            });
+            
+            if (window.messagesList) {
+                window.messagesList = window.messagesList.filter(msg => !selectedMessageIds.has(msg.id));
             }
-        })
-        .catch(error => console.error('Error loading activities:', error));
-    }
-
-    // Initialize everything
-    document.addEventListener('DOMContentLoaded', function() {
-        generateCalendar();
-        updateScheduleDisplay();
-        loadActivities();
-        loadMessages();
-        setInterval(loadMessages, 30000);
+            
+            selectedMessageIds.clear();
+            updateSelectionUI();
+            
+            // Reload messages to update count
+            loadMessages();
+        } else {
+            showToast(data.message || 'Failed to delete messages', 'error');
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        showToast('Something went wrong', 'error');
     });
+}
 
-
-
-// Variables for upload modal
+// ================= FILE UPLOAD HANDLING =================
 let selectedFile = null;
 let currentTaskId = null;
 
-function openUploadModal(taskId) {
-    currentTaskId = taskId;
-    const modal = document.getElementById('uploadModal');
-    modal.style.display = 'flex';
-    
-    // Reset upload area
-    resetUploadArea();
-}
-
-function resetUploadArea() {
-    selectedFile = null;
-    document.getElementById('paymentProof').value = '';
-    document.getElementById('uploadArea').style.display = 'block';
-    document.getElementById('previewArea').style.display = 'none';
-    document.getElementById('uploadBtn').disabled = false;
-    document.getElementById('previewContent').innerHTML = '';
-}
-
-function closeUploadModal() {
-    const modal = document.getElementById('uploadModal');
-    modal.style.display = 'none';
-    resetUploadArea();
-    currentTaskId = null;
-}
-
-// File upload handling
 const uploadArea = document.getElementById('uploadArea');
 const fileInput = document.getElementById('paymentProof');
 
 if (uploadArea) {
-    uploadArea.addEventListener('click', () => {
-        fileInput.click();
-    });
-
-    uploadArea.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        uploadArea.classList.add('drag-over');
-    });
-
-    uploadArea.addEventListener('dragleave', () => {
-        uploadArea.classList.remove('drag-over');
-    });
-
+    uploadArea.addEventListener('click', () => fileInput.click());
+    uploadArea.addEventListener('dragover', (e) => e.preventDefault());
     uploadArea.addEventListener('drop', (e) => {
         e.preventDefault();
-        uploadArea.classList.remove('drag-over');
-        
-        const files = e.dataTransfer.files;
-        if (files.length > 0) {
-            handleFileSelect(files[0]);
-        }
+        if (e.dataTransfer.files.length > 0) handleFileSelect(e.dataTransfer.files[0]);
     });
 }
 
 if (fileInput) {
     fileInput.addEventListener('change', (e) => {
-        if (e.target.files.length > 0) {
-            handleFileSelect(e.target.files[0]);
-        }
+        if (e.target.files.length > 0) handleFileSelect(e.target.files[0]);
     });
 }
 
 function handleFileSelect(file) {
-    // Validate file type
     const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
     if (!validTypes.includes(file.type)) {
         showToast('Invalid file type. Please upload JPG, PNG, or PDF files only.', 'error');
         return;
     }
     
-    // Validate file size (5MB max)
     if (file.size > 5 * 1024 * 1024) {
         showToast('File is too large. Maximum size is 5MB.', 'error');
         return;
     }
     
     selectedFile = file;
-    
-    // Hide upload area, show preview area
     document.getElementById('uploadArea').style.display = 'none';
     document.getElementById('previewArea').style.display = 'block';
-    
-    // Update file info
     document.getElementById('previewFileName').textContent = file.name;
     document.getElementById('previewFileSize').textContent = formatFileSize(file.size);
     
-    // Show preview
     const previewContent = document.getElementById('previewContent');
     const fileExt = file.name.split('.').pop().toLowerCase();
     
     if (fileExt === 'pdf') {
-        const fileURL = URL.createObjectURL(file);
-        previewContent.innerHTML = `<iframe src="${fileURL}" class="preview-pdf" style="width: 100%; height: 250px; border: none; border-radius: 8px;"></iframe>`;
+        previewContent.innerHTML = `<iframe src="${URL.createObjectURL(file)}" class="preview-pdf" style="width: 100%; height: 250px; border: none; border-radius: 8px;"></iframe>`;
     } else if (['jpg', 'jpeg', 'png'].includes(fileExt)) {
         const reader = new FileReader();
         reader.onload = function(e) {
@@ -1076,6 +1241,27 @@ function formatFileSize(bytes) {
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+function resetUploadArea() {
+    selectedFile = null;
+    document.getElementById('paymentProof').value = '';
+    document.getElementById('uploadArea').style.display = 'block';
+    document.getElementById('previewArea').style.display = 'none';
+    document.getElementById('uploadBtn').disabled = false;
+    document.getElementById('previewContent').innerHTML = '';
+}
+
+function closeUploadModal() {
+    document.getElementById('uploadModal').style.display = 'none';
+    resetUploadArea();
+    currentTaskId = null;
+}
+
+function openUploadModal(taskId) {
+    currentTaskId = taskId;
+    document.getElementById('uploadModal').style.display = 'flex';
+    resetUploadArea();
 }
 
 async function uploadPaymentProof() {
@@ -1106,42 +1292,11 @@ async function uploadPaymentProof() {
         if (data.success) {
             showToast(data.message, 'success');
             closeUploadModal();
-            
-            // Update the task button to show "Waiting for Verification"
-            if (currentTaskId) {
-                const taskElement = document.querySelector(`.req-item[data-task-id="${currentTaskId}"]`);
-                if (taskElement) {
-                    const actionsDiv = taskElement.querySelector('.task-actions');
-                    if (actionsDiv) {
-                        actionsDiv.innerHTML = `
-                            <a href="{{ route('applicant.download-payment-stub', auth()->id()) }}"
-                               target="_blank"
-                               class="task-view-btn">
-                                View Stub
-                            </a>
-                            <button disabled class="task-upload-btn" style="background: #f59e0b; cursor: not-allowed;">
-                                Waiting for Verification
-                            </button>
-                        `;
-                    }
-                }
-            }
-            
-            // Refresh activities
-            if (typeof loadActivities === 'function') {
-                loadActivities();
-            }
-            
-            // Refresh page after 3 seconds to show updated status
-            setTimeout(() => {
-                location.reload();
-            }, 3000);
-            
+            setTimeout(() => location.reload(), 3000);
         } else {
             showToast(data.message, 'error');
         }
     } catch (error) {
-        console.error('Error:', error);
         showToast('Failed to upload payment proof', 'error');
     } finally {
         uploadBtn.disabled = false;
@@ -1153,23 +1308,14 @@ async function fetchProgressData() {
     try {
         const response = await fetch('/applicant/progress', {
             method: 'GET',
-            headers: {
-                'Accept': 'application/json',
-                'X-CSRF-TOKEN': csrfToken,
-                'Content-Type': 'application/json'
-            }
+            headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken }
         });
-        
         const data = await response.json();
-        
         if (data.success) {
-            // Update progress bars
             document.getElementById('profileProgress').textContent = data.profile_progress + '%';
             document.getElementById('profileProgressBar').style.width = data.profile_progress + '%';
-            
             document.getElementById('documentsProgress').textContent = data.documents_progress + '%';
             document.getElementById('documentsProgressBar').style.width = data.documents_progress + '%';
-            
             document.getElementById('applicationProgress').textContent = data.application_progress + '%';
             document.getElementById('applicationProgressBar').style.width = data.application_progress + '%';
         }
@@ -1178,8 +1324,47 @@ async function fetchProgressData() {
     }
 }
 
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    initializeMessageCount(); // Use the new initialization function
+    fetchProgressData();
+    
+    // Poll for new messages every 5 seconds (more frequent)
+    setInterval(loadMessages, 5000);
+    
+    // Also check when page becomes visible again
+    document.addEventListener('visibilitychange', function() {
+        if (!document.hidden) {
+            loadMessages();
+        }
+    });
 
+    const deleteBtn = document.getElementById('deleteSelectedBtn');
+    const deleteToolbarBtn = document.getElementById('deleteSelectedToolbarBtn');
+    const selectModeBtn = document.getElementById('selectModeBtn');
+    const selectAllBtn = document.getElementById('selectAllBtn');
+    const cancelSelectBtn = document.getElementById('cancelSelectBtn');
 
+    if (deleteBtn) {
+        deleteBtn.addEventListener('click', deleteSelectedMessages);
+    }
+
+    if (deleteToolbarBtn) {
+        deleteToolbarBtn.addEventListener('click', deleteSelectedMessages);
+    }
+
+    if (selectModeBtn) {
+        selectModeBtn.addEventListener('click', toggleSelectionMode);
+    }
+
+    if (selectAllBtn) {
+        selectAllBtn.addEventListener('click', toggleSelectAll);
+    }
+
+    if (cancelSelectBtn) {
+        cancelSelectBtn.addEventListener('click', cancelSelection);
+    }
+});
 </script>
 
 </body>
