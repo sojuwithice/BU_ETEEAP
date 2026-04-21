@@ -79,6 +79,17 @@ Route::post('/staff/applicant/{id}/interview-result', [StaffDashboardController:
 
 // Student download payment stub - MAKE SURE THIS EXISTS
 Route::get('/applicant/download-payment-stub/{id}', [DashboardController::class, 'downloadPaymentStub'])->name('applicant.download-payment-stub');
+
+// Add these routes inside your auth middleware group
+Route::post('/applicant/upload-payment-proof', [DashboardController::class, 'uploadPaymentProof'])->name('applicant.upload-payment-proof');
+
+// Add route for this
+Route::get('/staff/applicant/{id}/payment-proof-status', [StaffDashboardController::class, 'getPaymentProofStatus']);
+
+
+// Add these routes
+Route::post('/staff/applicant/{id}/verify-payment', [StaffDashboardController::class, 'verifyPayment'])->name('staff.verify-payment');
+Route::get('/applicant/get-payment-proof', [DashboardController::class, 'getPaymentProof'])->name('applicant.get-payment-proof');
     
     // Password and profile routes
     Route::post('/update-password', [AuthController::class, 'updatePassword']);

@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Str;
+use App\Models\PaymentProof;
+
 
 class DashboardController extends Controller
 {
@@ -321,4 +323,69 @@ if (!empty($user->interview_date) && strtolower($user->interview_status) == 'sch
     return $pdf->download('Payment_Stub_' . $applicant->last_name . '.pdf');
 }
     
+
+public function uploadPaymentProof(Request $request)
+{
+    try {
+        $user = auth()->user();
+        
+        $validator = validator($request->all(), [
+            'payment_proof' => 'required|file|mimes:jpg,jpeg,png,pdf|max:5120'
+        ]);
+        
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => $validator->errors()->first()
+            ], 422);
+        }
+        
+        $file = $request->file('payment_proof');
+        $filename = 'payment_proof_' . $user->id . '_' . time() . '.' . $file->getClientOriginalExtension();
+        $path = $file->storeAs('payment_proofs', $filename, 'public');
+        
+        // Save to user - use 'pending' (lowercase)
+        $user->payment_proof = $path;
+        $user->payment_proof_uploaded_at = now();
+        $user->payment_status = 'pending'; // Make sure this is lowercase 'pending'
+        $user->save();
+        
+        // Notify staff
+        $staff = User::where('role', 'staff')->first();
+        if ($staff) {
+            Message::create([
+                'sender_id' => $user->id,
+                'receiver_id' => $staff->id,
+                'message' => "Applicant {$user->first_name} {$user->last_name} has uploaded their payment proof. Please verify.",
+                'is_read' => false
+            ]);
+        }
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Payment proof uploaded! Waiting for staff verification.'
+        ]);
+        
+    } catch (\Exception $e) {
+        \Log::error('Upload error: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to upload: ' . $e->getMessage()
+        ], 500);
+    }
+}
+
+// Add method to get payment proof for preview
+public function getPaymentProof()
+{
+    $user = auth()->user();
+    
+    return response()->json([
+        'success' => true,
+        'has_proof' => !empty($user->payment_proof),
+        'proof_url' => $user->payment_proof ? asset('storage/' . $user->payment_proof) : null,
+        'uploaded_at' => $user->payment_proof_uploaded_at,
+        'payment_status' => $user->payment_status
+    ]);
+}
 }

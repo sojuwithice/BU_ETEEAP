@@ -54,9 +54,9 @@
                     <form method="POST" action="{{ route('logout') }}" style="margin: 0;">
                         @csrf
                         <button type="submit" class="dropdown-item" onclick="event.stopPropagation();">
-                <span class="material-symbols-outlined">logout</span>
-                <span>Logout</span>
-            </button>
+                            <span class="material-symbols-outlined">logout</span>
+                            <span>Logout</span>
+                        </button>
                     </form>
                 </div>
             </div>
@@ -161,109 +161,139 @@
                     </div>
 
                     <div class="step-item" onclick="toggleStep(this, event)">
-    <div class="step-number">3</div>
-    <div class="step-content">
-        <div class="step-header">
-            <h3>Interview</h3>
-            <span class="material-symbols-outlined arrow-icon">expand_more</span>
-        </div>
-        <div class="step-details">
-            <div id="interviewInfo">
-                @if($applicant->interview_date)
-                    <p class="interview-scheduled">
-                        <strong>Scheduled:</strong> {{ date('F d, Y', strtotime($applicant->interview_date)) }}<br>
-                        <strong>Time:</strong> {{ $applicant->interview_time }}<br>
-                        <strong>Setup:</strong> {{ $applicant->interview_setup }}<br>
-                        <strong>Location:</strong> {{ $applicant->interview_location }}
-                    </p>
-                @else
-                    <p>No interview scheduled yet.</p>
-                @endif
-            </div>
-            
-            <!-- Container for buttons and result dropdown -->
-            <div id="interviewActionsContainer">
-                @if($applicant->interview_date)
-                    @php
-                        $hasResult = in_array(strtolower($applicant->interview_result ?? ''), ['passed', 'failed']);
-                    @endphp
-                    
-                    @if(!$hasResult)
-                        <!-- Buttons: Cancel on LEFT, Mark as Done on RIGHT -->
-                        <div class="action-buttons" id="actionButtons" style="display: flex; align-items: center; justify-content: space-between; margin-top: 15px;">
-                            <button class="btn-cancel" onclick="cancelInterview(event)">Cancel Interview</button>
-                            <button class="btn-done" id="btnDoneInterview" onclick="showResultDropdown()">Mark as Done</button>
-                        </div>
-                        <!-- Hidden Result Dropdown (will appear in place of Cancel button) -->
-                        <div id="resultDropdownArea" style="display: none; margin-top: 15px;">
-                            <div class="result-selector-wrapper" style="display: flex; align-items: center; gap: 10px;">
-                                <div class="status-selector">
-                                    <span>Result:</span>
-                                    <div class="custom-dropdown">
-                                        <div class="selected-option" onclick="toggleDropdown(this, event)">
-                                            <span class="selected-value">Select Result</span>
-                                            <span class="material-symbols-outlined dropdown-arrow">expand_more</span>
-                                        </div>
-                                        <div class="dropdown-menu">
-                                            <div class="option" onclick="saveInterviewResult(this, 'Passed')">Passed</div>
-                                            <div class="option" onclick="saveInterviewResult(this, 'Failed')">Failed</div>
-                                        </div>
-                                    </div>
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <div class="step-header">
+                                <h3>Interview</h3>
+                                <span class="material-symbols-outlined arrow-icon">expand_more</span>
+                            </div>
+                            <div class="step-details">
+                                <div id="interviewInfo">
+                                    @if($applicant->interview_date)
+                                        <p class="interview-scheduled">
+                                            <strong>Scheduled:</strong> {{ date('F d, Y', strtotime($applicant->interview_date)) }}<br>
+                                            <strong>Time:</strong> {{ $applicant->interview_time }}<br>
+                                            <strong>Setup:</strong> {{ $applicant->interview_setup }}<br>
+                                            <strong>Location:</strong> {{ $applicant->interview_location }}
+                                        </p>
+                                    @else
+                                        <p>No interview scheduled yet.</p>
+                                    @endif
                                 </div>
-                                <div style="flex: 1;"></div>
+                                
+                                <div id="interviewActionsContainer">
+                                    @if($applicant->interview_date)
+                                        @php
+                                            $hasResult = in_array(strtolower($applicant->interview_result ?? ''), ['passed', 'failed']);
+                                        @endphp
+                                        
+                                        @if(!$hasResult)
+                                            <div class="action-buttons" id="actionButtons" style="display: flex; align-items: center; justify-content: space-between; margin-top: 15px;">
+                                                <button class="btn-cancel" onclick="cancelInterview(event)">Cancel Interview</button>
+                                                <button class="btn-done" id="btnDoneInterview" onclick="showResultDropdown()">Mark as Done</button>
+                                            </div>
+                                            <div id="resultDropdownArea" style="display: none; margin-top: 15px;">
+                                                <div class="result-selector-wrapper" style="display: flex; align-items: center; gap: 10px;">
+                                                    <div class="status-selector">
+                                                        <span>Result:</span>
+                                                        <div class="custom-dropdown">
+                                                            <div class="selected-option" onclick="toggleDropdown(this, event)">
+                                                                <span class="selected-value">Select Result</span>
+                                                                <span class="material-symbols-outlined dropdown-arrow">expand_more</span>
+                                                            </div>
+                                                            <div class="dropdown-menu">
+                                                                <div class="option" onclick="saveInterviewResult(this, 'Passed')">Passed</div>
+                                                                <div class="option" onclick="saveInterviewResult(this, 'Failed')">Failed</div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div style="flex: 1;"></div>
+                                                </div>
+                                            </div>
+                                        @else
+                                            <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 15px;">
+                                                <div class="status-selector">
+                                                    <span>Result:</span>
+                                                    <div class="custom-dropdown">
+                                                        <div class="selected-option" onclick="toggleDropdown(this, event)">
+                                                            <span class="selected-value">{{ $applicant->interview_result ?? 'Pending' }}</span>
+                                                            <span class="material-symbols-outlined dropdown-arrow">expand_more</span>
+                                                        </div>
+                                                        <div class="dropdown-menu">
+                                                            <div class="option" onclick="updateInterviewResult(this, 'Pending')">Pending</div>
+                                                            <div class="option" onclick="updateInterviewResult(this, 'Passed')">Passed</div>
+                                                            <div class="option" onclick="updateInterviewResult(this, 'Failed')">Failed</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div></div>
+                                            </div>
+                                        @endif
+                                    @else
+                                        <div style="margin-top: 15px;">
+                                            <button class="btn-interview" onclick="handleInterview(event)">Set an Interview</button>
+                                        </div>
+                                    @endif
+                                </div>
                             </div>
                         </div>
-                    @else
-                        <!-- Already has result - show result dropdown on LEFT -->
-                        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 15px;">
-                            <div class="status-selector">
-                                <span>Result:</span>
-                                <div class="custom-dropdown">
-                                    <div class="selected-option" onclick="toggleDropdown(this, event)">
-                                        <span class="selected-value">{{ $applicant->interview_result ?? 'Pending' }}</span>
-                                        <span class="material-symbols-outlined dropdown-arrow">expand_more</span>
-                                    </div>
-                                    <div class="dropdown-menu">
-                                        <div class="option" onclick="updateInterviewResult(this, 'Pending')">Pending</div>
-                                        <div class="option" onclick="updateInterviewResult(this, 'Passed')">Passed</div>
-                                        <div class="option" onclick="updateInterviewResult(this, 'Failed')">Failed</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div></div>
-                        </div>
-                    @endif
-                @else
-                    <div style="margin-top: 15px;">
-                        <button class="btn-interview" onclick="handleInterview(event)">Set an Interview</button>
                     </div>
-                @endif
-            </div>
-        </div>
-    </div>
-</div>
-            
 
+                    <!-- PAYMENT STEP - FIXED VERSION -->
                     <div class="step-item" onclick="toggleStep(this, event)">
-    <div class="step-number">4</div>
-    <div class="step-content">
-        <div class="step-header">
-            <h3>Payment</h3>
-            <span class="material-symbols-outlined arrow-icon">expand_more</span>
-        </div>
-        <div class="step-details">
-            <div style="display: flex; flex-direction: column; align-items: flex-start; width: 100%; gap: 15px;">
-                <p style="margin: 0; color: #333; line-height: 1.5;">
-                    Generate and send the payment instructions to the applicant to proceed with the transaction.
-                </p>
-                
-                <button type="button" class="btn-send-payment" onclick="sendPaymentStub('{{ $applicant->id }}', event)">
-                    Send a Payment Stub
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <div class="step-header">
+                                <h3>Payment</h3>
+                                <span class="material-symbols-outlined arrow-icon">expand_more</span>
+                            </div>
+                            <div class="step-details">
+                                <div style="display: flex; flex-direction: column; align-items: flex-start; width: 100%; gap: 15px;">
+                                    <p style="margin: 0; color: #333; line-height: 1.5;">
+                                        Generate and send the payment instructions to the applicant to proceed with the transaction.
+                                    </p>
+                                    
+                                    <button type="button" class="btn-send-payment" onclick="sendPaymentStub('{{ $applicant->id }}', event)">
+                                        Send a Payment Stub
+                                    </button>
+                                    
+                                    <!-- Payment Proof Section - shows after applicant uploads -->
+                                    <div id="paymentProofSection" style="display: {{ $applicant->payment_proof ? 'block' : 'none' }}; width: 100%; margin-top: 5px;">
+                                        <div style="background: #f0fdf4; border: 1px solid #2F6B3F; border-radius: 8px; padding: 15px;">
+                                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                                <h4 style="margin: 0; color: #166534;">Payment Proof Uploaded</h4>
+                                                <span id="paymentProofStatus" class="status-badge" style="background: {{ $applicant->payment_status == 'paid' ? '#d1fae5' : ($applicant->payment_status == 'pending_verification' ? '#fef3c7' : '#f3f4f6') }}; color: {{ $applicant->payment_status == 'paid' ? '#065f46' : ($applicant->payment_status == 'pending_verification' ? '#92400e' : '#374151') }}; padding: 4px 12px; border-radius: 20px; font-size: 12px;">
+                                                    @if($applicant->payment_status == 'paid')
+                                                        ✓ Verified & Paid
+                                                    @elseif($applicant->payment_status == 'pending_verification')
+                                                        Pending Verification
+                                                    @else
+                                                        Uploaded
+                                                    @endif
+                                                </span>
+                                            </div>
+                                            
+                                            <button type="button" class="btn-preview-proof" onclick="previewPaymentProof('{{ $applicant->payment_proof ? asset('storage/' . $applicant->payment_proof) : '' }}')" style="background: #223381; color: white; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; margin-bottom: 10px;">
+                                                <span class="material-symbols-outlined" style="font-size: 16px; vertical-align: middle;">visibility</span> Preview Proof
+                                            </button>
+                                            
+                                            @if($applicant->payment_status != 'paid')
+                                            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                                                <button type="button" class="btn-verify-paid" onclick="verifyPayment('paid')" style="background: #399918; color: white; border: none; padding: 8px 20px; border-radius: 20px; cursor: pointer;">
+                                                    Mark as Paid
+                                                </button>
+                                                <button type="button" class="btn-verify-reject" onclick="verifyPayment('rejected')" style="background: #FB4141; color: white; border: none; padding: 8px 20px; border-radius: 20px; cursor: pointer;">
+                                                    Reject
+                                                </button>
+                                            </div>
+                                            @else
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                     <div class="step-item" onclick="toggleStep(this, event)">
                         <div class="step-number">5</div>
@@ -368,6 +398,26 @@
                     </div>
                     <button class="btn-set" onclick="saveInterviewSchedule()">Schedule Interview</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Proof Preview Modal -->
+    <div id="paymentProofModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2>Payment Proof Preview</h2>
+                <span class="close-btn" onclick="closePaymentProofModal()">&times;</span>
+            </div>
+            <div class="modal-body" style="padding: 20px;">
+                <div id="proofPreviewContent">
+                    <img id="proofImage" src="" alt="Payment Proof" style="max-width: 100%; display: none;">
+                    <iframe id="proofPDF" src="" style="width: 100%; height: 500px; display: none;"></iframe>
+                    <div id="noProofMsg" style="text-align: center; padding: 40px; display: none;">No payment proof uploaded yet.</div>
+                </div>
+            </div>
+            <div class="modal-footer" style="padding: 15px; border-top: 1px solid #e5e7eb; display: flex; justify-content: flex-end;">
+                <button class="btn-cancel" onclick="closePaymentProofModal()">Close</button>
             </div>
         </div>
     </div>
@@ -489,6 +539,96 @@
         setTimeout(() => {
             toast.classList.remove('show');
         }, 5000);
+    }
+
+    // ======================== PAYMENT VERIFICATION FUNCTIONS ========================
+    function previewPaymentProof(proofUrl) {
+        const modal = document.getElementById('paymentProofModal');
+        const proofImage = document.getElementById('proofImage');
+        const proofPDF = document.getElementById('proofPDF');
+        const noProofMsg = document.getElementById('noProofMsg');
+        
+        if (proofUrl) {
+            const fileExt = proofUrl.split('.').pop().toLowerCase();
+            if (fileExt === 'pdf') {
+                proofPDF.style.display = 'block';
+                proofImage.style.display = 'none';
+                noProofMsg.style.display = 'none';
+                proofPDF.src = proofUrl;
+            } else if (['jpg', 'jpeg', 'png'].includes(fileExt)) {
+                proofImage.style.display = 'block';
+                proofPDF.style.display = 'none';
+                noProofMsg.style.display = 'none';
+                proofImage.src = proofUrl;
+            } else {
+                proofImage.style.display = 'none';
+                proofPDF.style.display = 'none';
+                noProofMsg.style.display = 'block';
+            }
+        } else {
+            proofImage.style.display = 'none';
+            proofPDF.style.display = 'none';
+            noProofMsg.style.display = 'block';
+        }
+        
+        modal.style.display = 'flex';
+    }
+
+    function closePaymentProofModal() {
+        document.getElementById('paymentProofModal').style.display = 'none';
+    }
+
+    function verifyPayment(status) {
+        const note = status === 'rejected' ? prompt('Please provide a reason for rejection:') : null;
+        
+        if (status === 'rejected' && !note) return;
+        
+        Swal.fire({
+            title: status === 'paid' ? 'Verify Payment' : 'Reject Payment',
+            text: status === 'paid' ? 'Are you sure you want to mark this payment as paid?' : 'Are you sure you want to reject this payment proof?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: status === 'paid' ? '#223381' : '#ef4444',
+            confirmButtonText: status === 'paid' ? 'Yes, Mark as Paid' : 'Yes, Reject',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: 'Processing...',
+                    text: 'Please wait',
+                    allowOutsideClick: false,
+                    showConfirmButton: false,
+                    didOpen: () => { Swal.showLoading(); }
+                });
+                
+                fetch(`/staff/applicant/${applicantId}/verify-payment`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken
+                    },
+                    body: JSON.stringify({
+                        payment_status: status,
+                        verification_note: note
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    Swal.close();
+                    if (data.success) {
+                        showToast(data.message, 'success');
+                        setTimeout(() => location.reload(), 1500);
+                    } else {
+                        showToast(data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    Swal.close();
+                    console.error('Error:', error);
+                    showToast('Failed to verify payment', 'error');
+                });
+            }
+        });
     }
 
     // ======================== CLOCK LOGIC ========================
@@ -787,314 +927,296 @@
     }
 
     // ======================== INTERVIEW FUNCTIONS ========================
-function handleInterview(event) {
-    if (event) {
-        event.preventDefault();
-        event.stopPropagation();
-    }
-    
-    resetInterviewForm();
-    
-    const modal = document.getElementById('interviewModal');
-    if (modal) {
-        modal.style.display = 'flex';
-    }
-}
-
-function resetInterviewForm() {
-    const setupVal = document.querySelector('.setup-val');
-    if (setupVal) setupVal.textContent = 'Select Setup';
-    
-    const locationGroup = document.getElementById('locationGroup');
-    if (locationGroup) locationGroup.style.display = 'none';
-    
-    const locationInput = document.getElementById('locationInput');
-    if (locationInput) locationInput.value = '';
-    
-    const today = new Date();
-    currentMonth = today.getMonth();
-    currentYear = today.getFullYear();
-    selectedDay = today.getDate();
-    renderCalendar();
-    
-    const hourInput = document.getElementById('hourInput');
-    const minuteInput = document.getElementById('minuteInput');
-    const ampmLabel = document.getElementById('ampmLabel');
-    
-    if (hourInput) hourInput.value = '09';
-    if (minuteInput) minuteInput.value = '00';
-    if (ampmLabel) ampmLabel.textContent = 'AM';
-}
-
-function closeModal() {
-    const modal = document.getElementById('interviewModal');
-    if (modal) {
-        modal.style.display = 'none';
-    }
-}
-
-function validateHour(input) {
-    let val = input.value.replace(/\D/g, '');
-    
-    if (val.length > 2) {
-        val = val.slice(0, 2);
-    }
-    
-    let num = parseInt(val);
-    if (!isNaN(num)) {
-        if (num > 12) num = 12;
-        if (num < 1 && val.length > 0) num = 1;
-        val = String(num);
-    }
-    
-    input.value = val;
-}
-
-function validateMinute(input) {
-    let val = input.value.replace(/\D/g, '');
-    
-    if (val.length > 2) {
-        val = val.slice(0, 2);
-    }
-    
-    let num = parseInt(val);
-    if (!isNaN(num)) {
-        if (num > 59) num = 59;
-        if (num < 0) num = 0;
-        val = String(num);
-    }
-    
-    input.value = val;
-}
-
-function toggleAMPM() {
-    const ampmLabel = document.getElementById('ampmLabel');
-    if (ampmLabel) {
-        ampmLabel.textContent = (ampmLabel.textContent.trim() === 'AM') ? 'PM' : 'AM';
-    }
-}
-
-function saveInterviewSchedule() {
-    const setup = document.querySelector('.setup-val')?.textContent;
-    const location = document.getElementById('locationInput')?.value || '';
-    
-    const year = currentYear;
-    const month = String(currentMonth + 1).padStart(2, '0');
-    const day = String(selectedDay).padStart(2, '0');
-    const date = `${year}-${month}-${day}`;
-    
-    let hour = document.getElementById('hourInput')?.value || '09';
-    let minute = document.getElementById('minuteInput')?.value || '00';
-    const ampm = document.getElementById('ampmLabel')?.textContent || 'AM';
-    
-    if (hour.length === 1) hour = '0' + hour;
-    if (hour === '00') hour = '12';
-    
-    if (minute.length === 1) minute = '0' + minute;
-    
-    let hourNum = parseInt(hour);
-    if (isNaN(hourNum) || hourNum < 1) hourNum = 1;
-    if (hourNum > 12) hourNum = 12;
-    hour = String(hourNum).padStart(2, '0');
-    
-    let minuteNum = parseInt(minute);
-    if (isNaN(minuteNum) || minuteNum < 0) minuteNum = 0;
-    if (minuteNum > 59) minuteNum = 59;
-    minute = String(minuteNum).padStart(2, '0');
-    
-    let hour24 = hourNum;
-    if (ampm === 'PM' && hour24 !== 12) hour24 += 12;
-    if (ampm === 'AM' && hour24 === 12) hour24 = 0;
-    const time = `${String(hour24).padStart(2, '0')}:${minute}`;
-    
-    if (setup === 'Select Setup') {
-        showToast("Please select an interview setup", "error");
-        return;
-    }
-    
-    // Format time for display (12-hour format)
-    const displayTime = `${hour}:${minute} ${ampm}`;
-    
-    // Format date for display
-    const displayDate = new Date(date).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-    });
-    
-    // Close modal first
-    closeModal();
-    
-    // Show confirmation SweetAlert
-    Swal.fire({
-        title: 'Schedule Interview',
-        html: `Schedule interview on <strong>${displayDate}</strong> at <strong>${displayTime}</strong> via <strong>${setup}</strong>?`,
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonColor: '#223381',
-        confirmButtonText: 'Yes, Schedule',
-        cancelButtonText: 'Cancel'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // Show loading
-            Swal.fire({
-                title: 'Scheduling...',
-                text: 'Please wait',
-                allowOutsideClick: false,
-                showConfirmButton: false,
-                didOpen: () => { 
-                    Swal.showLoading(); 
-                }
-            });
-            
-            fetch(`/staff/applicant/${applicantId}/interview`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': csrfToken,
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({ 
-                    setup: setup, 
-                    location: location, 
-                    date: date,
-                    time: time 
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                Swal.close();
-                if (data.success) {
-                    // Update UI immediately with the new interview details
-                    updateInterviewDisplay({
-                        date: displayDate,
-                        time: displayTime,
-                        setup: setup,
-                        location: location
-                    });
-                    showToast(data.message, "success");
-                } else {
-                    showToast(data.message || "Failed to set interview", "error");
-                }
-            })
-            .catch(error => {
-                Swal.close();
-                console.error('Error:', error);
-                showToast("Error setting interview", "error");
-            });
+    function handleInterview(event) {
+        if (event) {
+            event.preventDefault();
+            event.stopPropagation();
         }
-    });
-}
-
-function cancelInterview(event) {
-    if (event) {
-        event.preventDefault();
-        event.stopPropagation();
-    }
-    
-    Swal.fire({
-        title: 'Cancel Interview',
-        text: 'Are you sure you want to cancel this interview?',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        confirmButtonText: 'Yes, Cancel',
-        cancelButtonText: 'No'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            Swal.fire({
-                title: 'Cancelling...',
-                text: 'Please wait',
-                allowOutsideClick: false,
-                showConfirmButton: false,
-                didOpen: () => { 
-                    Swal.showLoading(); 
-                }
-            });
-            
-            fetch(`/staff/applicant/${applicantId}/cancel-interview`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': csrfToken,
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({ cancel: true })
-            })
-            .then(response => response.json())
-            .then(data => {
-                Swal.close();
-                if (data.success) {
-                    // Update UI immediately - remove interview details
-                    updateInterviewDisplay(null);
-                    showToast(data.message, "success");
-                } else {
-                    showToast(data.message || "Failed to cancel interview", "error");
-                }
-            })
-            .catch(error => {
-                Swal.close();
-                console.error('Error:', error);
-                showToast("Error cancelling interview", "error");
-            });
-        }
-    });
-}
-
-// Helper function to update the UI with interview details
-function updateInterviewDisplay(interviewData) {
-    const interviewInfoDiv = document.getElementById('interviewInfo');
-    const container = document.getElementById('interviewActionsContainer');
-    
-    if (interviewData) {
-        // Has interview - show details
-        interviewInfoDiv.innerHTML = `
-            <p class="interview-scheduled">
-                <strong>Scheduled:</strong> ${interviewData.date}<br>
-                <strong>Time:</strong> ${interviewData.time}<br>
-                <strong>Setup:</strong> ${interviewData.setup}<br>
-                <strong>Location:</strong> ${interviewData.location}
-            </p>
-        `;
         
-        // Show Cancel and Done buttons (Cancel on LEFT, Mark as Done on RIGHT)
-        container.innerHTML = `
-            <div class="action-buttons" id="actionButtons" style="display: flex; align-items: center; justify-content: space-between; margin-top: 15px;">
-                <button class="btn-cancel" onclick="cancelInterview(event)">Cancel Interview</button>
-                <button class="btn-done" id="btnDoneInterview" onclick="showResultDropdown()">Mark as Done</button>
-            </div>
-            <div id="resultDropdownArea" style="display: none; margin-top: 15px;">
-                <div class="result-selector-wrapper" style="display: flex; align-items: center; gap: 10px;">
-                    <div class="status-selector">
-                        <span>Result:</span>
-                        <div class="custom-dropdown">
-                            <div class="selected-option" onclick="toggleDropdown(this, event)">
-                                <span class="selected-value">Select Result</span>
-                                <span class="material-symbols-outlined dropdown-arrow">expand_more</span>
-                            </div>
-                            <div class="dropdown-menu">
-                                <div class="option" onclick="saveInterviewResult(this, 'Passed')">Passed</div>
-                                <div class="option" onclick="saveInterviewResult(this, 'Failed')">Failed</div>
-                                <div class="option" onclick="saveInterviewResult(this, 'Pending')">Pending</div>
+        resetInterviewForm();
+        
+        const modal = document.getElementById('interviewModal');
+        if (modal) {
+            modal.style.display = 'flex';
+        }
+    }
+
+    function resetInterviewForm() {
+        const setupVal = document.querySelector('.setup-val');
+        if (setupVal) setupVal.textContent = 'Select Setup';
+        
+        const locationGroup = document.getElementById('locationGroup');
+        if (locationGroup) locationGroup.style.display = 'none';
+        
+        const locationInput = document.getElementById('locationInput');
+        if (locationInput) locationInput.value = '';
+        
+        const today = new Date();
+        currentMonth = today.getMonth();
+        currentYear = today.getFullYear();
+        selectedDay = today.getDate();
+        renderCalendar();
+        
+        const hourInput = document.getElementById('hourInput');
+        const minuteInput = document.getElementById('minuteInput');
+        const ampmLabel = document.getElementById('ampmLabel');
+        
+        if (hourInput) hourInput.value = '09';
+        if (minuteInput) minuteInput.value = '00';
+        if (ampmLabel) ampmLabel.textContent = 'AM';
+    }
+
+    function closeModal() {
+        const modal = document.getElementById('interviewModal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    }
+
+    function validateHour(input) {
+        let val = input.value.replace(/\D/g, '');
+        
+        if (val.length > 2) {
+            val = val.slice(0, 2);
+        }
+        
+        let num = parseInt(val);
+        if (!isNaN(num)) {
+            if (num > 12) num = 12;
+            if (num < 1 && val.length > 0) num = 1;
+            val = String(num);
+        }
+        
+        input.value = val;
+    }
+
+    function validateMinute(input) {
+        let val = input.value.replace(/\D/g, '');
+        
+        if (val.length > 2) {
+            val = val.slice(0, 2);
+        }
+        
+        let num = parseInt(val);
+        if (!isNaN(num)) {
+            if (num > 59) num = 59;
+            if (num < 0) num = 0;
+            val = String(num);
+        }
+        
+        input.value = val;
+    }
+
+    function toggleAMPM() {
+        const ampmLabel = document.getElementById('ampmLabel');
+        if (ampmLabel) {
+            ampmLabel.textContent = (ampmLabel.textContent.trim() === 'AM') ? 'PM' : 'AM';
+        }
+    }
+
+    function saveInterviewSchedule() {
+        const setup = document.querySelector('.setup-val')?.textContent;
+        const location = document.getElementById('locationInput')?.value || '';
+        
+        const year = currentYear;
+        const month = String(currentMonth + 1).padStart(2, '0');
+        const day = String(selectedDay).padStart(2, '0');
+        const date = `${year}-${month}-${day}`;
+        
+        let hour = document.getElementById('hourInput')?.value || '09';
+        let minute = document.getElementById('minuteInput')?.value || '00';
+        const ampm = document.getElementById('ampmLabel')?.textContent || 'AM';
+        
+        if (hour.length === 1) hour = '0' + hour;
+        if (hour === '00') hour = '12';
+        
+        if (minute.length === 1) minute = '0' + minute;
+        
+        let hourNum = parseInt(hour);
+        if (isNaN(hourNum) || hourNum < 1) hourNum = 1;
+        if (hourNum > 12) hourNum = 12;
+        hour = String(hourNum).padStart(2, '0');
+        
+        let minuteNum = parseInt(minute);
+        if (isNaN(minuteNum) || minuteNum < 0) minuteNum = 0;
+        if (minuteNum > 59) minuteNum = 59;
+        minute = String(minuteNum).padStart(2, '0');
+        
+        let hour24 = hourNum;
+        if (ampm === 'PM' && hour24 !== 12) hour24 += 12;
+        if (ampm === 'AM' && hour24 === 12) hour24 = 0;
+        const time = `${String(hour24).padStart(2, '0')}:${minute}`;
+        
+        if (setup === 'Select Setup') {
+            showToast("Please select an interview setup", "error");
+            return;
+        }
+        
+        const displayTime = `${hour}:${minute} ${ampm}`;
+        const displayDate = new Date(date).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+        
+        closeModal();
+        
+        Swal.fire({
+            title: 'Schedule Interview',
+            html: `Schedule interview on <strong>${displayDate}</strong> at <strong>${displayTime}</strong> via <strong>${setup}</strong>?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#223381',
+            confirmButtonText: 'Yes, Schedule',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: 'Scheduling...',
+                    text: 'Please wait',
+                    allowOutsideClick: false,
+                    showConfirmButton: false,
+                    didOpen: () => { Swal.showLoading(); }
+                });
+                
+                fetch(`/staff/applicant/${applicantId}/interview`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        setup: setup, 
+                        location: location, 
+                        date: date,
+                        time: time 
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    Swal.close();
+                    if (data.success) {
+                        updateInterviewDisplay({
+                            date: displayDate,
+                            time: displayTime,
+                            setup: setup,
+                            location: location
+                        });
+                        showToast(data.message, "success");
+                    } else {
+                        showToast(data.message || "Failed to set interview", "error");
+                    }
+                })
+                .catch(error => {
+                    Swal.close();
+                    console.error('Error:', error);
+                    showToast("Error setting interview", "error");
+                });
+            }
+        });
+    }
+
+    function cancelInterview(event) {
+        if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        
+        Swal.fire({
+            title: 'Cancel Interview',
+            text: 'Are you sure you want to cancel this interview?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'Yes, Cancel',
+            cancelButtonText: 'No'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: 'Cancelling...',
+                    text: 'Please wait',
+                    allowOutsideClick: false,
+                    showConfirmButton: false,
+                    didOpen: () => { Swal.showLoading(); }
+                });
+                
+                fetch(`/staff/applicant/${applicantId}/cancel-interview`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ cancel: true })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    Swal.close();
+                    if (data.success) {
+                        updateInterviewDisplay(null);
+                        showToast(data.message, "success");
+                    } else {
+                        showToast(data.message || "Failed to cancel interview", "error");
+                    }
+                })
+                .catch(error => {
+                    Swal.close();
+                    console.error('Error:', error);
+                    showToast("Error cancelling interview", "error");
+                });
+            }
+        });
+    }
+
+    function updateInterviewDisplay(interviewData) {
+        const interviewInfoDiv = document.getElementById('interviewInfo');
+        const container = document.getElementById('interviewActionsContainer');
+        
+        if (interviewData) {
+            interviewInfoDiv.innerHTML = `
+                <p class="interview-scheduled">
+                    <strong>Scheduled:</strong> ${interviewData.date}<br>
+                    <strong>Time:</strong> ${interviewData.time}<br>
+                    <strong>Setup:</strong> ${interviewData.setup}<br>
+                    <strong>Location:</strong> ${interviewData.location}
+                </p>
+            `;
+            
+            container.innerHTML = `
+                <div class="action-buttons" id="actionButtons" style="display: flex; align-items: center; justify-content: space-between; margin-top: 15px;">
+                    <button class="btn-cancel" onclick="cancelInterview(event)">Cancel Interview</button>
+                    <button class="btn-done" id="btnDoneInterview" onclick="showResultDropdown()">Mark as Done</button>
+                </div>
+                <div id="resultDropdownArea" style="display: none; margin-top: 15px;">
+                    <div class="result-selector-wrapper" style="display: flex; align-items: center; gap: 10px;">
+                        <div class="status-selector">
+                            <span>Result:</span>
+                            <div class="custom-dropdown">
+                                <div class="selected-option" onclick="toggleDropdown(this, event)">
+                                    <span class="selected-value">Select Result</span>
+                                    <span class="material-symbols-outlined dropdown-arrow">expand_more</span>
+                                </div>
+                                <div class="dropdown-menu">
+                                    <div class="option" onclick="saveInterviewResult(this, 'Passed')">Passed</div>
+                                    <div class="option" onclick="saveInterviewResult(this, 'Failed')">Failed</div>
+                                    <div class="option" onclick="saveInterviewResult(this, 'Pending')">Pending</div>
+                                </div>
                             </div>
                         </div>
+                        <div style="flex: 1;"></div>
                     </div>
-                    <div style="flex: 1;"></div>
                 </div>
-            </div>
-        `;
-        
-    } else {
-        // No interview - show message and set button
-        interviewInfoDiv.innerHTML = `<p>No interview scheduled yet.</p>`;
-        
-        container.innerHTML = `
-            <div style="margin-top: 15px;">
-                <button class="btn-interview" onclick="handleInterview(event)">Set an Interview</button>
-            </div>
-        `;
+            `;
+        } else {
+            interviewInfoDiv.innerHTML = `<p>No interview scheduled yet.</p>`;
+            container.innerHTML = `
+                <div style="margin-top: 15px;">
+                    <button class="btn-interview" onclick="handleInterview(event)">Set an Interview</button>
+                </div>
+            `;
+        }
     }
-}
 
     // ======================== STATUS UPDATE FUNCTIONS ========================
     function toggleDropdown(element, event) {
@@ -1143,32 +1265,6 @@ function updateInterviewDisplay(interviewData) {
                 'Accept': 'application/json'
             },
             body: JSON.stringify({ document_status: value })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                showToast(data.message, "success");
-            } else {
-                showToast(data.message || "Failed to update", "error");
-            }
-        })
-        .catch(error => showToast("Error updating status", "error"));
-    }
-
-    function updatePaymentStatus(element, value) {
-        const dropdown = element.closest('.custom-dropdown');
-        const display = dropdown.querySelector('.selected-value');
-        if (display) display.textContent = value;
-        dropdown.classList.remove('open');
-        
-        fetch(`/staff/applicant/${applicantId}/payment-status`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': csrfToken,
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({ payment_status: value })
         })
         .then(response => response.json())
         .then(data => {
@@ -1273,6 +1369,9 @@ function updateInterviewDisplay(interviewData) {
         const modal = document.getElementById('interviewModal');
         if (event.target === modal) closeModal();
         
+        const proofModal = document.getElementById('paymentProofModal');
+        if (event.target === proofModal) closePaymentProofModal();
+        
         if (!event.target.closest('.custom-dropdown')) {
             document.querySelectorAll('.custom-dropdown').forEach(d => d.classList.remove('open'));
         }
@@ -1285,132 +1384,115 @@ function updateInterviewDisplay(interviewData) {
     });
 
     function updateInterviewResult(element, value) {
-    const dropdown = element.closest('.custom-dropdown');
-    const display = dropdown.querySelector('.selected-value');
-    if (display) display.textContent = value;
-    dropdown.classList.remove('open');
-    
-    fetch(`/staff/applicant/${applicantId}/interview-result`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': csrfToken,
-            'Accept': 'application/json'
-        },
-        body: JSON.stringify({ interview_result: value })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            showToast(data.message, "success");
-            // Refresh page or update UI as needed
-            setTimeout(() => location.reload(), 1500);
-        } else {
-            showToast(data.message || "Failed to update interview result", "error");
-        }
-    })
-    .catch(error => showToast("Error updating interview result", "error"));
-}
-
-
-// Show the result dropdown when Mark as Done is clicked
-function showResultDropdown() {
-    const actionButtons = document.getElementById('actionButtons');
-    const resultDropdownArea = document.getElementById('resultDropdownArea');
-    
-    if (actionButtons && resultDropdownArea) {
-        // Hide the buttons container
-        actionButtons.style.display = 'none';
+        const dropdown = element.closest('.custom-dropdown');
+        const display = dropdown.querySelector('.selected-value');
+        if (display) display.textContent = value;
+        dropdown.classList.remove('open');
         
-        // Show the result dropdown area
-        resultDropdownArea.style.display = 'block';
+        fetch(`/staff/applicant/${applicantId}/interview-result`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ interview_result: value })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast(data.message, "success");
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showToast(data.message || "Failed to update interview result", "error");
+            }
+        })
+        .catch(error => showToast("Error updating interview result", "error"));
     }
-}
 
-// Save the interview result (Passed/Failed)
-function saveInterviewResult(element, value) {
-    // Close the dropdown
-    const dropdown = element.closest('.custom-dropdown');
-    if (dropdown) dropdown.classList.remove('open');
-    
-    // Show loading
-    Swal.fire({
-        title: 'Saving Result...',
-        text: 'Please wait',
-        allowOutsideClick: false,
-        showConfirmButton: false,
-        didOpen: () => {
-            Swal.showLoading();
+    function showResultDropdown() {
+        const actionButtons = document.getElementById('actionButtons');
+        const resultDropdownArea = document.getElementById('resultDropdownArea');
+        
+        if (actionButtons && resultDropdownArea) {
+            actionButtons.style.display = 'none';
+            resultDropdownArea.style.display = 'block';
         }
-    });
-    
-    fetch(`/staff/applicant/${applicantId}/interview-result`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': csrfToken,
-            'Accept': 'application/json'
-        },
-        body: JSON.stringify({ interview_result: value })
-    })
-    .then(response => response.json())
-    .then(data => {
-        Swal.close();
-        if (data.success) {
-            showToast(data.message, "success");
-            // Reload to show the updated UI
-            setTimeout(() => location.reload(), 1500);
-        } else {
-            showToast(data.message || "Failed to update interview result", "error");
-        }
-    })
-    .catch(error => {
-        Swal.close();
-        console.error('Error:', error);
-        showToast("Error updating interview result", "error");
-    });
-}
+    }
 
+    function saveInterviewResult(element, value) {
+        const dropdown = element.closest('.custom-dropdown');
+        if (dropdown) dropdown.classList.remove('open');
+        
+        Swal.fire({
+            title: 'Saving Result...',
+            text: 'Please wait',
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
+        
+        fetch(`/staff/applicant/${applicantId}/interview-result`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ interview_result: value })
+        })
+        .then(response => response.json())
+        .then(data => {
+            Swal.close();
+            if (data.success) {
+                showToast(data.message, "success");
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showToast(data.message || "Failed to update interview result", "error");
+            }
+        })
+        .catch(error => {
+            Swal.close();
+            console.error('Error:', error);
+            showToast("Error updating interview result", "error");
+        });
+    }
 
-
-
-function sendPaymentStub(id, event) {
-    if(event) event.stopPropagation();
-    
-    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-    const btn = event.currentTarget;
-    const originalText = btn.textContent;
-    btn.disabled = true;
-    btn.textContent = 'Sending...';
-    
-    fetch(`/staff/applicant/${id}/send-payment-stub`, {
-        method: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': csrfToken,
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-        },
-        body: JSON.stringify({})
-    })
-    .then(response => response.json())
-    .then(data => {
-        if(data.success) {
-            showToast(data.message, "success");
-            // Remove the auto-download here
-            // window.location.href = data.download_url; // DELETE THIS LINE
-        } else {
-            showToast(data.message || "Failed to send payment stub", "error");
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showToast("Network error. Please try again.", "error");
-    })
-    .finally(() => {
-        btn.disabled = false;
-        btn.textContent = originalText;
-    });
-}
+    function sendPaymentStub(id, event) {
+        if(event) event.stopPropagation();
+        
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        const btn = event.currentTarget;
+        const originalText = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = 'Sending...';
+        
+        fetch(`/staff/applicant/${id}/send-payment-stub`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': csrfToken,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.success) {
+                showToast(data.message, "success");
+            } else {
+                showToast(data.message || "Failed to send payment stub", "error");
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast("Network error. Please try again.", "error");
+        })
+        .finally(() => {
+            btn.disabled = false;
+            btn.textContent = originalText;
+        });
+    }
     </script>
 </body>
 </html>

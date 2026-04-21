@@ -123,52 +123,78 @@
         <div class="center-column">
             <h2>Incomplete Requirements</h2>
             <div class="req-box">
-                <div class="task-header">
-                    <div class="task-badge">
-                        Tasks <span class="badge-num" id="taskCount">{{ $tasks->count() }}</span>
-                    </div>
-                    <div class="message-badge" onclick="openMessagesModal()" style="cursor: pointer;">
-                        Messages <span class="badge-num-gray" id="messageCount">{{ $unreadMessagesCount }}</span>
-                    </div>
-                </div>
-                <h3 class="todo-title">To do</h3>
-                <div class="req-header">
-                            <span>Task</span>
-                            <span>Action</span>
-                        </div>
-                <!-- I-wrap ang scrollable part dito -->
-                <div class="req-list-container">
-                    <div class="req-list" id="taskList">
-                        
-                        @forelse($tasks as $task)
-                        <div class="req-item" data-task-id="{{ $task->id }}" data-task-type="{{ $task->type }}">
-                            <div class="task-info">
-                                <span class="task-title">{{ $task->title }}</span>
-                                @if($task->description)
-                                    <small class="task-desc">{{ $task->description }}</small>
-                                @endif
-                            </div>
+                <!-- Task header - not scrollable -->
+<div class="task-header">
+    <div class="task-badge">
+        Tasks <span class="badge-num" id="taskCount">{{ $tasks->count() }}</span>
+    </div>
+    <div class="message-badge" onclick="openMessagesModal()" style="cursor: pointer;">
+        Messages <span class="badge-num-gray" id="messageCount">{{ $unreadMessagesCount }}</span>
+    </div>
+</div>
+<h3 class="todo-title">To do</h3>
+<div class="req-header">
+    <span>Task</span>
+    <span>Action</span>
+</div>
 
-                            @if($task->type == 'payment')
-                                <a href="{{ route('applicant.download-payment-stub', auth()->id()) }}"
-                                target="_blank"
-                                class="task-view-btn">
-                                    View
-                                </a>
-                            @else
-                                <a href="{{ $task->action_url }}"
-                                class="task-view-btn">
-                                    View
-                                </a>
-                            @endif
-                        </div>
-                        @empty
-                        <div class="req-item">
-                            <span>All tasks completed! Great job!</span>
-                        </div>
-                        @endforelse
-                    </div>
-                </div>
+<!-- Scrollable container for tasks only -->
+<div class="req-list-container">
+    <div class="req-list" id="taskList">
+        @forelse($tasks as $task)
+        @php
+            $isPaymentTask = in_array($task->type, ['payment_upload', 'payment']);
+            $user = auth()->user();
+            $hasUploadedProof = !empty($user->payment_proof);
+            $isPendingVerification = strtolower($user->payment_status) == 'pending';
+            $isPaid = $user->payment_status == 'paid';
+        @endphp
+        <div class="req-item {{ $isPaymentTask ? 'payment-task' : '' }}" data-task-id="{{ $task->id }}" data-task-type="{{ $task->type }}">
+            <div class="task-info">
+                <span class="task-title">{{ $task->title }}</span>
+                @if($task->description)
+                    <small class="task-desc">{{ $task->description }}</small>
+                @endif
+            </div>
+
+            <div class="task-actions">
+                @if($task->type == 'payment_upload' || $task->type == 'payment')
+    {{-- Payment task - show stub button --}}
+    <a href="{{ route('applicant.download-payment-stub', auth()->id()) }}"
+       target="_blank"
+       class="task-view-btn">
+        View Stub
+    </a>
+    
+    @if($isPaid)
+        <button disabled class="task-upload-btn task-verified">
+            Payment Verified
+        </button>
+    @elseif($hasUploadedProof && $isPendingVerification)
+        <button disabled class="task-upload-btn">
+            Waiting for Verification
+        </button>
+    @else
+        <button onclick="openUploadModal('{{ $task->id }}')" class="task-upload-btn">
+            @if($hasUploadedProof && !$isPendingVerification)
+                Re-upload Proof
+            @else
+                Upload Proof
+            @endif
+        </button>
+    @endif
+@else
+    <a href="{{ $task->action_url }}" class="task-view-btn">View</a>
+@endif
+            </div>
+        </div>
+        @empty
+        <div class="req-item">
+            <span>All tasks completed! Great job!</span>
+        </div>
+        @endforelse
+    </div>
+</div>
                 <!-- End of scrollable container -->
                 
             
@@ -274,7 +300,7 @@
                                     $paymentStatus = strtolower($user->payment_status ?? 'pending');
                                 @endphp
                                 @if($paymentStatus == 'paid' || $paymentStatus == 'completed')
-                                    <span class="text-approved">✓ Paid</span>
+                                    <span class="text-approved">Paid</span>
                                 @elseif($paymentStatus == 'partial')
                                     <span class="text-partial">Partial</span>
                                 @else
@@ -376,6 +402,56 @@
         </div>
         <div class="messages-list" id="messagesList">
             <div style="text-align: center; padding: 20px;">Loading messages...</div>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- Upload Payment Proof Modal -->
+<div id="uploadModal" class="modal-upload">
+    <div class="modal-upload-content">
+        <div class="modal-upload-header">
+            <h2>Upload Payment Proof</h2>
+            <span class="close-upload-modal" onclick="closeUploadModal()">&times;</span>
+        </div>
+        <div class="modal-upload-body">
+            <!-- Upload Area (hidden when file is selected) -->
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">
+                    <span class="material-symbols-outlined" style="font-size: 48px;">cloud_upload</span>
+                </div>
+                <div class="upload-text">
+                    Click or drag file here to upload
+                </div>
+                <div class="upload-text" style="font-size: 12px; margin-top: 8px;">
+                    Supports: JPG, PNG, PDF (Max 5MB)
+                </div>
+                <input type="file" id="paymentProof" accept=".jpg,.jpeg,.png,.pdf" style="display: none;">
+            </div>
+            
+            <!-- Preview Area (replaces upload area when file is selected) -->
+            <div class="preview-area" id="previewArea" style="display: none;">
+                <div class="preview-header">
+                    <div class="preview-file-info">
+                        <span class="material-symbols-outlined" style="font-size: 24px;">description</span>
+                        <div>
+                            <div class="preview-file-name" id="previewFileName"></div>
+                            <div class="preview-file-size" id="previewFileSize"></div>
+                        </div>
+                    </div>
+                    <button type="button" class="preview-change-btn" onclick="resetUploadArea()">
+                        <span class="material-symbols-outlined" style="font-size: 18px;">change_circle</span> Change
+                    </button>
+                </div>
+                <div class="preview-content" id="previewContent">
+                    <!-- Preview will be shown here -->
+                </div>
+            </div>
+        </div>
+        <div class="modal-upload-footer">
+            <button class="btn-cancel" onclick="closeUploadModal()">Cancel</button>
+            <button class="btn-upload" id="uploadBtn" onclick="uploadPaymentProof()">Upload</button>
         </div>
     </div>
 </div>
@@ -887,7 +963,223 @@
     });
 
 
+
+// Variables for upload modal
+let selectedFile = null;
+let currentTaskId = null;
+
+function openUploadModal(taskId) {
+    currentTaskId = taskId;
+    const modal = document.getElementById('uploadModal');
+    modal.style.display = 'flex';
     
+    // Reset upload area
+    resetUploadArea();
+}
+
+function resetUploadArea() {
+    selectedFile = null;
+    document.getElementById('paymentProof').value = '';
+    document.getElementById('uploadArea').style.display = 'block';
+    document.getElementById('previewArea').style.display = 'none';
+    document.getElementById('uploadBtn').disabled = false;
+    document.getElementById('previewContent').innerHTML = '';
+}
+
+function closeUploadModal() {
+    const modal = document.getElementById('uploadModal');
+    modal.style.display = 'none';
+    resetUploadArea();
+    currentTaskId = null;
+}
+
+// File upload handling
+const uploadArea = document.getElementById('uploadArea');
+const fileInput = document.getElementById('paymentProof');
+
+if (uploadArea) {
+    uploadArea.addEventListener('click', () => {
+        fileInput.click();
+    });
+
+    uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.classList.add('drag-over');
+    });
+
+    uploadArea.addEventListener('dragleave', () => {
+        uploadArea.classList.remove('drag-over');
+    });
+
+    uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove('drag-over');
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            handleFileSelect(files[0]);
+        }
+    });
+}
+
+if (fileInput) {
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            handleFileSelect(e.target.files[0]);
+        }
+    });
+}
+
+function handleFileSelect(file) {
+    // Validate file type
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+    if (!validTypes.includes(file.type)) {
+        showToast('Invalid file type. Please upload JPG, PNG, or PDF files only.', 'error');
+        return;
+    }
+    
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+        showToast('File is too large. Maximum size is 5MB.', 'error');
+        return;
+    }
+    
+    selectedFile = file;
+    
+    // Hide upload area, show preview area
+    document.getElementById('uploadArea').style.display = 'none';
+    document.getElementById('previewArea').style.display = 'block';
+    
+    // Update file info
+    document.getElementById('previewFileName').textContent = file.name;
+    document.getElementById('previewFileSize').textContent = formatFileSize(file.size);
+    
+    // Show preview
+    const previewContent = document.getElementById('previewContent');
+    const fileExt = file.name.split('.').pop().toLowerCase();
+    
+    if (fileExt === 'pdf') {
+        const fileURL = URL.createObjectURL(file);
+        previewContent.innerHTML = `<iframe src="${fileURL}" class="preview-pdf" style="width: 100%; height: 250px; border: none; border-radius: 8px;"></iframe>`;
+    } else if (['jpg', 'jpeg', 'png'].includes(fileExt)) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            previewContent.innerHTML = `<img src="${e.target.result}" class="preview-image" style="max-width: 100%; max-height: 250px; border-radius: 8px; object-fit: contain;">`;
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+async function uploadPaymentProof() {
+    if (!selectedFile) {
+        showToast('Please select a file to upload', 'error');
+        return;
+    }
+    
+    const uploadBtn = document.getElementById('uploadBtn');
+    const originalText = uploadBtn.textContent;
+    uploadBtn.disabled = true;
+    uploadBtn.textContent = 'Uploading...';
+    
+    const formData = new FormData();
+    formData.append('payment_proof', selectedFile);
+    
+    try {
+        const response = await fetch('/applicant/upload-payment-proof', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showToast(data.message, 'success');
+            closeUploadModal();
+            
+            // Update the task button to show "Waiting for Verification"
+            if (currentTaskId) {
+                const taskElement = document.querySelector(`.req-item[data-task-id="${currentTaskId}"]`);
+                if (taskElement) {
+                    const actionsDiv = taskElement.querySelector('.task-actions');
+                    if (actionsDiv) {
+                        actionsDiv.innerHTML = `
+                            <a href="{{ route('applicant.download-payment-stub', auth()->id()) }}"
+                               target="_blank"
+                               class="task-view-btn">
+                                View Stub
+                            </a>
+                            <button disabled class="task-upload-btn" style="background: #f59e0b; cursor: not-allowed;">
+                                Waiting for Verification
+                            </button>
+                        `;
+                    }
+                }
+            }
+            
+            // Refresh activities
+            if (typeof loadActivities === 'function') {
+                loadActivities();
+            }
+            
+            // Refresh page after 3 seconds to show updated status
+            setTimeout(() => {
+                location.reload();
+            }, 3000);
+            
+        } else {
+            showToast(data.message, 'error');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showToast('Failed to upload payment proof', 'error');
+    } finally {
+        uploadBtn.disabled = false;
+        uploadBtn.textContent = originalText;
+    }
+}
+
+async function fetchProgressData() {
+    try {
+        const response = await fetch('/applicant/progress', {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': csrfToken,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Update progress bars
+            document.getElementById('profileProgress').textContent = data.profile_progress + '%';
+            document.getElementById('profileProgressBar').style.width = data.profile_progress + '%';
+            
+            document.getElementById('documentsProgress').textContent = data.documents_progress + '%';
+            document.getElementById('documentsProgressBar').style.width = data.documents_progress + '%';
+            
+            document.getElementById('applicationProgress').textContent = data.application_progress + '%';
+            document.getElementById('applicationProgressBar').style.width = data.application_progress + '%';
+        }
+    } catch (error) {
+        console.error('Error fetching progress:', error);
+    }
+}
+
+
+
 </script>
 
 </body>

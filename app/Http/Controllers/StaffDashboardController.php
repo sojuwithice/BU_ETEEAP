@@ -358,6 +358,8 @@ public function cancelInterview(Request $request, $id)
     }
 }
 
+// Add this method to your StaffDashboardController.php
+
 public function sendPaymentStub(Request $request, $id)
 {
     try {
@@ -366,18 +368,20 @@ public function sendPaymentStub(Request $request, $id)
         // Generate reference number
         $reference = 'PAY-' . strtoupper(Str::random(8));
         
-        // Update payment status
+        // Update payment status to 'pending' (not paid yet)
         $applicant->update([
-            'payment_status' => 'Pending',
+            'payment_status' => 'pending',
+            'payment_reference' => $reference
         ]);
         
+        // Insert payment stub task - payment_upload type (for uploading proof)
         DB::table('tasks')->insert([
             'user_id' => $id,
-            'title' => 'Complete Payment',
-            'description' => "Payment Reference: {$reference}\n\nClick View to see your payment stub.",
+            'title' => 'Upload Payment Proof',
+            'description' => "Payment Reference: {$reference}\n\nPlease upload your proof of payment for verification.",
             'action_url' => route('applicant.download-payment-stub', $id),
             'status' => 'pending',
-            'type' => 'payment', // <<<------ ITO dapat 'payment' HINDI 'reupload'!
+            'type' => 'payment_upload', // Changed type
             'created_at' => now(),
             'updated_at' => now()
         ]);
@@ -386,19 +390,123 @@ public function sendPaymentStub(Request $request, $id)
         Message::create([
             'sender_id' => auth()->id(),
             'receiver_id' => $id,
-            'message' => "Payment instruction has been added to your Todo list.\n\nReference Number: {$reference}",
+            'message' => "Payment instruction has been added to your Todo list.\n\nReference Number: {$reference}\n\nPlease upload your proof of payment.",
             'is_read' => false
         ]);
         
         return response()->json([
             'success' => true,
-            'message' => 'Payment stub sent successfully!',
+            'message' => 'Payment stub sent successfully!'
         ]);
         
     } catch (\Exception $e) {
         return response()->json([
             'success' => false,
             'message' => 'Failed to send: ' . $e->getMessage()
+        ], 500);
+    }
+}
+
+public function verifyPayment(Request $request, $id)
+{
+    try {
+        $applicant = User::findOrFail($id);
+        
+        $request->validate([
+            'payment_status' => 'required|in:paid,rejected',
+            'verification_note' => 'nullable|string'
+        ]);
+        
+        // Update payment status (use lowercase)
+        $applicant->payment_status = $request->payment_status; // 'paid' or 'rejected'
+        $applicant->save();
+        
+        // If paid, complete the payment task
+        if ($request->payment_status == 'paid') {
+            DB::table('tasks')
+                ->where('user_id', $id)
+                ->where('type', 'payment_upload')
+                ->where('status', 'pending')
+                ->update(['status' => 'completed']);
+        } else {
+            // If rejected, clear the payment proof so applicant can re-upload
+            $applicant->payment_proof = null;
+            $applicant->payment_proof_uploaded_at = null;
+            $applicant->payment_status = 'pending';
+            $applicant->save();
+        }
+        
+        // Notify applicant
+        $statusMessage = $request->payment_status == 'paid' 
+            ? "Your payment has been verified and approved!"
+            : "Your payment proof was rejected. Reason: " . ($request->verification_note ?? 'Please re-upload valid proof.');
+        
+        Message::create([
+            'sender_id' => auth()->id(),
+            'receiver_id' => $id,
+            'message' => $statusMessage,
+            'is_read' => false
+        ]);
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Payment ' . ($request->payment_status == 'paid' ? 'verified' : 'rejected') . ' successfully!'
+        ]);
+        
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to verify payment: ' . $e->getMessage()
+        ], 500);
+    }
+}
+
+// Add this method to handle payment proof upload from applicant
+public function uploadPaymentProof(Request $request, $id)
+{
+    try {
+        $request->validate([
+            'payment_proof' => 'required|file|mimes:jpg,jpeg,png,pdf|max:5120'
+        ]);
+        
+        $applicant = User::findOrFail($id);
+        
+        // Store the file
+        $file = $request->file('payment_proof');
+        $filename = 'payment_proof_' . $applicant->id . '_' . time() . '.' . $file->getClientOriginalExtension();
+        $path = $file->storeAs('payment_proofs', $filename, 'public');
+        
+        // Save to database (you may need to create a PaymentProof model or add column to users table)
+        // For now, let's add a column to users table or create a new table
+        $applicant->payment_proof = $path;
+        $applicant->payment_proof_uploaded_at = now();
+        $applicant->payment_status = 'paid'; // Auto update to paid
+        $applicant->save();
+        
+        // Complete the payment task
+        DB::table('tasks')
+            ->where('user_id', $id)
+            ->where('type', 'payment')
+            ->where('status', 'pending')
+            ->update(['status' => 'completed']);
+        
+        // Notify staff
+        Message::create([
+            'sender_id' => $id,
+            'receiver_id' => 1, // Assuming staff user ID 1 is admin, or get first staff
+            'message' => "Applicant {$applicant->first_name} {$applicant->last_name} has uploaded their payment proof.",
+            'is_read' => false
+        ]);
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Payment proof uploaded successfully!'
+        ]);
+        
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to upload: ' . $e->getMessage()
         ], 500);
     }
 }
