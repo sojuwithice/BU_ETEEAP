@@ -49,6 +49,8 @@ Route::post('/staff/applicant/{id}/upload-document', [StaffDashboardController::
 
 Route::post('/applicant/messages/mark-as-read', [DashboardController::class, 'markAsRead'])->name('messages.markAsRead');
 
+Route::post('/applicant/tasks/complete', [App\Http\Controllers\DashboardController::class, 'markTaskAsComplete'])->name('applicant.tasks.complete');
+
     // Requirements routes (STAFF SIDE - requirements management)
     Route::get('/requirements', [RequirementController::class, 'index'])->name('requirements.index');
     Route::post('/requirements', [RequirementController::class, 'store']);
@@ -110,8 +112,7 @@ Route::get('/applicant/get-payment-proof', [DashboardController::class, 'getPaym
     Route::post('/task/{id}/complete', [DashboardController::class, 'completeTask'])->name('task.complete');
     Route::get('/applicant/messages', [DashboardController::class, 'getMessages'])->name('applicant.messages');
     Route::get('/applicant/progress', [DashboardController::class, 'getProgressData'])->name('applicant.progress');
-    Route::get('/applicant/activities', [DashboardController::class, 'getActivities'])->name('applicant.activities');
-
+    Route::get('/applicant/activities', [App\Http\Controllers\DashboardController::class, 'getActivities']);
 Route::post('/staff/applicant/{id}/update-status', [StaffDashboardController::class, 'updateApplicantStatus'])
     ->name('staff.applicant.update-status');
     

@@ -650,4 +650,38 @@ public function markAsRead()
     }
 }
 
+// Add this method to your DashboardController.php
+public function markTaskAsComplete(Request $request)
+{
+    try {
+        $taskId = $request->task_id;
+        $user = auth()->user();
+        
+        $task = Task::where('user_id', $user->id)
+            ->where('id', $taskId)
+            ->first();
+        
+        if ($task) {
+            $task->status = 'completed';
+            $task->save();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Task marked as completed'
+            ]);
+        }
+        
+        return response()->json([
+            'success' => false,
+            'message' => 'Task not found'
+        ], 404);
+        
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error: ' . $e->getMessage()
+        ], 500);
+    }
+}
+
 }

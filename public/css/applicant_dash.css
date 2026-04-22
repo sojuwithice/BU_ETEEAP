@@ -2062,6 +2062,44 @@ body {
     .main-bg { 
         padding: 15px; 
     }
+
+    .modal-header {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        position: relative;
+    }
+    
+    .modal-header h2 {
+        font-size: 16px;
+        margin: 0;
+        flex: 1;
+    }
+    
+    .modal-header-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+    
+    .close-btn {
+        position: static;
+        font-size: 24px;
+        margin-left: auto;
+    }
+    
+    .header-btn {
+        padding: 5px 10px;
+        font-size: 11px;
+    }
+    
+    .header-btn .material-symbols-outlined {
+        font-size: 14px !important;
+    }
+
 }
 
 @media (max-width: 600px) {
@@ -2196,5 +2234,26 @@ body {
     .req-item:not(.payment-task) .task-view-btn {
         font-size: 9px;
         padding: 4px 8px;
+    }
+
+    .modal-header {
+        gap: 8px;
+    }
+    
+    .modal-header h2 {
+        font-size: 14px;
+    }
+    
+    .modal-header-actions {
+        gap: 5px;
+    }
+    
+    .header-btn {
+        padding: 4px 8px;
+        font-size: 10px;
+    }
+    
+    .close-btn {
+        font-size: 22px;
     }
 }

@@ -1,6 +1,3 @@
-
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,6 +9,24 @@
 <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0" />
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;800;900&family=Raleway:wght@400;700&display=swap" rel="stylesheet">
+<style>
+    /* Animation for task removal */
+    .req-item.removing {
+        animation: slideOut 0.3s ease forwards;
+    }
+    
+    @keyframes slideOut {
+        0% {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        100% {
+            opacity: 0;
+            transform: translateX(100%);
+            display: none;
+        }
+    }
+</style>
 </head>
 
 <body>
@@ -119,87 +134,81 @@
             </div>
 
             <div class="center">
-    <div class="center-content-wrapper">
-        <div class="center-column">
-            <h2>Incomplete Requirements</h2>
-            <div class="req-box">
-                <!-- Task header - not scrollable -->
-<div class="task-header">
-    <div class="task-badge">
-        Tasks <span class="badge-num" id="taskCount">{{ $tasks->count() }}</span>
-    </div>
-    <div class="message-badge" onclick="openMessagesModal()" style="cursor: pointer;">
-        Messages <span class="badge-num" id="messageCount">{{ $unreadMessagesCount }}</span>
-    </div>
-</div>
-<h3 class="todo-title">To do</h3>
-<div class="req-header">
-    <span>Task</span>
-    <span>Action</span>
-</div>
+                <div class="center-content-wrapper">
+                    <div class="center-column">
+                        <h2>Incomplete Requirements</h2>
+                        <div class="req-box">
+                            <div class="task-header">
+                                <div class="task-badge">
+                                    Tasks <span class="badge-num" id="taskCount">{{ $tasks->count() }}</span>
+                                </div>
+                                <div class="message-badge" onclick="openMessagesModal()" style="cursor: pointer;">
+                                    Messages <span class="badge-num" id="messageCount">{{ $unreadMessagesCount }}</span>
+                                </div>
+                            </div>
+                            <h3 class="todo-title">To do</h3>
+                            <div class="req-header">
+                                <span>Task</span>
+                                <span>Action</span>
+                            </div>
 
-<!-- Scrollable container for tasks only -->
-<div class="req-list-container">
-    <div class="req-list" id="taskList">
-        @forelse($tasks as $task)
-        @php
-            $isPaymentTask = in_array($task->type, ['payment_upload', 'payment']);
-            $user = auth()->user();
-            $hasUploadedProof = !empty($user->payment_proof);
-            $isPendingVerification = strtolower($user->payment_status) == 'pending';
-            $isPaid = $user->payment_status == 'paid';
-        @endphp
-        <div class="req-item {{ $isPaymentTask ? 'payment-task' : '' }}" data-task-id="{{ $task->id }}" data-task-type="{{ $task->type }}">
-            <div class="task-info">
-                <span class="task-title">{{ $task->title }}</span>
-                @if($task->description)
-                    <small class="task-desc">{{ $task->description }}</small>
-                @endif
-            </div>
-
-            <div class="task-actions">
-                @if($task->type == 'payment_upload' || $task->type == 'payment')
-    {{-- Payment task - show stub button --}}
-    <a href="{{ route('applicant.download-payment-stub', auth()->id()) }}"
-       target="_blank"
-       class="task-view-btn">
-        View Stub
-    </a>
-    
-    @if($isPaid)
-        <button disabled class="task-upload-btn task-verified">
-            Payment Verified
-        </button>
-    @elseif($hasUploadedProof && $isPendingVerification)
-        <button disabled class="task-upload-btn">
-            Waiting for Verification
-        </button>
-    @else
-        <button onclick="openUploadModal('{{ $task->id }}')" class="task-upload-btn">
-            @if($hasUploadedProof && !$isPendingVerification)
-                Re-upload Proof
-            @else
-                Upload Proof
-            @endif
-        </button>
-    @endif
-@else
-    <a href="{{ $task->action_url }}" class="task-view-btn">View</a>
-@endif
-            </div>
-        </div>
-        @empty
-        <div class="req-item">
-            <span>All tasks completed! Great job!</span>
-        </div>
-        @endforelse
-    </div>
-</div>
-                <!-- End of scrollable container -->
-                
-            
-                 </div>
+                            <div class="req-list-container">
+                                <div class="req-list" id="taskList">
+                                    @forelse($tasks as $task)
+                                    @php
+                                        $isPaymentTask = in_array($task->type, ['payment_upload', 'payment']);
+                                        $user = auth()->user();
+                                        $hasUploadedProof = !empty($user->payment_proof);
+                                        $isPendingVerification = strtolower($user->payment_status) == 'pending';
+                                        $isPaid = $user->payment_status == 'paid';
+                                    @endphp
+                                    <div class="req-item {{ $isPaymentTask ? 'payment-task' : '' }}" data-task-id="{{ $task->id }}" data-task-type="{{ $task->type }}">
+                                        <div class="task-info">
+                                            <span class="task-title">{{ $task->title }}</span>
+                                            @if($task->description)
+                                                <small class="task-desc">{{ $task->description }}</small>
+                                            @endif
                                         </div>
+
+                                        <div class="task-actions">
+                                            @if($task->type == 'payment_upload' || $task->type == 'payment')
+                                                <a href="{{ route('applicant.download-payment-stub', auth()->id()) }}"
+                                                   target="_blank"
+                                                   class="task-view-btn">
+                                                    View Stub
+                                                </a>
+                                                
+                                                @if($isPaid)
+                                                    <button disabled class="task-upload-btn task-verified">
+                                                        Payment Verified
+                                                    </button>
+                                                @elseif($hasUploadedProof && $isPendingVerification)
+                                                    <button disabled class="task-upload-btn">
+                                                        Waiting for Verification
+                                                    </button>
+                                                @else
+                                                    <button onclick="openUploadModal('{{ $task->id }}')" class="task-upload-btn">
+                                                        @if($hasUploadedProof && !$isPendingVerification)
+                                                            Re-upload Proof
+                                                        @else
+                                                            Upload Proof
+                                                        @endif
+                                                    </button>
+                                                @endif
+                                            @else
+                                                <a href="{{ $task->action_url }}" class="task-view-btn" onclick="markTaskAndRedirect('{{ $task->id }}', this.href); return false;">View</a>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    @empty
+                                    <div class="req-item">
+                                        <span>All tasks completed! Great job!</span>
+                                    </div>
+                                    @endforelse
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                     <div class="center-column">
                         <h2 class="rem-title-outside">Reminders</h2>
@@ -266,28 +275,28 @@
                         </div>
                     </div>
                     <div class="status-row">
-    <div class="timeline-col">
-        <div class="dot {{ in_array(strtolower($user->interview_result ?? 'pending'), ['passed', 'failed']) ? 'active' : '' }}">3</div>
-        <div class="line"></div>
-    </div>
-    <div class="status {{ in_array(strtolower($user->interview_result ?? 'pending'), ['passed', 'failed']) ? 'active' : '' }}">
-        <p>Interview</p>
-        <small class="status-text">
-            @php
-                $interviewResult = strtolower($user->interview_result ?? 'pending');
-            @endphp
-            @if($interviewResult == 'passed')
-                <span class="text-approved">Passed</span>
-            @elseif($interviewResult == 'failed')
-                <span class="text-rejected">Failed</span>
-            @elseif($interviewResult == 'scheduled')
-                <span class="text-scheduled">Scheduled</span>
-            @else
-                <span class="text-pending">Pending</span>
-            @endif
-        </small>
-    </div>
-</div>
+                        <div class="timeline-col">
+                            <div class="dot {{ in_array(strtolower($user->interview_result ?? 'pending'), ['passed', 'failed']) ? 'active' : '' }}">3</div>
+                            <div class="line"></div>
+                        </div>
+                        <div class="status {{ in_array(strtolower($user->interview_result ?? 'pending'), ['passed', 'failed']) ? 'active' : '' }}">
+                            <p>Interview</p>
+                            <small class="status-text">
+                                @php
+                                    $interviewResult = strtolower($user->interview_result ?? 'pending');
+                                @endphp
+                                @if($interviewResult == 'passed')
+                                    <span class="text-approved">Passed</span>
+                                @elseif($interviewResult == 'failed')
+                                    <span class="text-rejected">Failed</span>
+                                @elseif($interviewResult == 'scheduled')
+                                    <span class="text-scheduled">Scheduled</span>
+                                @else
+                                    <span class="text-pending">Pending</span>
+                                @endif
+                            </small>
+                        </div>
+                    </div>
                     <div class="status-row">
                         <div class="timeline-col">
                             <div class="dot {{ strtolower($user->payment_status ?? 'pending') == 'paid' || strtolower($user->payment_status ?? 'pending') == 'completed' ? 'active' : '' }}">4</div>
@@ -394,7 +403,6 @@
     <span id="toast-message"></span>
 </div>
 
-
 <div id="messagesModal" class="modal" style="display: none;">
     <div class="modal-content">
         <div class="modal-header">
@@ -429,8 +437,6 @@
     </div>
 </div>
 
-
-
 <!-- Upload Payment Proof Modal -->
 <div id="uploadModal" class="modal-upload">
     <div class="modal-upload-content">
@@ -439,7 +445,6 @@
             <span class="close-upload-modal" onclick="closeUploadModal()">&times;</span>
         </div>
         <div class="modal-upload-body">
-            <!-- Upload Area (hidden when file is selected) -->
             <div class="upload-area" id="uploadArea">
                 <div class="upload-icon">
                     <span class="material-symbols-outlined" style="font-size: 48px;">cloud_upload</span>
@@ -453,7 +458,6 @@
                 <input type="file" id="paymentProof" accept=".jpg,.jpeg,.png,.pdf" style="display: none;">
             </div>
             
-            <!-- Preview Area (replaces upload area when file is selected) -->
             <div class="preview-area" id="previewArea" style="display: none;">
                 <div class="preview-header">
                     <div class="preview-file-info">
@@ -468,7 +472,6 @@
                     </button>
                 </div>
                 <div class="preview-content" id="previewContent">
-                    <!-- Preview will be shown here -->
                 </div>
             </div>
         </div>
@@ -478,8 +481,6 @@
         </div>
     </div>
 </div>
-
-
 
 <script>
     // ================= SCHEDULES FROM BACKEND =================
@@ -815,536 +816,590 @@
         }
     }
 
-// ================= MESSAGES FUNCTIONS =================
-const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-    
-// SELECTION MODE VARIABLES
-let isSelectionMode = false;
-let selectedMessageIds = new Set();
-
-function formatMessageTime(dateString) {
-    if (!dateString) return 'Unknown date';
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now - date;
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-    
-    if (diffMins < 1) return 'Just now';
-    else if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
-    else if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
-    else if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
-    else return date.toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true });
-}
-
-function loadMessages() {
-    fetch('/applicant/messages', {
-        method: 'GET',
-        headers: { 
-            'Accept': 'application/json', 
-            'X-CSRF-TOKEN': csrfToken, 
-            'Content-Type': 'application/json' 
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            const messageCountSpan = document.getElementById('messageCount');
-            if (messageCountSpan) {
-                const unreadCount = data.unread_count || 0;
-                // Update the display
-                messageCountSpan.innerText = unreadCount;
-                
-                // Update visual styling
-                if (unreadCount > 0) {
-                    messageCountSpan.classList.add('has-unread');
-                    // Optional: Add animation or change color
-                } else {
-                    messageCountSpan.classList.remove('has-unread');
-                }
-            }
-            
-            window.messagesList = data.messages;
-            
-            const modal = document.getElementById('messagesModal');
-            if (modal && modal.style.display === 'flex') {
-                displayMessagesInModal();
-            }
-        }
-    })
-    .catch(error => console.error('Error loading messages:', error));
-}
-
-// Initial load
-function initializeMessageCount() {
-    loadMessages();
-    // Reload every 10 seconds
-    setInterval(loadMessages, 10000);
-}
-
-function displayMessagesInModal() {
-    const messagesList = document.getElementById('messagesList');
-    if (!messagesList) return;
-    
-    if (window.messagesList && window.messagesList.length > 0) {
-        messagesList.innerHTML = window.messagesList.map(msg => `
-            <div class="message-item ${!msg.is_read ? 'unread' : ''} ${selectedMessageIds.has(msg.id) ? 'selected' : ''}" 
-                 data-message-id="${msg.id}" 
-                 onclick="toggleMessageSelection(${msg.id}, event)">
-                <div class="message-checkbox" style="display: ${isSelectionMode ? 'flex' : 'none'}">
-                    <input type="checkbox" 
-                        class="message-checkbox"
-                        value="${msg.id}"
-                        ${selectedMessageIds.has(msg.id) ? 'checked' : ''}
-                        onclick="event.stopPropagation(); toggleMessageCheckbox(${msg.id})">
-                </div>
-                <div class="message-content">
-                    <div class="message-sender">From: ${escapeHtml(msg.sender_name)}</div>
-                    <div class="message-text">${escapeHtml(msg.message)}</div>
-                    <div class="message-time">${formatMessageTime(msg.created_at)}</div>
-                    ${!msg.is_read ? '<span class="unread-badge">New</span>' : ''}
-                </div>
-            </div>
-        `).join('');
-    } else {
-        messagesList.innerHTML = '<div style="text-align: center; padding: 20px;">No messages yet</div>';
-    }
-}
-
-function escapeHtml(text) {
-    if (!text) return '';
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
-
-function openMessagesModal() {
-    const modal = document.getElementById('messagesModal');
-    const messagesList = document.getElementById('messagesList');
-    const messageCountSpan = document.getElementById('messageCount');
-
-    if (messagesList) messagesList.innerHTML = '<div style="text-align: center; padding: 20px;">Loading messages...</div>';
-    
-    // Reset selection mode when opening modal
-    isSelectionMode = false;
-    selectedMessageIds.clear();
-    
-    // Fetch messages
-    fetch('/applicant/messages', {
-        method: 'GET',
-        headers: { 
-            'Accept': 'application/json', 
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            window.messagesList = data.messages;
-            displayMessagesInModal();
-            modal.style.display = 'flex';
-            
-            // Mark as read if there are unread messages
-            if (data.unread_count > 0) {
-                markMessagesAsRead();
-            }
-            
-            // Update UI badge to zero
-            if (messageCountSpan) {
-                messageCountSpan.innerText = '0';
-                messageCountSpan.classList.remove('has-unread');
-            }
-            
-            // Hide selection tools
-            const elementsToHide = ['selectAllBtn', 'deleteSelectedBtn', 'cancelSelectBtn', 'messagesToolbar'];
-            elementsToHide.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.style.display = 'none';
+    // ================= TASK AUTO-REMOVAL FUNCTION =================
+    async function markTaskAndRedirect(taskId, redirectUrl) {
+        try {
+            // Mark task as completed
+            const response = await fetch('/applicant/tasks/complete', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ task_id: taskId })
             });
             
+            const data = await response.json();
+            
+            if (data.success) {
+                // Remove task from UI with animation
+                const taskElement = document.querySelector(`.req-item[data-task-id="${taskId}"]`);
+                if (taskElement) {
+                    taskElement.classList.add('removing');
+                    setTimeout(() => {
+                        taskElement.remove();
+                        updateTaskCount();
+                        // Redirect after animation
+                        window.location.href = redirectUrl;
+                    }, 300);
+                } else {
+                    window.location.href = redirectUrl;
+                }
+            } else {
+                // If marking fails, just redirect
+                window.location.href = redirectUrl;
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            window.location.href = redirectUrl;
+        }
+    }
+    
+    function updateTaskCount() {
+        const remainingTasks = document.querySelectorAll('.req-item').length;
+        const taskCountSpan = document.getElementById('taskCount');
+        if (taskCountSpan) {
+            taskCountSpan.textContent = remainingTasks;
+        }
+        
+        // Show message if no tasks left
+        if (remainingTasks === 0) {
+            const taskList = document.getElementById('taskList');
+            if (taskList && taskList.querySelectorAll('.req-item').length === 0) {
+                taskList.innerHTML = '<div class="req-item"><span>All tasks completed! Great job! 🎉</span></div>';
+            }
+        }
+    }
+
+    // ================= MESSAGES FUNCTIONS =================
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+    
+    let isSelectionMode = false;
+    let selectedMessageIds = new Set();
+
+    function formatMessageTime(dateString) {
+        if (!dateString) return 'Unknown date';
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffMs = now - date;
+        const diffMins = Math.floor(diffMs / 60000);
+        const diffHours = Math.floor(diffMs / 3600000);
+        const diffDays = Math.floor(diffMs / 86400000);
+        
+        if (diffMins < 1) return 'Just now';
+        else if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+        else if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+        else if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+        else return date.toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true });
+    }
+
+    function loadMessages() {
+        fetch('/applicant/messages', {
+            method: 'GET',
+            headers: { 
+                'Accept': 'application/json', 
+                'X-CSRF-TOKEN': csrfToken, 
+                'Content-Type': 'application/json' 
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const messageCountSpan = document.getElementById('messageCount');
+                if (messageCountSpan) {
+                    const unreadCount = data.unread_count || 0;
+                    messageCountSpan.innerText = unreadCount;
+                    
+                    if (unreadCount > 0) {
+                        messageCountSpan.classList.add('has-unread');
+                    } else {
+                        messageCountSpan.classList.remove('has-unread');
+                    }
+                }
+                
+                window.messagesList = data.messages;
+                
+                const modal = document.getElementById('messagesModal');
+                if (modal && modal.style.display === 'flex') {
+                    displayMessagesInModal();
+                }
+            }
+        })
+        .catch(error => console.error('Error loading messages:', error));
+    }
+
+    function displayMessagesInModal() {
+        const messagesList = document.getElementById('messagesList');
+        if (!messagesList) return;
+        
+        if (window.messagesList && window.messagesList.length > 0) {
+            messagesList.innerHTML = window.messagesList.map(msg => `
+                <div class="message-item ${!msg.is_read ? 'unread' : ''} ${selectedMessageIds.has(msg.id) ? 'selected' : ''}" 
+                     data-message-id="${msg.id}" 
+                     onclick="toggleMessageSelection(${msg.id}, event)">
+                    <div class="message-checkbox" style="display: ${isSelectionMode ? 'flex' : 'none'}">
+                        <input type="checkbox" 
+                            class="message-checkbox"
+                            value="${msg.id}"
+                            ${selectedMessageIds.has(msg.id) ? 'checked' : ''}
+                            onclick="event.stopPropagation(); toggleMessageCheckbox(${msg.id})">
+                    </div>
+                    <div class="message-content">
+                        <div class="message-sender">From: ${escapeHtml(msg.sender_name)}</div>
+                        <div class="message-text">${escapeHtml(msg.message)}</div>
+                        <div class="message-time">${formatMessageTime(msg.created_at)}</div>
+                        ${!msg.is_read ? '<span class="unread-badge">New</span>' : ''}
+                    </div>
+                </div>
+            `).join('');
         } else {
+            messagesList.innerHTML = '<div style="text-align: center; padding: 20px;">No messages yet</div>';
+        }
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function openMessagesModal() {
+        const modal = document.getElementById('messagesModal');
+        const messagesList = document.getElementById('messagesList');
+        const messageCountSpan = document.getElementById('messageCount');
+
+        if (messagesList) messagesList.innerHTML = '<div style="text-align: center; padding: 20px;">Loading messages...</div>';
+        
+        isSelectionMode = false;
+        selectedMessageIds.clear();
+        
+        fetch('/applicant/messages', {
+            method: 'GET',
+            headers: { 
+                'Accept': 'application/json', 
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.messagesList = data.messages;
+                displayMessagesInModal();
+                modal.style.display = 'flex';
+                
+                if (data.unread_count > 0) {
+                    markMessagesAsRead();
+                }
+                
+                if (messageCountSpan) {
+                    messageCountSpan.innerText = '0';
+                    messageCountSpan.classList.remove('has-unread');
+                }
+                
+                const elementsToHide = ['selectAllBtn', 'deleteSelectedBtn', 'cancelSelectBtn', 'messagesToolbar'];
+                elementsToHide.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.style.display = 'none';
+                });
+                
+            } else {
+                if (messagesList) messagesList.innerHTML = '<div style="text-align: center; padding: 20px;">Error loading messages</div>';
+                modal.style.display = 'flex';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
             if (messagesList) messagesList.innerHTML = '<div style="text-align: center; padding: 20px;">Error loading messages</div>';
             modal.style.display = 'flex';
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        if (messagesList) messagesList.innerHTML = '<div style="text-align: center; padding: 20px;">Error loading messages</div>';
-        modal.style.display = 'flex';
-    });
-}
+        });
+    }
 
-// Mark messages as read function - FIXED
-function markMessagesAsRead() {
-    fetch('/applicant/messages/mark-as-read', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        },
-        body: JSON.stringify({})
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            console.log('Messages marked as read:', data.updated_count, 'message(s)');
-            // Update local messages list to mark all as read
-            if (window.messagesList) {
-                window.messagesList = window.messagesList.map(msg => ({
-                    ...msg,
-                    is_read: true
-                }));
-                displayMessagesInModal();
+    function markMessagesAsRead() {
+        fetch('/applicant/messages/mark-as-read', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log('Messages marked as read:', data.updated_count, 'message(s)');
+                if (window.messagesList) {
+                    window.messagesList = window.messagesList.map(msg => ({
+                        ...msg,
+                        is_read: true
+                    }));
+                    displayMessagesInModal();
+                }
             }
+        })
+        .catch(error => console.error('Error marking messages as read:', error));
+    }
+
+    function closeMessagesModal() {
+        const modal = document.getElementById('messagesModal');
+        if (modal) modal.style.display = 'none';
+        isSelectionMode = false;
+        selectedMessageIds.clear();
+    }
+
+    window.onclick = function(event) {
+        const modal = document.getElementById('messagesModal');
+        if (event.target === modal) closeMessagesModal();
+    }
+
+    function toggleSelectionMode() {
+        isSelectionMode = !isSelectionMode;
+        
+        const selectAllBtn = document.getElementById('selectAllBtn');
+        const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
+        const cancelSelectBtn = document.getElementById('cancelSelectBtn');
+        const messagesToolbar = document.getElementById('messagesToolbar');
+        
+        if (isSelectionMode) {
+            if (selectAllBtn) selectAllBtn.style.display = 'inline-flex';
+            if (deleteSelectedBtn) deleteSelectedBtn.style.display = 'inline-flex';
+            if (cancelSelectBtn) cancelSelectBtn.style.display = 'inline-flex';
+            if (messagesToolbar) messagesToolbar.style.display = 'flex';
         } else {
-            console.error('Failed to mark messages as read:', data.message);
+            if (selectAllBtn) selectAllBtn.style.display = 'none';
+            if (deleteSelectedBtn) deleteSelectedBtn.style.display = 'none';
+            if (cancelSelectBtn) cancelSelectBtn.style.display = 'none';
+            if (messagesToolbar) messagesToolbar.style.display = 'none';
+            selectedMessageIds.clear();
         }
-    })
-    .catch(error => console.error('Error marking messages as read:', error));
-}
+        
+        displayMessagesInModal();
+    }
 
-function closeMessagesModal() {
-    const modal = document.getElementById('messagesModal');
-    if (modal) modal.style.display = 'none';
-    isSelectionMode = false;
-    selectedMessageIds.clear();
-}
+    function toggleMessageSelection(messageId, event) {
+        if (event.target.type === 'checkbox') return;
+        
+        if (!isSelectionMode) {
+            toggleSelectionMode();
+        }
+        
+        if (selectedMessageIds.has(messageId)) {
+            selectedMessageIds.delete(messageId);
+        } else {
+            selectedMessageIds.add(messageId);
+        }
+        
+        updateSelectionUI();
+        displayMessagesInModal();
+    }
 
-window.onclick = function(event) {
-    const modal = document.getElementById('messagesModal');
-    if (event.target === modal) closeMessagesModal();
-}
+    function toggleMessageCheckbox(messageId) {
+        if (selectedMessageIds.has(messageId)) {
+            selectedMessageIds.delete(messageId);
+        } else {
+            selectedMessageIds.add(messageId);
+        }
+        updateSelectionUI();
+        displayMessagesInModal();
+    }
 
-// ================= SELECTION & DELETE FUNCTIONS =================
-function toggleSelectionMode() {
-    isSelectionMode = !isSelectionMode;
-    
-    const selectAllBtn = document.getElementById('selectAllBtn');
-    const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
-    const cancelSelectBtn = document.getElementById('cancelSelectBtn');
-    const messagesToolbar = document.getElementById('messagesToolbar');
-    
-    if (isSelectionMode) {
-        if (selectAllBtn) selectAllBtn.style.display = 'inline-flex';
-        if (deleteSelectedBtn) deleteSelectedBtn.style.display = 'inline-flex';
-        if (cancelSelectBtn) cancelSelectBtn.style.display = 'inline-flex';
-        if (messagesToolbar) messagesToolbar.style.display = 'flex';
-    } else {
+    function toggleSelectAll() {
+        if (!window.messagesList) return;
+        
+        if (selectedMessageIds.size === window.messagesList.length) {
+            selectedMessageIds.clear();
+        } else {
+            window.messagesList.forEach(msg => {
+                selectedMessageIds.add(msg.id);
+            });
+        }
+        updateSelectionUI();
+        displayMessagesInModal();
+    }
+
+    function cancelSelection() {
+        isSelectionMode = false;
+        selectedMessageIds.clear();
+        updateSelectionUI();
+        displayMessagesInModal();
+        
+        const selectAllBtn = document.getElementById('selectAllBtn');
+        const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
+        const cancelSelectBtn = document.getElementById('cancelSelectBtn');
+        const messagesToolbar = document.getElementById('messagesToolbar');
+        
         if (selectAllBtn) selectAllBtn.style.display = 'none';
         if (deleteSelectedBtn) deleteSelectedBtn.style.display = 'none';
         if (cancelSelectBtn) cancelSelectBtn.style.display = 'none';
         if (messagesToolbar) messagesToolbar.style.display = 'none';
-        selectedMessageIds.clear();
     }
-    
-    displayMessagesInModal();
-}
 
-function toggleMessageSelection(messageId, event) {
-    if (event.target.type === 'checkbox') return;
-    
-    if (!isSelectionMode) {
-        toggleSelectionMode();
-    }
-    
-    if (selectedMessageIds.has(messageId)) {
-        selectedMessageIds.delete(messageId);
-    } else {
-        selectedMessageIds.add(messageId);
-    }
-    
-    updateSelectionUI();
-    displayMessagesInModal();
-}
-
-function toggleMessageCheckbox(messageId) {
-    if (selectedMessageIds.has(messageId)) {
-        selectedMessageIds.delete(messageId);
-    } else {
-        selectedMessageIds.add(messageId);
-    }
-    updateSelectionUI();
-    displayMessagesInModal();
-}
-
-function toggleSelectAll() {
-    if (!window.messagesList) return;
-    
-    if (selectedMessageIds.size === window.messagesList.length) {
-        selectedMessageIds.clear();
-    } else {
-        window.messagesList.forEach(msg => {
-            selectedMessageIds.add(msg.id);
-        });
-    }
-    updateSelectionUI();
-    displayMessagesInModal();
-}
-
-function cancelSelection() {
-    isSelectionMode = false;
-    selectedMessageIds.clear();
-    updateSelectionUI();
-    displayMessagesInModal();
-    
-    const selectAllBtn = document.getElementById('selectAllBtn');
-    const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
-    const cancelSelectBtn = document.getElementById('cancelSelectBtn');
-    const messagesToolbar = document.getElementById('messagesToolbar');
-    
-    if (selectAllBtn) selectAllBtn.style.display = 'none';
-    if (deleteSelectedBtn) deleteSelectedBtn.style.display = 'none';
-    if (cancelSelectBtn) cancelSelectBtn.style.display = 'none';
-    if (messagesToolbar) messagesToolbar.style.display = 'none';
-}
-
-function updateSelectionUI() {
-    const selectedCountSpan = document.getElementById('selectedCount');
-    const selectAllBtn = document.getElementById('selectAllBtn');
-    
-    if (selectedCountSpan) {
-        selectedCountSpan.innerText = selectedMessageIds.size;
-    }
-    
-    if (selectAllBtn && window.messagesList) {
-        if (selectedMessageIds.size === window.messagesList.length && window.messagesList.length > 0) {
-            selectAllBtn.innerHTML = '<span class="material-symbols-outlined">deselect</span> Deselect All';
-        } else {
-            selectAllBtn.innerHTML = '<span class="material-symbols-outlined">select_all</span> Select All';
+    function updateSelectionUI() {
+        const selectedCountSpan = document.getElementById('selectedCount');
+        const selectAllBtn = document.getElementById('selectAllBtn');
+        
+        if (selectedCountSpan) {
+            selectedCountSpan.innerText = selectedMessageIds.size;
         }
-    }
-}
-
-function deleteSelectedMessages() {
-    if (selectedMessageIds.size === 0) {
-        showToast('Please select messages to delete', 'error');
-        return;
-    }
-
-    fetch('/applicant/messages/delete', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-        },
-        body: JSON.stringify({
-            message_ids: Array.from(selectedMessageIds)
-        })
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.success) {
-            showToast(data.message || 'Messages deleted successfully', 'success');
-            
-            selectedMessageIds.forEach(id => {
-                const el = document.querySelector(`[data-message-id="${id}"]`);
-                if (el) el.remove();
-            });
-            
-            if (window.messagesList) {
-                window.messagesList = window.messagesList.filter(msg => !selectedMessageIds.has(msg.id));
+        
+        if (selectAllBtn && window.messagesList) {
+            if (selectedMessageIds.size === window.messagesList.length && window.messagesList.length > 0) {
+                selectAllBtn.innerHTML = '<span class="material-symbols-outlined">deselect</span> Deselect All';
+            } else {
+                selectAllBtn.innerHTML = '<span class="material-symbols-outlined">select_all</span> Select All';
             }
-            
-            selectedMessageIds.clear();
-            updateSelectionUI();
-            
-            // Reload messages to update count
-            loadMessages();
-        } else {
-            showToast(data.message || 'Failed to delete messages', 'error');
         }
-    })
-    .catch(err => {
-        console.error(err);
-        showToast('Something went wrong', 'error');
-    });
-}
-
-// ================= FILE UPLOAD HANDLING =================
-let selectedFile = null;
-let currentTaskId = null;
-
-const uploadArea = document.getElementById('uploadArea');
-const fileInput = document.getElementById('paymentProof');
-
-if (uploadArea) {
-    uploadArea.addEventListener('click', () => fileInput.click());
-    uploadArea.addEventListener('dragover', (e) => e.preventDefault());
-    uploadArea.addEventListener('drop', (e) => {
-        e.preventDefault();
-        if (e.dataTransfer.files.length > 0) handleFileSelect(e.dataTransfer.files[0]);
-    });
-}
-
-if (fileInput) {
-    fileInput.addEventListener('change', (e) => {
-        if (e.target.files.length > 0) handleFileSelect(e.target.files[0]);
-    });
-}
-
-function handleFileSelect(file) {
-    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
-    if (!validTypes.includes(file.type)) {
-        showToast('Invalid file type. Please upload JPG, PNG, or PDF files only.', 'error');
-        return;
     }
-    
-    if (file.size > 5 * 1024 * 1024) {
-        showToast('File is too large. Maximum size is 5MB.', 'error');
-        return;
-    }
-    
-    selectedFile = file;
-    document.getElementById('uploadArea').style.display = 'none';
-    document.getElementById('previewArea').style.display = 'block';
-    document.getElementById('previewFileName').textContent = file.name;
-    document.getElementById('previewFileSize').textContent = formatFileSize(file.size);
-    
-    const previewContent = document.getElementById('previewContent');
-    const fileExt = file.name.split('.').pop().toLowerCase();
-    
-    if (fileExt === 'pdf') {
-        previewContent.innerHTML = `<iframe src="${URL.createObjectURL(file)}" class="preview-pdf" style="width: 100%; height: 250px; border: none; border-radius: 8px;"></iframe>`;
-    } else if (['jpg', 'jpeg', 'png'].includes(fileExt)) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            previewContent.innerHTML = `<img src="${e.target.result}" class="preview-image" style="max-width: 100%; max-height: 250px; border-radius: 8px; object-fit: contain;">`;
-        };
-        reader.readAsDataURL(file);
-    }
-}
 
-function formatFileSize(bytes) {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-}
+    function deleteSelectedMessages() {
+        if (selectedMessageIds.size === 0) {
+            showToast('Please select messages to delete', 'error');
+            return;
+        }
 
-function resetUploadArea() {
-    selectedFile = null;
-    document.getElementById('paymentProof').value = '';
-    document.getElementById('uploadArea').style.display = 'block';
-    document.getElementById('previewArea').style.display = 'none';
-    document.getElementById('uploadBtn').disabled = false;
-    document.getElementById('previewContent').innerHTML = '';
-}
-
-function closeUploadModal() {
-    document.getElementById('uploadModal').style.display = 'none';
-    resetUploadArea();
-    currentTaskId = null;
-}
-
-function openUploadModal(taskId) {
-    currentTaskId = taskId;
-    document.getElementById('uploadModal').style.display = 'flex';
-    resetUploadArea();
-}
-
-async function uploadPaymentProof() {
-    if (!selectedFile) {
-        showToast('Please select a file to upload', 'error');
-        return;
-    }
-    
-    const uploadBtn = document.getElementById('uploadBtn');
-    const originalText = uploadBtn.textContent;
-    uploadBtn.disabled = true;
-    uploadBtn.textContent = 'Uploading...';
-    
-    const formData = new FormData();
-    formData.append('payment_proof', selectedFile);
-    
-    try {
-        const response = await fetch('/applicant/upload-payment-proof', {
+        fetch('/applicant/messages/delete', {
             method: 'POST',
             headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
             },
-            body: formData
+            body: JSON.stringify({
+                message_ids: Array.from(selectedMessageIds)
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                showToast(data.message || 'Messages deleted successfully', 'success');
+                
+                selectedMessageIds.forEach(id => {
+                    const el = document.querySelector(`[data-message-id="${id}"]`);
+                    if (el) el.remove();
+                });
+                
+                if (window.messagesList) {
+                    window.messagesList = window.messagesList.filter(msg => !selectedMessageIds.has(msg.id));
+                }
+                
+                selectedMessageIds.clear();
+                updateSelectionUI();
+                loadMessages();
+            } else {
+                showToast(data.message || 'Failed to delete messages', 'error');
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            showToast('Something went wrong', 'error');
         });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            showToast(data.message, 'success');
-            closeUploadModal();
-            setTimeout(() => location.reload(), 3000);
-        } else {
-            showToast(data.message, 'error');
-        }
-    } catch (error) {
-        showToast('Failed to upload payment proof', 'error');
-    } finally {
-        uploadBtn.disabled = false;
-        uploadBtn.textContent = originalText;
     }
-}
 
-async function fetchProgressData() {
-    try {
-        const response = await fetch('/applicant/progress', {
-            method: 'GET',
-            headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken }
+    // ================= FILE UPLOAD HANDLING =================
+    let selectedFile = null;
+    let currentTaskId = null;
+
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('paymentProof');
+
+    if (uploadArea) {
+        uploadArea.addEventListener('click', () => fileInput.click());
+        uploadArea.addEventListener('dragover', (e) => e.preventDefault());
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            if (e.dataTransfer.files.length > 0) handleFileSelect(e.dataTransfer.files[0]);
         });
-        const data = await response.json();
-        if (data.success) {
-            document.getElementById('profileProgress').textContent = data.profile_progress + '%';
-            document.getElementById('profileProgressBar').style.width = data.profile_progress + '%';
-            document.getElementById('documentsProgress').textContent = data.documents_progress + '%';
-            document.getElementById('documentsProgressBar').style.width = data.documents_progress + '%';
-            document.getElementById('applicationProgress').textContent = data.application_progress + '%';
-            document.getElementById('applicationProgressBar').style.width = data.application_progress + '%';
-        }
-    } catch (error) {
-        console.error('Error fetching progress:', error);
     }
-}
 
-// Initialize on page load
-document.addEventListener('DOMContentLoaded', function() {
-    initializeMessageCount(); // Use the new initialization function
-    fetchProgressData();
-    
-    // Poll for new messages every 5 seconds (more frequent)
-    setInterval(loadMessages, 5000);
-    
-    // Also check when page becomes visible again
-    document.addEventListener('visibilitychange', function() {
-        if (!document.hidden) {
-            loadMessages();
+    if (fileInput) {
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) handleFileSelect(e.target.files[0]);
+        });
+    }
+
+    function handleFileSelect(file) {
+        const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+        if (!validTypes.includes(file.type)) {
+            showToast('Invalid file type. Please upload JPG, PNG, or PDF files only.', 'error');
+            return;
+        }
+        
+        if (file.size > 5 * 1024 * 1024) {
+            showToast('File is too large. Maximum size is 5MB.', 'error');
+            return;
+        }
+        
+        selectedFile = file;
+        document.getElementById('uploadArea').style.display = 'none';
+        document.getElementById('previewArea').style.display = 'block';
+        document.getElementById('previewFileName').textContent = file.name;
+        document.getElementById('previewFileSize').textContent = formatFileSize(file.size);
+        
+        const previewContent = document.getElementById('previewContent');
+        const fileExt = file.name.split('.').pop().toLowerCase();
+        
+        if (fileExt === 'pdf') {
+            previewContent.innerHTML = `<iframe src="${URL.createObjectURL(file)}" class="preview-pdf" style="width: 100%; height: 250px; border: none; border-radius: 8px;"></iframe>`;
+        } else if (['jpg', 'jpeg', 'png'].includes(fileExt)) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewContent.innerHTML = `<img src="${e.target.result}" class="preview-image" style="max-width: 100%; max-height: 250px; border-radius: 8px; object-fit: contain;">`;
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    function resetUploadArea() {
+        selectedFile = null;
+        document.getElementById('paymentProof').value = '';
+        document.getElementById('uploadArea').style.display = 'block';
+        document.getElementById('previewArea').style.display = 'none';
+        document.getElementById('uploadBtn').disabled = false;
+        document.getElementById('previewContent').innerHTML = '';
+    }
+
+    function closeUploadModal() {
+        document.getElementById('uploadModal').style.display = 'none';
+        resetUploadArea();
+        currentTaskId = null;
+    }
+
+    function openUploadModal(taskId) {
+        currentTaskId = taskId;
+        document.getElementById('uploadModal').style.display = 'flex';
+        resetUploadArea();
+    }
+
+    async function uploadPaymentProof() {
+        if (!selectedFile) {
+            showToast('Please select a file to upload', 'error');
+            return;
+        }
+        
+        const uploadBtn = document.getElementById('uploadBtn');
+        const originalText = uploadBtn.textContent;
+        uploadBtn.disabled = true;
+        uploadBtn.textContent = 'Uploading...';
+        
+        const formData = new FormData();
+        formData.append('payment_proof', selectedFile);
+        
+        try {
+            const response = await fetch('/applicant/upload-payment-proof', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: formData
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                showToast(data.message, 'success');
+                closeUploadModal();
+                setTimeout(() => location.reload(), 2000);
+            } else {
+                showToast(data.message, 'error');
+            }
+        } catch (error) {
+            showToast('Failed to upload payment proof', 'error');
+        } finally {
+            uploadBtn.disabled = false;
+            uploadBtn.textContent = originalText;
+        }
+    }
+
+    async function fetchProgressData() {
+        try {
+            const response = await fetch('/applicant/progress', {
+                method: 'GET',
+                headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken }
+            });
+            const data = await response.json();
+            if (data.success) {
+                document.getElementById('profileProgress').textContent = data.profile_progress + '%';
+                document.getElementById('profileProgressBar').style.width = data.profile_progress + '%';
+                document.getElementById('documentsProgress').textContent = data.documents_progress + '%';
+                document.getElementById('documentsProgressBar').style.width = data.documents_progress + '%';
+                document.getElementById('applicationProgress').textContent = data.application_progress + '%';
+                document.getElementById('applicationProgressBar').style.width = data.application_progress + '%';
+            }
+        } catch (error) {
+            console.error('Error fetching progress:', error);
+        }
+    }
+
+    async function loadActivities() {
+        try {
+            const response = await fetch('/applicant/activities', {
+                method: 'GET',
+                headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken }
+            });
+            const data = await response.json();
+            if (data.success && data.activities.length > 0) {
+                const activityList = document.getElementById('activityList');
+                activityList.innerHTML = data.activities.map(activity => `
+                    <div class="activity">
+                        <div class="activity-date">${activity.date}</div>
+                        <div class="activity-text">${activity.activity}</div>
+                    </div>
+                `).join('');
+            }
+        } catch (error) {
+            console.error('Error loading activities:', error);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        loadMessages();
+        fetchProgressData();
+        loadActivities();
+        
+        setInterval(loadMessages, 10000);
+        setInterval(loadActivities, 30000);
+        
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) {
+                loadMessages();
+                loadActivities();
+            }
+        });
+
+        const deleteBtn = document.getElementById('deleteSelectedBtn');
+        const deleteToolbarBtn = document.getElementById('deleteSelectedToolbarBtn');
+        const selectModeBtn = document.getElementById('selectModeBtn');
+        const selectAllBtn = document.getElementById('selectAllBtn');
+        const cancelSelectBtn = document.getElementById('cancelSelectBtn');
+
+        if (deleteBtn) {
+            deleteBtn.addEventListener('click', deleteSelectedMessages);
+        }
+
+        if (deleteToolbarBtn) {
+            deleteToolbarBtn.addEventListener('click', deleteSelectedMessages);
+        }
+
+        if (selectModeBtn) {
+            selectModeBtn.addEventListener('click', toggleSelectionMode);
+        }
+
+        if (selectAllBtn) {
+            selectAllBtn.addEventListener('click', toggleSelectAll);
+        }
+
+        if (cancelSelectBtn) {
+            cancelSelectBtn.addEventListener('click', cancelSelection);
         }
     });
-
-    const deleteBtn = document.getElementById('deleteSelectedBtn');
-    const deleteToolbarBtn = document.getElementById('deleteSelectedToolbarBtn');
-    const selectModeBtn = document.getElementById('selectModeBtn');
-    const selectAllBtn = document.getElementById('selectAllBtn');
-    const cancelSelectBtn = document.getElementById('cancelSelectBtn');
-
-    if (deleteBtn) {
-        deleteBtn.addEventListener('click', deleteSelectedMessages);
-    }
-
-    if (deleteToolbarBtn) {
-        deleteToolbarBtn.addEventListener('click', deleteSelectedMessages);
-    }
-
-    if (selectModeBtn) {
-        selectModeBtn.addEventListener('click', toggleSelectionMode);
-    }
-
-    if (selectAllBtn) {
-        selectAllBtn.addEventListener('click', toggleSelectAll);
-    }
-
-    if (cancelSelectBtn) {
-        cancelSelectBtn.addEventListener('click', cancelSelection);
-    }
-});
 </script>
 
 </body>
