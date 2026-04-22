@@ -70,7 +70,7 @@
                 <span class="material-symbols-outlined icon">assignment</span>
                 Requirements List
             </a>
-            <a href="#" class="nav-item">
+            <a href="{{ route('reports') }}" class="nav-item">
                 <span class="material-symbols-outlined icon">bar_chart_4_bars</span>
                 Reports
             </a>

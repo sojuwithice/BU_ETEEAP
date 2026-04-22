@@ -8,6 +8,7 @@ use App\Http\Controllers\RequirementController;
 use App\Http\Controllers\ApplicantDocumentController;
 use App\Http\Controllers\StaffDashboardController;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Http\Controllers\ReportController;
 
 Route::get('/', function () { return view('landing'); });
 
@@ -116,6 +117,17 @@ Route::get('/applicant/get-payment-proof', [DashboardController::class, 'getPaym
 Route::post('/staff/applicant/{id}/update-status', [StaffDashboardController::class, 'updateApplicantStatus'])
     ->name('staff.applicant.update-status');
     
+
+// Reports Routes - ADD THESE INSIDE YOUR AUTH MIDDLEWARE GROUP
+Route::get('/staff/reports/data', [ReportController::class, 'getReportsData']);
+Route::get('/staff/reports/export', [ReportController::class, 'exportReport']);
+
+// REPORTS ROUTES (STAFF)
+Route::get('/staff/reports/data', [ReportController::class, 'getReportsData'])
+    ->name('staff.reports.data');
+
+Route::get('/staff/reports/export', [ReportController::class, 'exportReport'])
+    ->name('staff.reports.export');
 });
 
 Route::get('/verify-documents', function () {
@@ -150,3 +162,7 @@ Route::get('/preview-payment-stub', function () {
     
     return $pdf->stream('payment_stub_preview.pdf');
 })->middleware('auth');
+
+Route::get('/reports', function () {
+    return view('reports');
+})->name('reports');
