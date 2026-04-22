@@ -303,9 +303,11 @@ body {
 
 .info-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr); 
+    grid-template-columns: repeat(4, 1fr);
     gap: 8px 20px;
+    align-items: center;
 }
+
 
 .info-item {
     display: flex;
@@ -329,9 +331,9 @@ body {
 }
 
 .info-item.sex-item .info-box {
-    flex: none;      
-    width: 60px;     
-    justify-content: center;
+    flex: 1;           /* Para same sa iba */
+    width: auto;       /* Para hindi fixed */
+    justify-content: flex-start; /* Left alignment */
 }
 
 .info-box.wide {
