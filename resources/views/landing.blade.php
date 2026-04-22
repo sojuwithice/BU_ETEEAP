@@ -408,7 +408,7 @@ window.onclick = function(event) {
 
 
 async function loadFBNews() {
-    const myRSSLink = "https://rss.app/feeds/hehF7HW8NbInvS2H.xml"; 
+    const myRSSLink = "https://rss.app/feeds/TSVH8gf7g2LBoh2x.xml"; 
     const API_URL = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(myRSSLink)}`;
 
     try {
