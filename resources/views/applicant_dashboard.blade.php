@@ -815,30 +815,30 @@
         }
     }
 
-    // ================= MESSAGES FUNCTIONS =================
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+// ================= MESSAGES FUNCTIONS =================
+const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
     
-    // SELECTION MODE VARIABLES - DECLARED ONCE ONLY
-    let isSelectionMode = false;
-    let selectedMessageIds = new Set();
+// SELECTION MODE VARIABLES
+let isSelectionMode = false;
+let selectedMessageIds = new Set();
 
-    function formatMessageTime(dateString) {
-        if (!dateString) return 'Unknown date';
-        const date = new Date(dateString);
-        const now = new Date();
-        const diffMs = now - date;
-        const diffMins = Math.floor(diffMs / 60000);
-        const diffHours = Math.floor(diffMs / 3600000);
-        const diffDays = Math.floor(diffMs / 86400000);
-        
-        if (diffMins < 1) return 'Just now';
-        else if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
-        else if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
-        else if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
-        else return date.toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true });
-    }
+function formatMessageTime(dateString) {
+    if (!dateString) return 'Unknown date';
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+    
+    if (diffMins < 1) return 'Just now';
+    else if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+    else if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    else if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+    else return date.toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true });
+}
 
-    function loadMessages() {
+function loadMessages() {
     fetch('/applicant/messages', {
         method: 'GET',
         headers: { 
@@ -853,34 +853,19 @@
             const messageCountSpan = document.getElementById('messageCount');
             if (messageCountSpan) {
                 const unreadCount = data.unread_count || 0;
-                const oldCount = parseInt(messageCountSpan.getAttribute('data-count') || '0');
-                
-                // Store current count
-                messageCountSpan.setAttribute('data-count', unreadCount);
-                
                 // Update the display
                 messageCountSpan.innerText = unreadCount;
-                
-                // Show notification for new messages (only if modal is not open)
-                const modal = document.getElementById('messagesModal');
-                if (unreadCount > oldCount && oldCount > 0 && (!modal || modal.style.display !== 'flex')) {
-                    showToast(`📬 You have ${unreadCount - oldCount} new message(s)!`, 'info');
-                    // Optional: Play sound
-                    // playNotificationSound();
-                }
                 
                 // Update visual styling
                 if (unreadCount > 0) {
                     messageCountSpan.classList.add('has-unread');
-                    messageCountSpan.style.animation = 'pulse 1s infinite';
+                    // Optional: Add animation or change color
                 } else {
                     messageCountSpan.classList.remove('has-unread');
-                    messageCountSpan.style.animation = 'none';
                 }
             }
             
             window.messagesList = data.messages;
-            window.unreadCount = data.unread_count || 0;
             
             const modal = document.getElementById('messagesModal');
             if (modal && modal.style.display === 'flex') {
@@ -891,16 +876,11 @@
     .catch(error => console.error('Error loading messages:', error));
 }
 
-// Initial load with retry mechanism
+// Initial load
 function initializeMessageCount() {
     loadMessages();
-    // Try again after 2 seconds if count is 0 (to ensure it loads)
-    setTimeout(() => {
-        const countSpan = document.getElementById('messageCount');
-        if (countSpan && countSpan.innerText === '0') {
-            loadMessages();
-        }
-    }, 2000);
+    // Reload every 10 seconds
+    setInterval(loadMessages, 10000);
 }
 
 function displayMessagesInModal() {
@@ -942,50 +922,47 @@ function escapeHtml(text) {
 function openMessagesModal() {
     const modal = document.getElementById('messagesModal');
     const messagesList = document.getElementById('messagesList');
+    const messageCountSpan = document.getElementById('messageCount');
+
     if (messagesList) messagesList.innerHTML = '<div style="text-align: center; padding: 20px;">Loading messages...</div>';
     
     // Reset selection mode when opening modal
     isSelectionMode = false;
     selectedMessageIds.clear();
     
+    // Fetch messages
     fetch('/applicant/messages', {
         method: 'GET',
         headers: { 
             'Accept': 'application/json', 
-            'X-CSRF-TOKEN': csrfToken, 
-            'Content-Type': 'application/json' 
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
         }
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
             window.messagesList = data.messages;
-            window.unreadCount = data.unread_count || 0;
             displayMessagesInModal();
             modal.style.display = 'flex';
             
-            // Mark messages as read when modal is opened
-            markMessagesAsRead();
-            
-            // Update the count badge
-            const messageCountSpan = document.getElementById('messageCount');
-            if (messageCountSpan) {
-                messageCountSpan.innerText = '0';
-                messageCountSpan.setAttribute('data-count', '0');
-                messageCountSpan.classList.remove('has-unread');
-                messageCountSpan.style.animation = 'none';
+            // Mark as read if there are unread messages
+            if (data.unread_count > 0) {
+                markMessagesAsRead();
             }
             
-            // Hide selection buttons initially
-            const selectAllBtn = document.getElementById('selectAllBtn');
-            const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
-            const cancelSelectBtn = document.getElementById('cancelSelectBtn');
-            const messagesToolbar = document.getElementById('messagesToolbar');
+            // Update UI badge to zero
+            if (messageCountSpan) {
+                messageCountSpan.innerText = '0';
+                messageCountSpan.classList.remove('has-unread');
+            }
             
-            if (selectAllBtn) selectAllBtn.style.display = 'none';
-            if (deleteSelectedBtn) deleteSelectedBtn.style.display = 'none';
-            if (cancelSelectBtn) cancelSelectBtn.style.display = 'none';
-            if (messagesToolbar) messagesToolbar.style.display = 'none';
+            // Hide selection tools
+            const elementsToHide = ['selectAllBtn', 'deleteSelectedBtn', 'cancelSelectBtn', 'messagesToolbar'];
+            elementsToHide.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.style.display = 'none';
+            });
+            
         } else {
             if (messagesList) messagesList.innerHTML = '<div style="text-align: center; padding: 20px;">Error loading messages</div>';
             modal.style.display = 'flex';
@@ -998,27 +975,30 @@ function openMessagesModal() {
     });
 }
 
-// Mark messages as read function
+// Mark messages as read function - FIXED
 function markMessagesAsRead() {
-    fetch('/applicant/messages/mark-read', {
+    fetch('/applicant/messages/mark-as-read', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': csrfToken
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
         },
         body: JSON.stringify({})
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            console.log('Messages marked as read');
+            console.log('Messages marked as read:', data.updated_count, 'message(s)');
+            // Update local messages list to mark all as read
             if (window.messagesList) {
-                window.messagesList.forEach(msg => {
-                    msg.is_read = true;
-                });
-                window.unreadCount = 0;
+                window.messagesList = window.messagesList.map(msg => ({
+                    ...msg,
+                    is_read: true
+                }));
                 displayMessagesInModal();
             }
+        } else {
+            console.error('Failed to mark messages as read:', data.message);
         }
     })
     .catch(error => console.error('Error marking messages as read:', error));

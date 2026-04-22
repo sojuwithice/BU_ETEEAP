@@ -47,8 +47,7 @@ Route::get('/staff/applicant/{id}/onsite-status', [StaffDashboardController::cla
 
 Route::post('/staff/applicant/{id}/upload-document', [StaffDashboardController::class, 'uploadDocumentForStudent'])->name('staff.applicant.upload-document');
 
-Route::post('/applicant/messages/mark-read', [MessageController::class, 'markAsRead'])->middleware('auth');
-
+Route::post('/applicant/messages/mark-as-read', [DashboardController::class, 'markAsRead'])->name('messages.markAsRead');
 
     // Requirements routes (STAFF SIDE - requirements management)
     Route::get('/requirements', [RequirementController::class, 'index'])->name('requirements.index');

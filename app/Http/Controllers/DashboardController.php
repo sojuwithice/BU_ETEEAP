@@ -17,101 +17,98 @@ use App\Models\PaymentProof;
 class DashboardController extends Controller
 {
     public function index()
-    {
-        $user = Auth::user();
-        
-        // Generate tasks automatically based on user's status
-        $this->generateAutoTasks($user);
-        
-        // Calculate Profile Progress
-        $profileFields = [
-            'first_name', 'last_name', 'email', 'birthdate', 'sex', 
-            'degree_program', 'permanent_address', 'current_address'
-        ];
-        
-        $filledCount = 0;
-        foreach ($profileFields as $field) {
-            if (!empty($user->$field)) {
-                $filledCount++;
-            }
-        }
-        $profileProgress = round(($filledCount / count($profileFields)) * 100);
-        
-        // Calculate Documents Progress
-        $totalRequirements = Requirement::count();
-        $uploadedDocs = DocumentUpload::where('user_id', $user->id)->count();
-        $documentsProgress = $totalRequirements > 0 ? round(($uploadedDocs / $totalRequirements) * 100) : 0;
-        
-        // Calculate Application Progress based on status steps
-        $statusSteps = [
-            'application_status' => ['approved', 'completed'],
-            'document_status' => ['verified', 'approved', 'completed'],
-            'interview_status' => ['completed', 'scheduled'],
-            'payment_status' => ['paid', 'completed'],
-            'final_status' => ['approved', 'completed']
-        ];
-        
-        $completedSteps = 0;
-        foreach ($statusSteps as $statusField => $completedValues) {
-            $userStatus = $user->$statusField ?? 'pending';
-            if (in_array(strtolower($userStatus), $completedValues)) {
-                $completedSteps++;
-            }
-        }
-        $applicationProgress = round(($completedSteps / count($statusSteps)) * 100);
-        
-        // Get pending tasks
-        $tasks = Task::where('user_id', $user->id)
-            ->where('status', 'pending')
-            ->orderBy('created_at', 'desc')
-            ->get();
-        
-        // Get unread messages count
-        $unreadMessagesCount = Message::where('receiver_id', $user->id)
-            ->where('is_read', false)
-            ->count();
-        
-        // Get recent messages
-        $recentMessages = Message::where('receiver_id', $user->id)
-            ->with('sender')
-            ->orderBy('created_at', 'desc')
-            ->limit(5)
-            ->get();
-        
-        // Fetch schedules from user's interview data - FIXED with correct column names
-        // Fetch schedules from user's interview data - FIXED with correct column names
-$schedules = [];
-
-// Check if user has interview scheduled (using correct column names: interview_date, interview_time, interview_location)
-if (!empty($user->interview_date) && strtolower($user->interview_status) == 'scheduled') {
-    // Check if interview date is today or future
-    $interviewDate = date('Y-m-d', strtotime($user->interview_date));
-    $today = date('Y-m-d');
+{
+    $user = Auth::user();
     
-    if ($interviewDate >= $today) {
-        $schedules[] = [
-            'date' => $interviewDate,
-            'title' => 'INTERVIEW',
-            'location' => $user->interview_location ?? 'BU Open University',
-            'time' => date('h:i A', strtotime($user->interview_time ?? '10:00 AM')),
-            'type' => 'interview',
-            'meeting_link' => $user->interview_meeting_link ?? null,  // ADD THIS
-            'setup' => $user->interview_setup ?? 'onsite'  // ADD THIS
-        ];
+    // Generate tasks automatically based on user's status
+    $this->generateAutoTasks($user);
+    
+    // Calculate Profile Progress
+    $profileFields = [
+        'first_name', 'last_name', 'email', 'birthdate', 'sex', 
+        'degree_program', 'permanent_address', 'current_address'
+    ];
+    
+    $filledCount = 0;
+    foreach ($profileFields as $field) {
+        if (!empty($user->$field)) {
+            $filledCount++;
+        }
     }
-}
+    $profileProgress = round(($filledCount / count($profileFields)) * 100);
+    
+    // Calculate Documents Progress
+    $totalRequirements = Requirement::count();
+    $uploadedDocs = DocumentUpload::where('user_id', $user->id)->count();
+    $documentsProgress = $totalRequirements > 0 ? round(($uploadedDocs / $totalRequirements) * 100) : 0;
+    
+    // Calculate Application Progress based on status steps
+    $statusSteps = [
+        'application_status' => ['approved', 'completed'],
+        'document_status' => ['verified', 'approved', 'completed'],
+        'interview_status' => ['completed', 'scheduled'],
+        'payment_status' => ['paid', 'completed'],
+        'final_status' => ['approved', 'completed']
+    ];
+    
+    $completedSteps = 0;
+    foreach ($statusSteps as $statusField => $completedValues) {
+        $userStatus = $user->$statusField ?? 'pending';
+        if (in_array(strtolower($userStatus), $completedValues)) {
+            $completedSteps++;
+        }
+    }
+    $applicationProgress = round(($completedSteps / count($statusSteps)) * 100);
+    
+    // Get pending tasks
+    $tasks = Task::where('user_id', $user->id)
+        ->where('status', 'pending')
+        ->orderBy('created_at', 'desc')
+        ->get();
+    
+    // Get unread messages count
+    $unreadMessagesCount = Message::where('receiver_id', $user->id)
+                                  ->where('is_read', false)
+                                  ->count();
+    
+    // Get recent messages
+    $recentMessages = Message::where('receiver_id', $user->id)
+        ->with('sender')
+        ->orderBy('created_at', 'desc')
+        ->limit(5)
+        ->get();
+    
+    // Fetch schedules
+    $schedules = [];
+    if (!empty($user->interview_date) && strtolower($user->interview_status) == 'scheduled') {
+        $interviewDate = date('Y-m-d', strtotime($user->interview_date));
+        $today = date('Y-m-d');
         
-        return view('applicant_dashboard', compact(
-            'user', 
-            'tasks', 
-            'unreadMessagesCount', 
-            'recentMessages',
-            'profileProgress',
-            'documentsProgress',
-            'applicationProgress',
-            'schedules'
-        ));
+        if ($interviewDate >= $today) {
+            $schedules[] = [
+                'date' => $interviewDate,
+                'title' => 'INTERVIEW',
+                'location' => $user->interview_location ?? 'BU Open University',
+                'time' => date('h:i A', strtotime($user->interview_time ?? '10:00 AM')),
+                'type' => 'interview',
+                'meeting_link' => $user->interview_meeting_link ?? null,
+                'setup' => $user->interview_setup ?? 'onsite'
+            ];
+        }
     }
+    
+    // DITO ANG FIX: Inalis ang duplicate return at inayos ang compact()
+    return view('applicant_dashboard', compact(
+        'user', 
+        'tasks', 
+        'unreadMessagesCount', 
+        'recentMessages',
+        'profileProgress',
+        'documentsProgress',
+        'applicationProgress',
+        'schedules'
+    ));
+}
     
     private function generateAutoTasks($user)
     {
@@ -184,34 +181,37 @@ if (!empty($user->interview_date) && strtolower($user->interview_status) == 'sch
     }
     
     public function getMessages()
-    {
-        $user = auth()->user();
-        
-        // Mark all messages as read
-        Message::where('receiver_id', $user->id)
-            ->where('is_read', false)
-            ->update(['is_read' => true]);
-        
-        $messages = Message::where('receiver_id', $user->id)
-            ->with('sender')
-            ->orderBy('created_at', 'desc')
-            ->get();
-        
-        return response()->json([
-            'success' => true,
-            'messages' => $messages->map(function($msg) {
-                return [
-                    'id' => $msg->id,
-                    'message' => $msg->message,
-                    'sender_name' => $msg->sender->first_name . ' ' . $msg->sender->last_name,
-                    'created_at' => $msg->created_at->toISOString(),
-                    'created_at_formatted' => $msg->created_at->format('M d, Y h:i A'),
-                    'is_read' => $msg->is_read
-                ];
-            }),
-            'unread_count' => Message::where('receiver_id', $user->id)->where('is_read', false)->count()
-        ]);
-    }
+{
+    $user = auth()->user();
+    
+    // DO NOT mark as read here - this is the problem!
+    // Just get the messages with their read status
+    
+    $messages = Message::where('receiver_id', $user->id)
+        ->with('sender')
+        ->orderBy('created_at', 'desc')
+        ->get();
+    
+    // Count unread messages without marking them as read
+    $unreadCount = Message::where('receiver_id', $user->id)
+        ->where('is_read', false)
+        ->count();
+    
+    return response()->json([
+        'success' => true,
+        'messages' => $messages->map(function($msg) {
+            return [
+                'id' => $msg->id,
+                'message' => $msg->message,
+                'sender_name' => $msg->sender->first_name . ' ' . $msg->sender->last_name,
+                'created_at' => $msg->created_at->toISOString(),
+                'created_at_formatted' => $msg->created_at->format('M d, Y h:i A'),
+                'is_read' => $msg->is_read
+            ];
+        }),
+        'unread_count' => $unreadCount
+    ]);
+}
     
     public function getProgressData()
     {
@@ -524,6 +524,8 @@ public function checkOnsiteStatus()
                 'path' => $path,
                 'upload_id' => $upload->id
             ]);
+
+            
             
         } catch (\Exception $e) {
             \Log::error('Upload error: ' . $e->getMessage());
@@ -624,5 +626,28 @@ public function deleteMessages(Request $request)
     }
 }
 
+public function markAsRead()
+{
+    try {
+        $user = auth()->user();
+        
+        // Update all unread messages for this user
+        $updatedCount = Message::where('receiver_id', $user->id)
+            ->where('is_read', false)
+            ->update(['is_read' => true]);
+        
+        return response()->json([
+            'success' => true,
+            'message' => $updatedCount . ' message(s) marked as read',
+            'updated_count' => $updatedCount
+        ]);
+    } catch (\Exception $e) {
+        \Log::error('Mark as read error: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Error: ' . $e->getMessage()
+        ], 500);
+    }
+}
 
 }
