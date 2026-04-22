@@ -46,21 +46,23 @@ public function register(Request $request)
     }
 
         // ================= RECAPTCHA CHECK =================
-        $verify = Http::asForm()->post(
-            'https://www.google.com/recaptcha/api/siteverify',
-            [
-                'secret' => env('RECAPTCHA_SECRET'),
-                'response' => $request->recaptcha_token
-            ]
-        );
+/*
+$verify = Http::asForm()->post(
+    'https://www.google.com/recaptcha/api/siteverify',
+    [
+        'secret' => env('RECAPTCHA_SECRET'),
+        'response' => $request->recaptcha_token
+    ]
+);
 
-        if (!($verify['success'] ?? false)) {
-            return back()
-                ->withErrors([
-                    'recaptcha' => 'Please verify that you are human.'
-                ], 'signup')
-                ->withInput();
-        }
+if (!($verify['success'] ?? false)) {
+    return back()
+        ->withErrors([
+            'recaptcha' => 'Please verify that you are human.'
+        ], 'signup')
+        ->withInput();
+}
+*/
 
         // ================= CREATE USER =================
         $user = User::create([
