@@ -188,25 +188,25 @@ class StaffDashboardController extends Controller
     }
 
     public function viewApplicantDocuments($id)
-    {
-        $applicant = User::findOrFail($id);
-        $requirements = Requirement::all();
-        
-        // Get document uploads for this specific applicant
-        $documents = DocumentUpload::where('user_id', $id)
-            ->with('requirement')
-            ->get()
-            ->keyBy('requirement_id');
-        
-        // Get recent uploads for the recent table
-        $recentUploads = DocumentUpload::where('user_id', $id)
-            ->with('requirement')
-            ->latest()
-            ->take(5)
-            ->get();
-        
-        return view('document_verification', compact('applicant', 'requirements', 'documents', 'recentUploads'));
-    }
+{
+    $applicant = User::findOrFail($id);
+    $requirements = Requirement::all(); // Make sure submission_type is included
+    
+    // Get document uploads for this specific applicant
+    $documents = DocumentUpload::where('user_id', $id)
+        ->with('requirement')
+        ->get()
+        ->keyBy('requirement_id');
+    
+    // Get recent uploads for the recent table
+    $recentUploads = DocumentUpload::where('user_id', $id)
+        ->with('requirement')
+        ->latest()
+        ->take(5)
+        ->get();
+    
+    return view('document_verification', compact('applicant', 'requirements', 'documents', 'recentUploads'));
+}
 
     public function getDocumentDetails($id, $requirementId)
 {
@@ -220,20 +220,28 @@ class StaffDashboardController extends Controller
             'success' => true,
             'document' => [
                 'id' => $document->id,
-                'file_path' => Storage::url($document->file_path),
+                'file_path' => $document->file_path ? Storage::url($document->file_path) : null,
                 'file_name' => $document->file_name,
-                'upload_date' => $document->created_at->toISOString(), // Use ISO string for consistent parsing
+                'upload_date' => $document->created_at->toISOString(),
                 'status' => $document->status,
                 'verification_reason' => $document->verification_reason ?? null,
                 'verification_comment' => $document->verification_comment ?? null,
                 'is_reuploaded' => $document->is_reuploaded ?? false,
-                'reuploaded_at' => $document->reuploaded_at ? $document->reuploaded_at->toISOString() : null
+                'reuploaded_at' => $document->reuploaded_at ? $document->reuploaded_at->toISOString() : null,
+                'submission_type' => $document->submission_type ?? 'file_upload',
+                'submission_value' => $document->submission_value ?? null
             ]
         ]);
     }
     
+    // Check if requirement expects gdrive_link but no upload yet
+    $requirement = Requirement::find($requirementId);
+    $submissionType = $requirement->submission_type ?? 'file_upload';
+    
     return response()->json([
-        'success' => false,
+        'success' => true,
+        'document' => null,
+        'submission_type' => $submissionType,
         'message' => 'No document uploaded yet'
     ]);
 }
@@ -671,6 +679,51 @@ public function uploadDocumentForStudent(Request $request, $id)
         return response()->json([
             'success' => false,
             'message' => 'Upload failed: ' . $e->getMessage()
+        ], 500);
+    }
+}
+
+// Sa StaffDashboardController.php, idagdag ang method na ito:
+
+public function updateGDriveLink(Request $request, $id)
+{
+    try {
+        $request->validate([
+            'requirement_id' => 'required|exists:requirements,id',
+            'submission_value' => 'required|url'
+        ]);
+        
+        // Find or create document upload
+        $upload = DocumentUpload::where('user_id', $id)
+            ->where('requirement_id', $request->requirement_id)
+            ->first();
+        
+        if ($upload) {
+            $upload->update([
+                'submission_value' => $request->submission_value,
+                'status' => 'pending',
+                'verification_reason' => null,
+                'verification_comment' => null
+            ]);
+        } else {
+            DocumentUpload::create([
+                'user_id' => $id,
+                'requirement_id' => $request->requirement_id,
+                'submission_type' => 'gdrive_link',
+                'submission_value' => $request->submission_value,
+                'status' => 'pending'
+            ]);
+        }
+        
+        return response()->json([
+            'success' => true, 
+            'message' => 'Google Drive link updated successfully'
+        ]);
+        
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false, 
+            'message' => 'Error: ' . $e->getMessage()
         ], 500);
     }
 }

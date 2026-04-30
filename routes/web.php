@@ -118,7 +118,6 @@ Route::post('/staff/applicant/{id}/update-status', [StaffDashboardController::cl
     ->name('staff.applicant.update-status');
     
 
-// Reports Routes - ADD THESE INSIDE YOUR AUTH MIDDLEWARE GROUP
 Route::get('/staff/reports/data', [ReportController::class, 'getReportsData']);
 Route::get('/staff/reports/export', [ReportController::class, 'exportReport']);
 
@@ -128,6 +127,17 @@ Route::get('/staff/reports/data', [ReportController::class, 'getReportsData'])
 
 Route::get('/staff/reports/export', [ReportController::class, 'exportReport'])
     ->name('staff.reports.export');
+
+Route::post('/applicant/upload/update', [ApplicantDocumentController::class, 'updateUpload'])->name('applicant.upload.update');
+
+// Sa routes file (web.php)
+Route::post('/staff/applicant/{id}/update-gdrive', [StaffDashboardController::class, 'updateGDriveLink'])->name('staff.applicant.update-gdrive');
+
+// Multiple file uploads and individual delete routes
+Route::delete('/applicant/upload/delete/{id}', [ApplicantDocumentController::class, 'deleteSingleUpload'])->name('applicant.upload.delete');
+Route::get('/applicant/uploads/{requirementId}', [ApplicantDocumentController::class, 'getUploadsForRequirement'])->name('applicant.uploads.get');
+Route::delete('/applicant/upload/delete/gdrive/{requirementId}', [ApplicantDocumentController::class, 'deleteGDriveLink'])->name('applicant.upload.delete-gdrive');
+
 });
 
 Route::get('/verify-documents', function () {

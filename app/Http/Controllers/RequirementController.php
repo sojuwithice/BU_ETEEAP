@@ -8,54 +8,62 @@ use Illuminate\Http\Request;
 class RequirementController extends Controller
 {
     public function index(Request $request)
-{
-    $search = $request->query('search');
+    {
+        $search = $request->query('search');
 
-    $requirements = Requirement::latest()
-        ->when($search, function ($query, $search) {
-            return $query->where('name', 'like', "%{$search}%")
-                         ->orWhere('note', 'like', "%{$search}%");
-        })
-        ->get();
+        $requirements = Requirement::latest()
+            ->when($search, function ($query, $search) {
+                return $query->where('name', 'like', "%{$search}%")
+                             ->orWhere('note', 'like', "%{$search}%");
+            })
+            ->get();
 
-    // Kapag AJAX ang request, table rows lang ang ibabalik natin
-    if ($request->ajax()) {
-        return view('partials.requirement_rows', compact('requirements'))->render();
+        if ($request->ajax()) {
+            return view('partials.requirement_rows', compact('requirements'))->render();
+        }
+
+        return view('requirements_list', compact('requirements'));
     }
-
-    return view('requirements_list', compact('requirements'));
-}
 
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required',
-            'note' => 'nullable'
+            'name' => 'required|string|max:255',
+            'note' => 'nullable|string',
+            'submission_type' => 'required|in:gdrive_link,file_upload'
         ]);
 
-        Requirement::create($request->only('name', 'note'));
+        $requirement = Requirement::create([
+            'name' => $request->name,
+            'note' => $request->note,
+            'submission_type' => $request->submission_type
+        ]);
 
-        return response()->json(['success' => true]);
+        return response()->json(['success' => true, 'data' => $requirement]);
     }
 
     public function update(Request $request, $id)
     {
-        $req = Requirement::findOrFail($id);
-
-        $req->update([
-            'name' => $request->name,
-            'note' => $request->note
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'note' => 'nullable|string',
+            'submission_type' => 'required|in:gdrive_link,file_upload'
         ]);
 
-        return response()->json(['success' => true]);
+        $requirement = Requirement::findOrFail($id);
+        
+        $requirement->update([
+            'name' => $request->name,
+            'note' => $request->note,
+            'submission_type' => $request->submission_type
+        ]);
+
+        return response()->json(['success' => true, 'data' => $requirement]);
     }
 
     public function destroy($id)
     {
         Requirement::findOrFail($id)->delete();
-
         return response()->json(['success' => true]);
     }
-
-    
 }

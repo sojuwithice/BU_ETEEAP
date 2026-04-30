@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Requirement extends Model
 {
-    protected $fillable = ['name', 'note'];
+    protected $fillable = ['name', 'note', 'submission_type'];
 
     public function userUpload()
     {

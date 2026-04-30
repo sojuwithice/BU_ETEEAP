@@ -922,3 +922,83 @@ body {
 }
 
 
+    /* Additional styles for submission type - properly aligned */
+    .submission-type-group {
+        margin-top: 15px;
+        margin-bottom: 10px;
+    }
+    .submission-label {
+        font-weight: 700;
+        font-size: 14px;
+        color: #223381;
+        display: block;
+        margin-bottom: 8px;
+    }
+    .submission-options {
+        display: flex;
+        gap: 25px;
+        align-items: center;
+    }
+    .sub-option {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+    }
+    .sub-option input {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+        accent-color: #EF7631;
+        margin: 0;
+    }
+    .sub-option span {
+        font-size: 14px;
+        font-weight: 500;
+        color: #333;
+    }
+    
+    /* TABLE COLUMN ALIGNMENT FIX */
+    .requirements-table th.col-submission,
+    .requirements-table td.submission-type-cell {
+        width: 18%;
+        text-align: left;
+    }
+    
+    .submission-type-cell span {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-weight: 500;
+    }
+    
+    /* Override existing column widths */
+    .requirements-table th.col-name,
+    .requirements-table td.req-name-cell {
+        width: 35%;
+    }
+    
+    .requirements-table th.col-note,
+    .requirements-table td.note-cell {
+        width: 35%;
+    }
+    
+    .requirements-table th.col-actions,
+    .requirements-table td.action-cell {
+        width: 12%;
+        text-align: right;
+    }
+    
+    /* Fix table layout */
+    .requirements-table {
+        table-layout: fixed;
+        width: 100%;
+    }
+    
+    .requirements-table thead tr,
+    .requirements-table tbody tr {
+        display: table;
+        width: 100%;
+        table-layout: fixed;
+    }
+
