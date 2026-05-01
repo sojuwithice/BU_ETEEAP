@@ -11,298 +11,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0" />
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;800;900&family=Raleway:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.0/dist/sweetalert2.all.min.js"></script>
-<style>
-    /* Document item styles */
-.doc-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    padding: 12px;
-    border-radius: 10px;
-    margin-bottom: 5px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    border-left: 3px solid transparent;
-}
 
-.doc-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.doc-name-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-
-.doc-name {
-    font-size: 1rem;
-    font-weight: 600;
-    color: #333;
-    line-height: 1.3;
-}
-
-/* Status badges with icon and text */
-.doc-status-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 11px;
-    font-weight: 600;
-    padding: 4px 12px;
-    border-radius: 20px;
-    white-space: nowrap;
-}
-
-.doc-status-badge .material-symbols-outlined {
-    font-size: 14px !important;
-}
-
-.doc-status-badge.approved {
-    color: #25c14a;
-    background: #e8f5e9;
-}
-
-.doc-status-badge.rejected {
-    color: #e03d4d;
-    background: #ffebee;
-}
-
-.doc-status-badge.incomplete {
-    color: #EF7631;
-    background: #fff3e0;
-}
-
-.doc-note {
-    font-size: 0.75rem;
-    color: #666;
-    line-height: 1.4;
-    margin: 0;
-}
-
-.doc-reason {
-    font-size: 0.7rem;
-    color: #EF7631;
-    line-height: 1.3;
-    margin-top: 2px;
-}
-
-/* Status badges for recent table */
-.status-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 11px;
-    font-weight: 600;
-    padding: 4px 12px;
-    border-radius: 20px;
-    white-space: nowrap;
-}
-
-.status-badge .material-symbols-outlined {
-    font-size: 14px !important;
-}
-
-.status-badge.approved {
-    color: #25c14a;
-    background: #e8f5e9;
-}
-
-.status-badge.rejected {
-    color: #e03d4d;
-    background: #ffebee;
-}
-
-.status-badge.incomplete {
-    color: #EF7631;
-    background: #fff3e0;
-}
-
-.status-badge.pending {
-    color: #f47c20;
-    background: #fff8f0;
-}
-
-/* Google Drive Section Styles */
-.gdrive-section {
-    margin-bottom: 20px;
-    padding: 20px;
-    background: #f8f9fa;
-    border-radius: 12px;
-    border: 2px dashed #223381;
-}
-
-.gdrive-section.hidden {
-    display: none;
-}
-
-.upload-box.hidden {
-    display: none;
-}
-
-.gdrive-label {
-    font-weight: 700;
-    font-size: 14px;
-    color: #223381;
-    display: block;
-    margin-bottom: 10px;
-}
-
-.gdrive-input-group {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 10px;
-}
-
-.gdrive-link-input {
-    flex: 1;
-    padding: 12px 15px;
-    border: 1.5px solid #ddd;
-    border-radius: 10px;
-    font-size: 14px;
-}
-
-.gdrive-link-input:focus {
-    outline: none;
-    border-color: #223381;
-}
-
-.gdrive-link-input:disabled {
-    background: #f0f0f0;
-    cursor: not-allowed;
-}
-
-.btn-gdrive {
-    background: #223381;
-    color: white;
-    border: none;
-    padding: 12px 24px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
-}
-
-.btn-gdrive-outline {
-    background: transparent;
-    border: 1.5px solid #223381;
-    color: #223381;
-    padding: 8px 16px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
-}
-
-.btn-gdrive-outline-danger {
-    border-color: #e03d4d;
-    color: #e03d4d;
-}
-
-.gdrive-actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 10px;
-}
-
-.gdrive-status {
-    font-size: 12px;
-    margin-top: 10px;
-    padding: 8px 12px;
-    border-radius: 8px;
-}
-
-.gdrive-status.success {
-    background: #e8f5e9;
-    color: #25c14a;
-}
-
-.gdrive-status.warning {
-    background: #fff3e0;
-    color: #EF7631;
-}
-
-.gdrive-link-display {
-    margin-top: 10px;
-    padding: 8px 12px;
-    background: #eef5ff;
-    border-radius: 8px;
-    word-break: break-all;
-}
-
-.gdrive-link-display a {
-    color: #223381;
-    text-decoration: none;
-}
-
-/* Multiple files grid preview */
-.files-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
-    padding: 10px;
-    max-height: 320px;
-    overflow-y: auto;
-    justify-content: flex-start;
-}
-.file-preview-card {
-    width: 160px;
-    background: #f8f9fc;
-    border-radius: 12px;
-    padding: 10px;
-    text-align: center;
-    border: 1px solid #e0e7ff;
-    position: relative;
-    transition: all 0.2s;
-}
-.file-preview-card:hover {
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-.file-preview-card img, .file-preview-card iframe {
-    width: 100%;
-    height: 100px;
-    object-fit: cover;
-    border-radius: 8px;
-}
-.file-preview-card .file-icon {
-    font-size: 60px;
-    color: #223381;
-}
-.file-preview-card .file-name {
-    font-size: 11px;
-    margin-top: 8px;
-    word-break: break-all;
-    font-weight: 500;
-}
-.file-preview-card .view-file-btn {
-    margin-top: 6px;
-    padding: 4px 10px;
-    background: #223381;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 11px;
-}
-.remove-preview-btn {
-    position: absolute;
-    top: 4px;
-    right: 4px;
-    background: #e03d4d;
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 22px;
-    height: 22px;
-    cursor: pointer;
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-</style>
 </head>
 <body>
 
@@ -423,7 +132,7 @@
                 @endif
             </div>
             @if($req->note)
-            <small class="doc-note">{{ $req->note }}</small>
+            <small class="doc-note" data-raw-note="{{ $req->note }}">{{ $req->note }}</small>
             @endif
             @if($upload && ($status == 'rejected' || $status == 'incomplete') && $reason)
             <small class="doc-reason">{{ $reason }}</small>
@@ -621,6 +330,25 @@ function updateClock() {
 
 setInterval(updateClock, 1000);
 updateClock();
+
+// ========== CONVERT LINKS TO CLICKABLE IN NOTES ==========
+function convertLinksInNotes() {
+    const noteElements = document.querySelectorAll('.doc-note');
+    noteElements.forEach(el => {
+        const rawText = el.innerText;
+        if (rawText && (rawText.match(/(https?:\/\/|www\.)/i))) {
+            const urlPattern = /(\b(https?:\/\/|www\.)[\w\-\.]+\.[a-z]{2,}(?:\/[\w\-\.\/?%&=#]*)?)/gi;
+            const convertedHtml = rawText.replace(urlPattern, function(url) {
+                let href = url;
+                if (url.startsWith('www.')) href = 'https://' + url;
+                return `<a href="${href}" target="_blank" rel="noopener noreferrer">${url}</a>`;
+            });
+            if (convertedHtml !== rawText) {
+                el.innerHTML = convertedHtml;
+            }
+        }
+    });
+}
 
 const profileWrapper = document.getElementById("profileWrapper");
 const dropdown = document.getElementById("profileDropdown");
@@ -832,6 +560,19 @@ document.querySelectorAll('.doc-item').forEach(item => {
         currentDocItem = this;
         currentDocStatus = docStatus;
         currentDocReason = docReason;
+
+        // DISABLE upload box if approved
+if (uploadBox) {
+    if (docStatus === 'approved') {
+        uploadBox.classList.add('disabled');
+        uploadBox.style.pointerEvents = 'none';
+        uploadBox.style.opacity = '0.6';
+    } else {
+        uploadBox.classList.remove('disabled');
+        uploadBox.style.pointerEvents = 'auto';
+        uploadBox.style.opacity = '1';
+    }
+}
         
         resetUploadUI();
         
@@ -1216,13 +957,31 @@ window.confirmOnsiteSubmission = function() {
 };
 checkOnsiteStatus();
 
+function showUploadSection() {
+    if (!uploadSection) return;
+
+    if (window.innerWidth <= 1024) {
+        uploadSection.classList.add('active');
+        uploadSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
 document.querySelectorAll('.upload-date-cell').forEach(cell => {
     const timestamp = cell.getAttribute('data-timestamp');
     if (timestamp) { cell.innerText = new Date(timestamp).toLocaleString(); }
 });
 
 window.addEventListener('beforeunload', function() { if (selectedRequirementId) localStorage.setItem('activeDocumentId', selectedRequirementId); });
-document.addEventListener('DOMContentLoaded', function() { const savedDocId = localStorage.getItem('activeDocumentId'); if (savedDocId) { const savedDoc = document.querySelector(`.doc-item[data-id="${savedDocId}"]`); if (savedDoc) savedDoc.click(); localStorage.removeItem('activeDocumentId'); } });
+
+document.addEventListener('DOMContentLoaded', function() {
+    convertLinksInNotes();
+    const savedDocId = localStorage.getItem('activeDocumentId');
+    if (savedDocId) {
+        const savedDoc = document.querySelector(`.doc-item[data-id="${savedDocId}"]`);
+        if (savedDoc) savedDoc.click();
+        localStorage.removeItem('activeDocumentId');
+    }
+});
 </script>
 </body>
 </html>

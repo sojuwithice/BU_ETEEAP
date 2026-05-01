@@ -13,6 +13,25 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 
+<style>
+    /* Style for clickable links in notes */
+    .note-cell a {
+        color: #223381;
+        text-decoration: none;
+        font-weight: 500;
+        border-bottom: 1px dashed #223381;
+        transition: all 0.2s ease;
+    }
+    .note-cell a:hover {
+        color: #EF7631;
+        border-bottom-color: #EF7631;
+        text-decoration: none;
+    }
+    .note-cell {
+        word-break: break-word;
+        max-width: 300px;
+    }
+</style>
 </head>
 
 <body>
@@ -109,7 +128,7 @@
                     @foreach($requirements as $req)
                     <tr data-id="{{ $req->id }}">
                         <td class="req-name-cell">{{ $req->name }}</td>
-                        <td class="note-cell">{{ $req->note }}</td>
+                        <td class="note-cell" data-raw-note="{{ $req->note }}">{{ $req->note }}</td>
                         <td class="submission-type-cell">
                             @if(($req->submission_type ?? 'gdrive_link') == 'gdrive_link')
                                 <span><span class="material-symbols-outlined" style="font-size: 16px; color: #223381;">link</span> Google Drive Link</span>
@@ -151,7 +170,8 @@
             </div>
             <div class="form-group">
                 <label for="reqNote">Note <span class="optional">(Optional)</span></label>
-                <textarea id="reqNote" rows="4" placeholder="Add some instructions or details..."></textarea>
+                <textarea id="reqNote" rows="4" placeholder="Add some instructions or details... (You can paste links, they will be clickable)"></textarea>
+                <small style="color: #666; font-size: 11px;"> Tip: Links like https://example.com will be automatically clickable</small>
             </div>
             
             <div class="submission-type-group">
@@ -192,6 +212,7 @@
             <div class="form-group">
                 <label>Note</label>
                 <textarea id="editReqNote" rows="4"></textarea>
+                <small style="color: #666; font-size: 11px;">Tip: Links like https://example.com will be automatically clickable</small>
             </div>
             
             <div class="submission-type-group">
@@ -293,6 +314,40 @@
 
 <script>
     let croppieInstance = null;
+
+    // ========== FUNCTION TO CONVERT TEXT LINKS TO CLICKABLE HTML ==========
+    function autoConvertLinks(text) {
+        if (!text) return '';
+        
+        // URL pattern: matches http://, https://, and www. links
+        const urlPattern = /(\b(https?:\/\/|www\.)[\w\-\.]+\.[a-z]{2,}(?:\/[\w\-\.\/?%&=#]*)?)/gi;
+        
+        return text.replace(urlPattern, function(url) {
+            let href = url;
+            // Add https:// if missing for www links
+            if (url.startsWith('www.')) {
+                href = 'https://' + url;
+            }
+            return `<a href="${href}" target="_blank" rel="noopener noreferrer">${url}</a>`;
+        });
+    }
+
+    // ========== FUNCTION TO PROCESS ALL NOTE CELLS ==========
+    function processAllNoteCells() {
+        const noteCells = document.querySelectorAll('.note-cell');
+        noteCells.forEach(cell => {
+            const rawNote = cell.getAttribute('data-raw-note') || cell.innerText;
+            if (rawNote && rawNote.trim() !== '') {
+                // Only process if contains http, https, or www
+                if (rawNote.match(/(https?:\/\/|www\.)/i)) {
+                    const convertedHtml = autoConvertLinks(rawNote);
+                    if (convertedHtml !== cell.innerText) {
+                        cell.innerHTML = convertedHtml;
+                    }
+                }
+            }
+        });
+    }
 
     function showToast(message, type = 'success') {
         const toast = document.getElementById("toast");
@@ -466,6 +521,9 @@
     document.addEventListener("DOMContentLoaded", () => {
         const btn = document.getElementById("confirmBtn");
         if (btn) btn.addEventListener("click", async () => { if (typeof confirmCallback === "function") await confirmCallback(); closeConfirm(); });
+        
+        // Process note cells to convert links to clickable
+        processAllNoteCells();
     });
 
     // ADD REQUIREMENT
@@ -475,7 +533,7 @@
             form.addEventListener("submit", async (e) => {
                 e.preventDefault();
                 const name = document.getElementById("reqName").value;
-                const note = document.getElementById("reqNote").value;
+                let note = document.getElementById("reqNote").value;
                 const submissionType = document.querySelector('input[name="submission_type"]:checked').value;
                 const saveBtn = form.querySelector(".btn-save");
                 saveBtn.disabled = true; 
