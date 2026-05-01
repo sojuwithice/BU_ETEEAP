@@ -34,9 +34,7 @@
         border-radius: 12px;
         border: 1px solid #EF7631;
     }
-    .gdrive-onsite-edit-section.hidden {
-        display: none;
-    }
+    .gdrive-onsite-edit-section.hidden { display: none; }
     .gdrive-onsite-label {
         font-weight: 600;
         font-size: 13px;
@@ -70,9 +68,7 @@
         font-weight: 600;
         font-size: 13px;
     }
-    .btn-gdrive-onsite-update:hover {
-        background: #d66528;
-    }
+    .btn-gdrive-onsite-update:hover { background: #d66528; }
     .gdrive-link-inline {
         margin-top: 10px;
         padding: 8px 12px;
@@ -84,12 +80,139 @@
         color: #223381;
         text-decoration: none;
     }
+    
+    /* Multiple files grid preview */
+    .files-grid-staff {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        padding: 10px;
+        max-height: 400px;
+        overflow-y: auto;
+        justify-content: flex-start;
+    }
+    .file-preview-card-staff {
+        width: 180px;
+        background: #f8f9fc;
+        border-radius: 12px;
+        padding: 10px;
+        text-align: center;
+        border: 1px solid #e0e7ff;
+        transition: all 0.2s;
+    }
+    .file-preview-card-staff:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .file-preview-card-staff img, .file-preview-card-staff iframe {
+        width: 100%;
+        height: 120px;
+        object-fit: cover;
+        border-radius: 8px;
+    }
+    .file-preview-card-staff .file-icon {
+        font-size: 60px;
+        color: #223381;
+    }
+    .file-preview-card-staff .file-name {
+        font-size: 11px;
+        margin-top: 8px;
+        word-break: break-all;
+        font-weight: 500;
+    }
+    .file-preview-card-staff .view-file-btn {
+        margin-top: 6px;
+        padding: 4px 10px;
+        background: #223381;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 11px;
+    }
+    .multiple-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 10px;
+        padding: 2px 8px;
+        border-radius: 12px;
+        background: #25c14a20;
+        color: #25c14a;
+        margin-left: 8px;
+    }
+    
+    /* Staff upload section with multiple file support */
+    .staff-upload-section {
+        margin-bottom: 20px;
+        padding: 15px;
+        background: #f0f7ff;
+        border-radius: 12px;
+        border: 1px solid #22338120;
+    }
+    .upload-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 15px;
+    }
+    .upload-header h4 {
+        margin: 0;
+        color: #223381;
+    }
+    .upload-area {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .upload-box-staff {
+        border: 2px dashed #223381;
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        background: white;
+    }
+    .upload-box-staff:hover {
+        background: #f8f9fc;
+        border-color: #EF7631;
+    }
+    .upload-box-staff .material-symbols-outlined {
+        font-size: 48px;
+        color: #223381;
+    }
+    .btn-upload-staff {
+        background: #223381;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+    .selected-files-list {
+        background: #eef5ff;
+        border-radius: 8px;
+        padding: 8px 12px;
+        font-size: 12px;
+        max-height: 100px;
+        overflow-y: auto;
+    }
+    .selected-files-list span {
+        display: inline-block;
+        background: #22338120;
+        padding: 2px 8px;
+        border-radius: 12px;
+        margin: 2px;
+        font-size: 11px;
+    }
 </style>
 </head>
 
 <body>
 
-    <!-- HEADER (same as before, keep your existing header) -->
 <div class="header">
     <div class="left-head">
         <img src="{{ asset('images/eteeap_logo.png') }}">
@@ -120,7 +243,7 @@
                 <a href="#" onclick="openAccountModal()" class="dropdown-item"><span class="material-symbols-outlined">manage_accounts</span><span>Manage Account</span></a>
                 <form method="POST" action="{{ route('logout') }}" style="margin: 0;">
                     @csrf
-                    <button type="submit" class="dropdown-item" onclick="event.stopPropagation();"><span class="material-symbols-outlined">logout</span><span>Logout</span></button>
+                    <button type="submit" class="dropdown-item"><span class="material-symbols-outlined">logout</span><span>Logout</span></button>
                 </form>
             </div>
         </div>
@@ -195,7 +318,7 @@
                     </div>
                 </div>
 
-                <!-- ONSITE GDRIVE EDIT SECTION - May fix para hindi mag-load ng link kung walang laman -->
+                <!-- ONSITE GDRIVE EDIT SECTION -->
                 <div id="gdriveOnsiteEditSection" class="gdrive-onsite-edit-section hidden">
                     <label class="gdrive-onsite-label">Onsite Submission - Google Drive Link</label>
                     <div class="gdrive-onsite-input-group">
@@ -205,17 +328,23 @@
                     <div id="onsiteCurrentDisplay" class="gdrive-link-inline" style="margin-top: 10px; display: none;"></div>
                 </div>
 
-                <!-- STAFF UPLOAD SECTION -->
-                <div class="staff-upload-section" id="staffUploadSection" style="display: none; margin-bottom: 20px;">
-                    <div class="upload-header"><span class="material-symbols-outlined">cloud_upload</span><h4>Upload Document for Student</h4></div>
-                    <div class="upload-area" id="staffUploadArea">
-                        <input type="file" id="staffFileInput" style="display: none;" accept="image/*,application/pdf,.doc,.docx">
+                <!-- STAFF UPLOAD SECTION - MULTIPLE FILES -->
+                <div class="staff-upload-section" id="staffUploadSection" style="display: none;">
+                    <div class="upload-header">
+                        <span class="material-symbols-outlined">cloud_upload</span>
+                        <h4>Upload Documents for Student (Multiple Files)</h4>
+                    </div>
+                    <div class="upload-area">
+                        <input type="file" id="staffFileInput" style="display: none;" accept="image/*,application/pdf,.doc,.docx" multiple>
                         <div class="upload-box-staff" onclick="document.getElementById('staffFileInput').click()">
                             <span class="material-symbols-outlined">upload_file</span>
-                            <p>Click to upload file</p>
-                            <small id="staffFileName">No file selected</small>
+                            <p>Click to select files (you can select multiple)</p>
+                            <small id="staffFileName">No files selected</small>
                         </div>
-                        <button class="btn-upload-staff" id="staffUploadBtn" style="display: none;" onclick="uploadStaffDocument()"><span class="material-symbols-outlined">publish</span> Upload Document</button>
+                        <div id="selectedFilesList" class="selected-files-list" style="display: none;"></div>
+                        <button class="btn-upload-staff" id="staffUploadBtn" style="display: none;" onclick="uploadStaffDocuments()">
+                            <span class="material-symbols-outlined">publish</span> Upload All Files
+                        </button>
                     </div>
                 </div>
                 
@@ -256,7 +385,7 @@
     </div>
 </div>
 
-<!-- Account Modal (same as before) -->
+<!-- Account Modal -->
 <div id="accountModal" class="account-modal">
     <div class="account-box">
         <span class="close-modal" onclick="closeAccountModal()">&times;</span>
@@ -306,6 +435,7 @@
     let currentRequirementName = null;
     let currentSubmissionType = null;
     let isOnsiteVerified = false;
+    let selectedStaffFiles = [];
 
     function showToast(message, type = 'success') {
         const toast = document.getElementById("toast");
@@ -364,6 +494,69 @@
         }
     });
 
+    function displayFilesInPreview(filesArray, submissionType = 'file_upload') {
+        const previewDiv = document.getElementById('documentPreview');
+        
+        if (!filesArray || filesArray.length === 0) {
+            previewDiv.innerHTML = `<div class="file-preview" style="text-align: center; padding: 20px; background: #f9f9f9; border-radius: 12px;">
+                <span class="material-symbols-outlined" style="font-size: 48px; color: #999;">description</span>
+                <p>No files uploaded yet</p>
+            </div>`;
+            return;
+        }
+        
+        if (submissionType === 'gdrive_link') {
+            const file = filesArray[0];
+            previewDiv.innerHTML = `
+                <div class="file-preview" style="text-align: center; padding: 20px; background: #f9f9f9; border-radius: 12px;">
+                    <span class="material-symbols-outlined" style="font-size: 48px; color: #223381;">link</span>
+                    <p style="margin: 10px 0; font-weight: 600; color: #223381;">Google Drive Link Submission</p>
+                    <div style="margin-top: 15px; padding: 10px; background: #eef5ff; border-radius: 8px; word-break: break-all;">
+                        <a href="${file.file_path}" target="_blank">${file.file_path}</a>
+                    </div>
+                    <button onclick="window.open('${file.file_path}', '_blank')" style="margin-top: 15px; padding: 8px 20px; background: #223381; color: white; border: none; border-radius: 6px; cursor: pointer;">Open Link</button>
+                </div>
+            `;
+            return;
+        }
+        
+        let gridHtml = `
+            <div style="background: #f9f9f9; border-radius: 12px; padding: 15px;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 15px; flex-wrap: wrap;">
+                    <span class="material-symbols-outlined" style="color: #223381;">folder</span>
+                    <strong>${filesArray.length} file(s) uploaded</strong>
+                    ${filesArray.length > 1 ? '<span class="multiple-badge"><span class="material-symbols-outlined" style="font-size: 12px;">collections</span> Multiple Files</span>' : ''}
+                </div>
+                <div class="files-grid-staff">
+        `;
+        
+        filesArray.forEach(file => {
+            const fileUrl = file.file_path;
+            const fileName = file.file_name || 'Document';
+            const ext = fileUrl.split('.').pop().toLowerCase();
+            
+            let content = '';
+            if (ext === 'pdf') {
+                content = `<iframe src="${fileUrl}" style="width:100%;height:120px;border:none;border-radius:8px;"></iframe>`;
+            } else if (['jpg','jpeg','png','gif','webp','bmp'].includes(ext)) {
+                content = `<img src="${fileUrl}" alt="preview" style="width:100%;height:120px;object-fit:cover;border-radius:8px;">`;
+            } else {
+                content = `<span class="material-symbols-outlined file-icon" style="font-size: 60px; color: #223381;">description</span>`;
+            }
+            
+            gridHtml += `
+                <div class="file-preview-card-staff">
+                    ${content}
+                    <div class="file-name" title="${fileName}">${fileName.length > 25 ? fileName.substring(0,22)+'...' : fileName}</div>
+                    <button class="view-file-btn" onclick="window.open('${fileUrl}', '_blank')">View</button>
+                </div>
+            `;
+        });
+        
+        gridHtml += `</div></div>`;
+        previewDiv.innerHTML = gridHtml;
+    }
+
     function updateGDriveLinkOnsite() {
         if (!isOnsiteVerified) {
             showToast("Onsite verification required to update links", "error");
@@ -400,7 +593,20 @@
         });
     }
 
-    function selectDocument(element, requirementId, requirementName) {
+    async function fetchAllUploads(requirementId) {
+        try {
+            const response = await fetch(`/staff/applicant/${applicantId}/all-uploads/${requirementId}`, {
+                headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken }
+            });
+            const data = await response.json();
+            return data;
+        } catch (err) {
+            console.error("Error fetching all uploads:", err);
+            return { success: false, files: [] };
+        }
+    }
+
+    async function selectDocument(element, requirementId, requirementName) {
         document.querySelectorAll('.doc-item').forEach(item => item.classList.remove('active'));
         element.classList.add('active');
         currentRequirementId = requirementId;
@@ -419,111 +625,163 @@
         document.getElementById('staffUploadSection').style.display = 'none';
         
         const previewDiv = document.getElementById('documentPreview');
-        previewDiv.innerHTML = `<div class="file-preview" style="text-align: center; padding: 20px; background: #f9f9f9; border-radius: 12px;"><span class="material-symbols-outlined" style="font-size: 48px; color: #999;">hourglass_empty</span><p>Loading document...</p></div>`;
+        previewDiv.innerHTML = `<div class="file-preview" style="text-align: center; padding: 20px; background: #f9f9f9; border-radius: 12px;">
+            <span class="material-symbols-outlined" style="font-size: 48px; color: #999;">hourglass_empty</span>
+            <p>Loading document(s)...</p>
+        </div>`;
         
-        fetch(`/staff/applicant/${applicantId}/onsite-status`, { headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken } })
-        .then(res => res.json())
-        .then(onsiteData => {
+        try {
+            const onsiteRes = await fetch(`/staff/applicant/${applicantId}/onsite-status`, { 
+                headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken } 
+            });
+            const onsiteData = await onsiteRes.json();
             isOnsiteVerified = onsiteData.success && onsiteData.onsite_verified;
-            return fetch(`/staff/applicant/${applicantId}/document/${requirementId}`, { headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken } });
-        })
-        .then(response => response.json())
-        .then(data => {
-            const doc = data.document;
-            const hasDocument = data.success && doc;
             
-            if (hasDocument) {
-                if (doc.status) {
-                    const radio = document.querySelector(`input[name="status"][value="${doc.status}"]`);
-                    if (radio) radio.checked = true;
-                    if (doc.status === 'rejected' || doc.status === 'incomplete') {
-                        document.getElementById('reasonGroup').style.display = 'block';
-                        if (doc.verification_reason) {
-                            document.getElementById('selectedReasonLabel').innerText = doc.verification_reason;
-                            document.getElementById('reasonSelect').value = doc.verification_reason;
-                        }
+            const docRes = await fetch(`/staff/applicant/${applicantId}/document/${requirementId}`, { 
+                headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken } 
+            });
+            const docData = await docRes.json();
+            const doc = docData.document;
+            
+            if (doc && doc.status) {
+                const radio = document.querySelector(`input[name="status"][value="${doc.status}"]`);
+                if (radio) radio.checked = true;
+                if (doc.status === 'rejected' || doc.status === 'incomplete') {
+                    document.getElementById('reasonGroup').style.display = 'block';
+                    if (doc.verification_reason) {
+                        document.getElementById('selectedReasonLabel').innerText = doc.verification_reason;
+                        document.getElementById('reasonSelect').value = doc.verification_reason;
                     }
                 }
                 if (doc.verification_comment) document.getElementById('commentText').value = doc.verification_comment;
-                
-                let displayDate = 'Not available';
-                if (doc.upload_date) {
-                    let uploadDate = new Date(doc.upload_date);
-                    if (!isNaN(uploadDate.getTime())) {
-                        displayDate = uploadDate.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true });
-                    }
-                }
-                
-                const submissionType = doc.submission_type || currentSubmissionType;
-                
-                if (submissionType === 'gdrive_link') {
-                    if (isOnsiteVerified) {
-                        // ONSITE VERIFIED - May edit box (FIXED: hindi magl-load ng link kung walang laman)
-                        document.getElementById('gdriveOnsiteEditSection').classList.remove('hidden');
-                        const onsiteInput = document.getElementById('gdriveOnsiteInput');
-                        const onsiteDisplay = document.getElementById('onsiteCurrentDisplay');
-                        
-                        // FIXED: Check kung may valid link bago i-set ang value
-                        const existingLink = doc.submission_value && doc.submission_value.trim() !== '' ? doc.submission_value : null;
-                        
-                        if (existingLink) {
-                            onsiteInput.value = existingLink;
-                            onsiteDisplay.style.display = 'block';
-                            onsiteDisplay.innerHTML = `<strong>Current Link:</strong> <a href="${existingLink}" target="_blank">${existingLink}</a>`;
-                        } else {
-                            onsiteInput.value = '';  // Blanko - walang laman
-                            onsiteDisplay.style.display = 'none';
-                        }
-                        previewDiv.innerHTML = `<div class="file-preview" style="text-align: center; padding: 20px; background: #f9f9f9; border-radius: 12px;"><span class="material-symbols-outlined" style="font-size: 48px; color: #EF7631;">edit_note</span><p style="font-weight: 600; color: #EF7631;">Onsite Submission</p><p>Use the form above to add/edit the Google Drive link.</p></div>`;
+            }
+            
+            const submissionType = (doc && doc.submission_type) || currentSubmissionType;
+            
+            if (submissionType === 'gdrive_link') {
+                if (isOnsiteVerified) {
+                    document.getElementById('gdriveOnsiteEditSection').classList.remove('hidden');
+                    const onsiteInput = document.getElementById('gdriveOnsiteInput');
+                    const onsiteDisplay = document.getElementById('onsiteCurrentDisplay');
+                    const existingLink = (doc && doc.submission_value) ? doc.submission_value : null;
+                    if (existingLink) {
+                        onsiteInput.value = existingLink;
+                        onsiteDisplay.style.display = 'block';
+                        onsiteDisplay.innerHTML = `<strong>Current Link:</strong> <a href="${existingLink}" target="_blank">${existingLink}</a>`;
+                        displayFilesInPreview([{ file_path: existingLink, file_name: 'Google Drive Link' }], 'gdrive_link');
                     } else {
-                        // ONLINE SUBMISSION - Preview link
-                        previewDiv.innerHTML = `
-                            <div class="file-preview" style="text-align: center; padding: 20px; background: #f9f9f9; border-radius: 12px;">
-                                <span class="material-symbols-outlined" style="font-size: 48px; color: #223381;">link</span>
-                                <p style="margin: 10px 0; font-weight: 600; color: #223381;">Google Drive Link Submission</p>
-                                <p style="font-size: 13px; color: #666;"><span class="material-symbols-outlined" style="font-size: 16px;">calendar_month</span> Submitted: ${displayDate}</p>
-                                ${doc.submission_value ? `
-                                    <div style="margin-top: 15px; padding: 10px; background: #eef5ff; border-radius: 8px; word-break: break-all;">
-                                        <a href="${doc.submission_value}" target="_blank">${doc.submission_value}</a>
-                                    </div>
-                                    <button onclick="window.open('${doc.submission_value}', '_blank')" style="margin-top: 15px; padding: 8px 20px; background: #223381; color: white; border: none; border-radius: 6px; cursor: pointer;">Open Link</button>
-                                ` : '<p style="color: #999; margin-top: 10px;">No link submitted yet</p>'}
-                            </div>
-                        `;
+                        onsiteInput.value = '';
+                        onsiteDisplay.style.display = 'none';
+                        displayFilesInPreview([], 'gdrive_link');
                     }
-                } else if (doc.file_path) {
-                    previewDiv.innerHTML = `
-                        <div class="file-preview" style="text-align: center; padding: 20px; background: #f9f9f9; border-radius: 12px;">
-                            <span class="material-symbols-outlined" style="font-size: 48px; color: #223381;">description</span>
-                            <p style="margin: 10px 0; font-weight: 600; color: #333;">${doc.file_name || 'Document'}</p>
-                            <p style="font-size: 13px; color: #666;"><span class="material-symbols-outlined" style="font-size: 16px;">calendar_month</span> Uploaded: ${displayDate}</p>
-                            <button onclick="window.open('${doc.file_path}', '_blank')" style="margin-top: 15px; padding: 8px 20px; background: #223381; color: white; border: none; border-radius: 6px; cursor: pointer;">View Document</button>
-                        </div>
-                    `;
-                    if (isOnsiteVerified) document.getElementById('staffUploadSection').style.display = 'block';
+                } else {
+                    const existingLink = (doc && doc.submission_value) ? doc.submission_value : null;
+                    if (existingLink) {
+                        displayFilesInPreview([{ file_path: existingLink, file_name: 'Google Drive Link' }], 'gdrive_link');
+                    } else {
+                        displayFilesInPreview([], 'gdrive_link');
+                    }
                 }
             } else {
-                if (currentSubmissionType === 'gdrive_link') {
-                    if (isOnsiteVerified) {
-                        document.getElementById('gdriveOnsiteEditSection').classList.remove('hidden');
-                        // FIXED: I-clear ang input kapag walang existing link
-                        document.getElementById('gdriveOnsiteInput').value = '';
-                        document.getElementById('onsiteCurrentDisplay').style.display = 'none';
-                        previewDiv.innerHTML = `<div class="file-preview" style="text-align: center; padding: 20px; background: #f9f9f9; border-radius: 12px;"><span class="material-symbols-outlined" style="font-size: 48px; color: #EF7631;">pending</span><p style="font-weight: 600; color: #EF7631;">Onsite Submission - Pending</p><p>Please add the Google Drive link.</p></div>`;
-                    } else {
-                        previewDiv.innerHTML = `<div class="file-preview" style="text-align: center; padding: 20px; background: #f9f9f9; border-radius: 12px;"><span class="material-symbols-outlined" style="font-size: 48px; color: #999;">link</span><p>No Google Drive link submitted yet</p></div>`;
-                    }
-                } else if (currentSubmissionType === 'file_upload' && isOnsiteVerified) {
-                    document.getElementById('staffUploadSection').style.display = 'block';
-                    previewDiv.innerHTML = `<div class="file-preview" style="text-align: center; padding: 20px; background: #f9f9f9; border-radius: 12px;"><span class="material-symbols-outlined" style="font-size: 48px; color: #EF7631;">cloud_upload</span><p style="font-weight: 600; color: #EF7631;">Onsite Submission</p><p>Please upload the document.</p></div>`;
+                const allUploads = await fetchAllUploads(requirementId);
+                
+                if (allUploads.success && allUploads.files && allUploads.files.length > 0) {
+                    displayFilesInPreview(allUploads.files, 'file_upload');
+                } else if (doc && doc.file_path) {
+                    displayFilesInPreview([{ file_path: doc.file_path, file_name: doc.file_name || 'Document' }], 'file_upload');
                 } else {
-                    previewDiv.innerHTML = `<div class="file-preview" style="text-align: center; padding: 20px; background: #f9f9f9; border-radius: 12px;"><span class="material-symbols-outlined" style="font-size: 48px; color: #999;">description</span><p>No document uploaded yet</p></div>`;
+                    displayFilesInPreview([], 'file_upload');
+                }
+                
+                if (isOnsiteVerified) {
+                    document.getElementById('staffUploadSection').style.display = 'block';
+                    selectedStaffFiles = [];
+                    updateSelectedFilesDisplay();
                 }
             }
-        })
-        .catch(error => {
+        } catch (error) {
             console.error('Error:', error);
-            previewDiv.innerHTML = `<div class="file-preview" style="text-align: center; padding: 20px;"><span class="material-symbols-outlined" style="color: #e03d4d;">error</span><p>Error loading document.</p></div>`;
+            previewDiv.innerHTML = `<div class="file-preview" style="text-align: center; padding: 20px;">
+                <span class="material-symbols-outlined" style="color: #e03d4d;">error</span>
+                <p>Error loading document.</p>
+            </div>`;
+        }
+    }
+
+    function updateSelectedFilesDisplay() {
+        const container = document.getElementById('selectedFilesList');
+        const fileNameSpan = document.getElementById('staffFileName');
+        const uploadBtn = document.getElementById('staffUploadBtn');
+        
+        if (selectedStaffFiles.length === 0) {
+            container.style.display = 'none';
+            fileNameSpan.innerText = 'No files selected';
+            uploadBtn.style.display = 'none';
+        } else {
+            container.style.display = 'block';
+            fileNameSpan.innerText = `${selectedStaffFiles.length} file(s) selected`;
+            uploadBtn.style.display = 'flex';
+            
+            let html = '';
+            selectedStaffFiles.forEach((file, index) => {
+                html += `<span>${file.name} <button onclick="removeSelectedFile(${index})" style="background:none; border:none; cursor:pointer; color:#e03d4d;">×</button></span>`;
+            });
+            container.innerHTML = html;
+        }
+    }
+    
+    function removeSelectedFile(index) {
+        selectedStaffFiles.splice(index, 1);
+        updateSelectedFilesDisplay();
+        const fileInput = document.getElementById('staffFileInput');
+        if (fileInput) fileInput.value = '';
+    }
+
+    document.getElementById('staffFileInput')?.addEventListener('change', function(e) {
+        if (e.target.files && e.target.files.length > 0) {
+            selectedStaffFiles = Array.from(e.target.files);
+            updateSelectedFilesDisplay();
+        }
+    });
+
+    async function uploadStaffDocuments() {
+        if (!currentRequirementId) { showToast("Please select a document first", "error"); return; }
+        if (selectedStaffFiles.length === 0) { showToast("Please select file(s) to upload", "error"); return; }
+        
+        Swal.fire({ 
+            title: 'Upload Documents', 
+            html: `Upload ${selectedStaffFiles.length} file(s) for <strong>${currentRequirementName}</strong>?`, 
+            icon: 'question', showCancelButton: true, confirmButtonColor: '#223381', confirmButtonText: 'Yes, Upload' 
+        }).then((result) => {
+            if (!result.isConfirmed) return;
+            Swal.fire({ title: 'Uploading...', allowOutsideClick: false, showConfirmButton: false, didOpen: () => Swal.showLoading() });
+            
+            const formData = new FormData();
+            selectedStaffFiles.forEach(file => {
+                formData.append('files[]', file);
+            });
+            formData.append('requirement_id', currentRequirementId);
+            
+            fetch(`/staff/applicant/${applicantId}/upload-document`, { 
+                method: 'POST', 
+                headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' }, 
+                body: formData 
+            })
+            .then(response => response.json())
+            .then(data => {
+                Swal.close();
+                if (data.success) {
+                    showToast(`${selectedStaffFiles.length} file(s) uploaded successfully!`, "success");
+                    document.getElementById('staffFileInput').value = '';
+                    selectedStaffFiles = [];
+                    updateSelectedFilesDisplay();
+                    const activeDoc = document.querySelector('.doc-item.active');
+                    if (activeDoc) selectDocument(activeDoc, currentRequirementId, currentRequirementName);
+                } else { 
+                    showToast(data.message || "Upload failed", "error"); 
+                }
+            })
+            .catch(error => { Swal.close(); showToast("Error uploading documents", "error"); });
         });
     }
 
@@ -673,8 +931,6 @@
         saveBtn.disabled = false; saveBtn.innerText = "Save Photo";
     }
 
-    let selectedStaffFile = null;
-
     function checkOnsiteRequest() {
         fetch(`/staff/applicant/${applicantId}/onsite-status`, { method: 'GET', headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken } })
         .then(response => response.json())
@@ -710,43 +966,6 @@
                 } else { showToast(data.message || "Confirmation failed", "error"); }
             })
             .catch(error => { Swal.close(); showToast("Error confirming submission", "error"); });
-        });
-    }
-
-    document.getElementById('staffFileInput')?.addEventListener('change', function(e) {
-        if (e.target.files && e.target.files[0]) {
-            selectedStaffFile = e.target.files[0];
-            document.getElementById('staffFileName').innerText = selectedStaffFile.name;
-            document.getElementById('staffUploadBtn').style.display = 'flex';
-        }
-    });
-
-    function uploadStaffDocument() {
-        if (!currentRequirementId) { showToast("Please select a document first", "error"); return; }
-        if (!selectedStaffFile) { showToast("Please select a file to upload", "error"); return; }
-        Swal.fire({ title: 'Upload Document for Student', html: `Upload "${selectedStaffFile.name}" for <strong>${currentRequirementName}</strong>?`, icon: 'question', showCancelButton: true, confirmButtonColor: '#223381', confirmButtonText: 'Yes, Upload' })
-        .then((result) => {
-            if (!result.isConfirmed) return;
-            Swal.fire({ title: 'Uploading...', allowOutsideClick: false, showConfirmButton: false, didOpen: () => Swal.showLoading() });
-            const formData = new FormData();
-            formData.append('file', selectedStaffFile);
-            formData.append('requirement_id', currentRequirementId);
-            formData.append('uploaded_by_staff', 'true');
-            fetch(`/staff/applicant/${applicantId}/upload-document`, { method: 'POST', headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' }, body: formData })
-            .then(response => response.json())
-            .then(data => {
-                Swal.close();
-                if (data.success) {
-                    showToast("Document uploaded successfully!", "success");
-                    document.getElementById('staffFileInput').value = '';
-                    selectedStaffFile = null;
-                    document.getElementById('staffFileName').innerText = 'No file selected';
-                    document.getElementById('staffUploadBtn').style.display = 'none';
-                    const activeDoc = document.querySelector('.doc-item.active');
-                    if (activeDoc) selectDocument(activeDoc, currentRequirementId, currentRequirementName);
-                } else { showToast(data.message || "Upload failed", "error"); }
-            })
-            .catch(error => { Swal.close(); showToast("Error uploading document", "error"); });
         });
     }
 

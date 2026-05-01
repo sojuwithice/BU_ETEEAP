@@ -138,6 +138,9 @@ Route::delete('/applicant/upload/delete/{id}', [ApplicantDocumentController::cla
 Route::get('/applicant/uploads/{requirementId}', [ApplicantDocumentController::class, 'getUploadsForRequirement'])->name('applicant.uploads.get');
 Route::delete('/applicant/upload/delete/gdrive/{requirementId}', [ApplicantDocumentController::class, 'deleteGDriveLink'])->name('applicant.upload.delete-gdrive');
 
+Route::get('/staff/applicant/{id}/all-uploads/{requirementId}', [StaffDashboardController::class, 'getAllUploads'])->name('staff.applicant.all-uploads');
+
+
 });
 
 Route::get('/verify-documents', function () {

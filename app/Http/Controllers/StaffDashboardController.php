@@ -604,7 +604,8 @@ public function uploadDocumentForStudent(Request $request, $id)
 {
     try {
         $request->validate([
-            'file' => 'required|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
+            'files' => 'required|array',
+            'files.*' => 'file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
             'requirement_id' => 'required|exists:requirements,id'
         ]);
         
@@ -621,44 +622,38 @@ public function uploadDocumentForStudent(Request $request, $id)
         
         $requirementId = $request->requirement_id;
         
-        // Check if document already approved
-        $existingUpload = DocumentUpload::where('user_id', $applicant->id)
+        // Check if document already approved (optional - pwede rin mag-reupload kahit approved kung onsite)
+        $existingUploads = DocumentUpload::where('user_id', $applicant->id)
             ->where('requirement_id', $requirementId)
-            ->first();
+            ->get();
+        
+        $savedFiles = [];
+        
+        foreach ($request->file('files') as $file) {
+            $originalName = $file->getClientOriginalName();
+            $safeName = time() . '_' . uniqid() . '_' . preg_replace('/[^a-zA-Z0-9._-]/', '_', $originalName);
+            $directory = 'documents/' . $applicant->id;
+            $path = $file->storeAs($directory, $safeName, 'public');
             
-        if ($existingUpload && $existingUpload->status === 'approved') {
-            return response()->json([
-                'success' => false,
-                'message' => 'This document is already approved and cannot be modified.'
-            ], 403);
-        }
-        
-        // Handle file upload
-        $file = $request->file('file');
-        $originalName = $file->getClientOriginalName();
-        $directory = 'documents/' . $applicant->id;
-        $filename = $requirementId . '_' . time() . '_staff_' . preg_replace('/[^a-zA-Z0-9._-]/', '_', $originalName);
-        $path = $file->storeAs($directory, $filename, 'public');
-        
-        $uploadData = [
-            'user_id' => $applicant->id,
-            'requirement_id' => $requirementId,
-            'file_path' => $path,
-            'original_filename' => $originalName,
-            'file_size' => $file->getSize(),
-            'mime_type' => $file->getMimeType(),
-            'uploaded_by_staff' => true,
-            'uploaded_by' => $staff->id
-        ];
-        
-        if ($existingUpload) {
-            // Delete old file
-            if (Storage::disk('public')->exists($existingUpload->file_path)) {
-                Storage::disk('public')->delete($existingUpload->file_path);
-            }
-            $existingUpload->update($uploadData);
-        } else {
-            DocumentUpload::create($uploadData);
+            $upload = DocumentUpload::create([
+                'user_id' => $applicant->id,
+                'requirement_id' => $requirementId,
+                'file_path' => $path,
+                'file_name' => $originalName,
+                'submission_type' => 'file_upload',
+                'submission_value' => null,
+                'status' => 'pending',
+                'uploaded_by_staff' => true,
+                'uploaded_by' => $staff->id,
+                'is_reuploaded' => $existingUploads->count() > 0,
+                'reuploaded_at' => $existingUploads->count() > 0 ? now() : null
+            ]);
+            
+            $savedFiles[] = [
+                'id' => $upload->id,
+                'file_path' => Storage::url($path),
+                'file_name' => $originalName
+            ];
         }
         
         // Notify student
@@ -666,13 +661,14 @@ public function uploadDocumentForStudent(Request $request, $id)
         Message::create([
             'sender_id' => $staff->id,
             'receiver_id' => $applicant->id,
-            'message' => "Staff has uploaded your document: {$requirement->name}. Please wait for verification.",
+            'message' => "Staff has uploaded " . count($savedFiles) . " document(s) for: {$requirement->name}. Please wait for verification.",
             'is_read' => false
         ]);
         
         return response()->json([
             'success' => true,
-            'message' => 'Document uploaded successfully'
+            'message' => count($savedFiles) . ' document(s) uploaded successfully',
+            'files' => $savedFiles
         ]);
         
     } catch (\Exception $e) {
@@ -724,6 +720,51 @@ public function updateGDriveLink(Request $request, $id)
         return response()->json([
             'success' => false, 
             'message' => 'Error: ' . $e->getMessage()
+        ], 500);
+    }
+}
+
+// Add this method to your StaffDashboardController.php - this gets ALL uploads for a requirement
+public function getAllUploads($id, $requirementId)
+{
+    try {
+        $uploads = DocumentUpload::where('user_id', $id)
+            ->where('requirement_id', $requirementId)
+            ->orderBy('created_at', 'desc')
+            ->get();
+        
+        $files = [];
+        foreach ($uploads as $upload) {
+            if ($upload->submission_type === 'gdrive_link') {
+                $files[] = [
+                    'id' => $upload->id,
+                    'file_path' => $upload->submission_value,
+                    'file_name' => 'Google Drive Link',
+                    'submission_type' => 'gdrive_link',
+                    'upload_date' => $upload->created_at->toISOString()
+                ];
+            } else if ($upload->file_path) {
+                $files[] = [
+                    'id' => $upload->id,
+                    'file_path' => Storage::url($upload->file_path),
+                    'file_name' => $upload->file_name ?? 'Document',
+                    'submission_type' => 'file_upload',
+                    'upload_date' => $upload->created_at->toISOString()
+                ];
+            }
+        }
+        
+        return response()->json([
+            'success' => true,
+            'files' => $files,
+            'count' => count($files)
+        ]);
+        
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => $e->getMessage(),
+            'files' => []
         ], 500);
     }
 }

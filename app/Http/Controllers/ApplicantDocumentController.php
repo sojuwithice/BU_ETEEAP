@@ -24,91 +24,98 @@ class ApplicantDocumentController extends Controller
     }
 
     public function storeUpload(Request $request)
-    {
+{
+    $request->validate([
+        'requirement_id' => 'required|exists:requirements,id',
+        'submission_type' => 'required|in:file_upload,gdrive_link'
+    ]);
+
+    $requirementId = $request->requirement_id;
+    $submissionType = $request->submission_type;
+
+    $existingUploads = DocumentUpload::where('user_id', auth()->id())
+        ->where('requirement_id', $requirementId)
+        ->get();
+
+    $isReupload = $existingUploads->contains(function ($upload) {
+        return in_array(strtolower($upload->status ?? ''), ['rejected', 'incomplete']);
+    });
+
+    /* ================= FILE UPLOAD ================= */
+    if ($submissionType === 'file_upload') {
+
         $request->validate([
-            'requirement_id' => 'required|exists:requirements,id',
-            'submission_type' => 'required|in:file_upload,gdrive_link'
+            'files' => 'required|array',
+            'files.*' => 'file' // ✅ ANY FILE TYPE, NO SIZE LIMIT
         ]);
-        
-        $requirementId = $request->requirement_id;
-        $submissionType = $request->submission_type;
-        
-        $existingUpload = DocumentUpload::where('user_id', auth()->id())
-            ->where('requirement_id', $requirementId)
-            ->first();
-        
-        $isReupload = false;
-        if ($existingUpload && in_array(strtolower($existingUpload->status ?? ''), ['rejected', 'incomplete'])) {
-            $isReupload = true;
-        }
-        
-        if ($submissionType === 'file_upload') {
-            // File upload validation
-            $request->validate([
-                'file' => 'required|mimes:pdf,jpg,jpeg,png,doc,docx,txt|max:5120',
-            ]);
-            
-            $file = $request->file('file');
+
+        $savedFiles = [];
+
+        foreach ($request->file('files') as $file) {
+
             $originalName = $file->getClientOriginalName();
-            $fileName = time() . '_' . preg_replace('/[^a-zA-Z0-9._-]/', '_', $originalName);
-            $path = $file->storeAs('documents', $fileName, 'public');
-            
-            $upload = DocumentUpload::updateOrCreate(
-                ['user_id' => auth()->id(), 'requirement_id' => $requirementId],
-                [
-                    'submission_type' => 'file_upload',
-                    'file_path' => $path,
-                    'submission_value' => null,
-                    'status' => 'pending',
-                    'file_name' => $originalName,
-                    'is_reuploaded' => $isReupload,
-                    'reuploaded_at' => $isReupload ? now() : null,
-                    'verification_reason' => null,
-                    'verification_comment' => null
-                ]
-            );
-            
-            return response()->json([
-                'success' => true,
-                'message' => $isReupload ? 'File re-uploaded successfully! It will be reviewed again.' : 'File saved successfully!',
-                'file_path' => Storage::url($path),
-                'path' => $path,
+            $safeName = time() . '_' . uniqid() . '_' . preg_replace('/[^a-zA-Z0-9._-]/', '_', $originalName);
+            $path = $file->storeAs('documents', $safeName, 'public');
+
+            $upload = DocumentUpload::create([
+                'user_id' => auth()->id(),
+                'requirement_id' => $requirementId,
+                'submission_type' => 'file_upload',
+                'file_path' => $path,
                 'file_name' => $originalName,
+                'submission_value' => null,
+                'status' => 'pending',
                 'is_reuploaded' => $isReupload,
-                'submission_type' => 'file_upload'
+                'reuploaded_at' => $isReupload ? now() : null,
+                'verification_reason' => null,
+                'verification_comment' => null
             ]);
-            
-        } else { // gdrive_link submission
-            $request->validate([
-                'submission_value' => 'required|url'
-            ]);
-            
-            $gdriveLink = $request->submission_value;
-            
-            $upload = DocumentUpload::updateOrCreate(
-                ['user_id' => auth()->id(), 'requirement_id' => $requirementId],
-                [
-                    'submission_type' => 'gdrive_link',
-                    'file_path' => null,
-                    'submission_value' => $gdriveLink,
-                    'status' => 'pending',
-                    'file_name' => null,
-                    'is_reuploaded' => $isReupload,
-                    'reuploaded_at' => $isReupload ? now() : null,
-                    'verification_reason' => null,
-                    'verification_comment' => null
-                ]
-            );
-            
-            return response()->json([
-                'success' => true,
-                'message' => $isReupload ? 'Google Drive link re-submitted successfully! It will be reviewed again.' : 'Google Drive link saved successfully!',
-                'submission_value' => $gdriveLink,
-                'submission_type' => 'gdrive_link',
-                'is_reuploaded' => $isReupload
-            ]);
+
+            $savedFiles[] = [
+                'id' => $upload->id,
+                'file_name' => $originalName,
+                'file_path' => Storage::url($path)
+            ];
         }
+
+        return response()->json([
+            'success' => true,
+            'message' => $isReupload
+                ? 'Files re-uploaded successfully! They will be reviewed again.'
+                : 'Files uploaded successfully!',
+            'files' => $savedFiles,
+            'submission_type' => 'file_upload',
+            'is_reuploaded' => $isReupload
+        ]);
     }
+
+    /* ================= GOOGLE DRIVE ================= */
+    $request->validate([
+        'submission_value' => 'required|url'
+    ]);
+
+    $upload = DocumentUpload::updateOrCreate(
+        ['user_id' => auth()->id(), 'requirement_id' => $requirementId],
+        [
+            'submission_type' => 'gdrive_link',
+            'submission_value' => $request->submission_value,
+            'file_path' => null,
+            'file_name' => null,
+            'status' => 'pending',
+            'is_reuploaded' => $isReupload,
+            'reuploaded_at' => $isReupload ? now() : null,
+            'verification_reason' => null,
+            'verification_comment' => null
+        ]
+    );
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Google Drive link saved successfully!',
+        'submission_value' => $request->submission_value,
+        'submission_type' => 'gdrive_link'
+    ]);
+}
     
     // ADD THIS METHOD FOR UPDATING GOOGLE DRIVE LINK
     public function updateUpload(Request $request)

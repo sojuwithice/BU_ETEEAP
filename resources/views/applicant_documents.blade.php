@@ -236,6 +236,72 @@
     color: #223381;
     text-decoration: none;
 }
+
+/* Multiple files grid preview */
+.files-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    padding: 10px;
+    max-height: 320px;
+    overflow-y: auto;
+    justify-content: flex-start;
+}
+.file-preview-card {
+    width: 160px;
+    background: #f8f9fc;
+    border-radius: 12px;
+    padding: 10px;
+    text-align: center;
+    border: 1px solid #e0e7ff;
+    position: relative;
+    transition: all 0.2s;
+}
+.file-preview-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.file-preview-card img, .file-preview-card iframe {
+    width: 100%;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+.file-preview-card .file-icon {
+    font-size: 60px;
+    color: #223381;
+}
+.file-preview-card .file-name {
+    font-size: 11px;
+    margin-top: 8px;
+    word-break: break-all;
+    font-weight: 500;
+}
+.file-preview-card .view-file-btn {
+    margin-top: 6px;
+    padding: 4px 10px;
+    background: #223381;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 11px;
+}
+.remove-preview-btn {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    background: #e03d4d;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 </style>
 </head>
 <body>
@@ -443,7 +509,7 @@
             @if($upload->submission_type == 'gdrive_link' && $upload->submission_value)
                 <button class="btn-view" onclick="window.open('{{ $upload->submission_value }}')">View Link</button>
             @else
-                <button class="btn-view" onclick="window.open('/storage/{{ $upload->file_path }}')">View</button>
+                <button class="btn-view" onclick="window.open('{{ Storage::url($upload->file_path) }}')">View</button>
             @endif
         </td>
     </tr>
@@ -510,30 +576,11 @@ let currentDocItem = null;
 let currentDocStatus = '';
 let currentDocReason = '';
 let isReuploadingAction = false;
+let selectedFiles = [];
+let currentUploadedFiles = []; // Store files for current selected requirement
 
 const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-/* ================= HIDE/SHOW UPLOAD SECTION ================= */
-function hideUploadSection() {
-    if (uploadSection) {
-        uploadSection.classList.remove('active');
-    }
-}
-
-function showUploadSection() {
-    if (uploadSection) {
-        uploadSection.classList.add('active');
-    }
-}
-
-hideUploadSection();
-
-if (window.innerWidth > 1024 && uploadSection) {
-    uploadSection.style.opacity = '0.5';
-    uploadSection.style.pointerEvents = 'none';
-}
-
-/* ================= TOAST ================= */
 function showToast(message, type = 'success') {
     const toast = document.getElementById("toast");
     const icon = document.getElementById("toast-icon");
@@ -575,7 +622,6 @@ function updateClock() {
 setInterval(updateClock, 1000);
 updateClock();
 
-/* ================= PROFILE ================= */
 const profileWrapper = document.getElementById("profileWrapper");
 const dropdown = document.getElementById("profileDropdown");
 if (profileWrapper) {
@@ -583,38 +629,24 @@ if (profileWrapper) {
     document.addEventListener("click", () => dropdown.classList.remove("show"));
 }
 
-/* ================= ACCOUNT MODAL ================= */
 function openAccountModal() { document.getElementById("accountModal")?.classList.add("show"); }
 function closeAccountModal() { document.getElementById("accountModal")?.classList.remove("show"); setTimeout(() => { document.getElementById("changeBtn").style.display = "block"; document.getElementById("changeSection").style.display = "none"; }, 300); }
 function showChangeSection() { document.getElementById("changeBtn").style.display = "none"; document.getElementById("changeSection").style.display = "flex"; }
 function togglePassword(inputId, iconId) { const input = document.getElementById(inputId); const icon = document.getElementById(iconId); if(input && icon) { input.type = input.type === "password" ? "text" : "password"; icon.innerText = input.type === "password" ? "visibility" : "visibility_off"; } }
 
-/* ================= UI FUNCTIONS ================= */
 function showGDriveSection(show) {
-    if (show) {
-        gdriveSection.classList.remove('hidden');
-        uploadBoxContainer.style.display = 'none';
-        sectionTitle.innerText = 'Google Drive Link Submission';
-    } else {
-        gdriveSection.classList.add('hidden');
-        uploadBoxContainer.style.display = 'block';
-        sectionTitle.innerText = 'File Upload';
-    }
+    if (show) { gdriveSection.classList.remove('hidden'); uploadBoxContainer.style.display = 'none'; sectionTitle.innerText = 'Google Drive Link Submission'; } 
+    else { gdriveSection.classList.add('hidden'); uploadBoxContainer.style.display = 'block'; sectionTitle.innerText = 'File Upload'; }
 }
 
 function resetGDriveUI() {
-    gdriveLinkInput.value = '';
-    gdriveLinkInput.disabled = false;
-    saveGDriveBtn.style.display = 'inline-block';
-    gdriveActions.style.display = 'none';
-    gdriveStatus.style.display = 'none';
-    gdriveLinkDisplay.style.display = 'none';
+    gdriveLinkInput.value = ''; gdriveLinkInput.disabled = false; saveGDriveBtn.style.display = 'inline-block';
+    gdriveActions.style.display = 'none'; gdriveStatus.style.display = 'none'; gdriveLinkDisplay.style.display = 'none';
 }
 
 function setGDriveExisting(link, status, reason) {
     gdriveLinkInput.value = link;
     currentGDriveLink = link;
-    
     if (status === 'approved') {
         gdriveLinkInput.disabled = true;
         saveGDriveBtn.style.display = 'none';
@@ -640,115 +672,145 @@ function setGDriveExisting(link, status, reason) {
     }
 }
 
-/* ================= PREVIEW FUNCTION ================= */
-function showFilePreview(file, isUploaded = false, fileUrl = null, fileNameValue = null) {
+// ========== DISPLAY ALL UPLOADED FILES IN PREVIEW (GRID) ==========
+function displayUploadedFilesInPreview(filesArray) {
+    if (!filesArray || filesArray.length === 0) {
+        resetUploadUI();
+        fileNameText.innerText = "Click to select: " + currentFileName;
+        return;
+    }
+    
     previewContainer.innerHTML = '';
     previewContainer.style.display = 'flex';
     uploadContent.style.display = 'none';
     uploadActions.style.display = 'block';
     uploadBox.classList.add('has-file');
     
-    if (isUploaded && fileUrl) {
-        const extension = fileUrl.split('.').pop().toLowerCase();
-        const displayName = fileNameValue ? fileNameValue : fileUrl.split('/').pop();
+    const grid = document.createElement('div');
+    grid.className = 'files-grid';
+    
+    filesArray.forEach(file => {
+        const card = document.createElement('div');
+        card.className = 'file-preview-card';
+        const fileUrl = file.file_path;
+        const fileNameDisplay = file.file_name || 'Document';
+        const ext = fileUrl.split('.').pop().toLowerCase();
         
-        if (extension === 'pdf') {
-            previewContainer.innerHTML = `<iframe src="${fileUrl}" class="pdf-preview"></iframe><div class="file-info"> PDF Document - ${displayName}</div>`;
-        } else if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'].includes(extension)) {
-            previewContainer.innerHTML = `<img src="${fileUrl}" alt="Preview"><div class="file-info"> Image File - ${displayName}</div>`;
+        let content = '';
+        if (ext === 'pdf') {
+            content = `<iframe src="${fileUrl}" style="width:100%;height:100px;border:none;"></iframe>`;
+        } else if (['jpg','jpeg','png','gif','webp'].includes(ext)) {
+            content = `<img src="${fileUrl}" alt="preview" style="width:100%;height:100px;object-fit:cover;">`;
         } else {
-            previewContainer.innerHTML = `<span class="material-symbols-outlined" style="font-size: 60px; color: #223381;">description</span><div class="file-info"> ${displayName}</div><button onclick="window.open('${fileUrl}')" style="margin-top:8px; padding:5px 12px; background:#223381; color:white; border:none; border-radius:5px; cursor:pointer;">View File</button>`;
+            content = `<span class="material-symbols-outlined file-icon">description</span>`;
         }
-    } else if (file) {
-        const fileType = file.type;
-        if (fileType.startsWith('image/')) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                previewContainer.innerHTML = `<img src="${e.target.result}" alt="Preview"><div class="file-info"> ${file.name} (${(file.size / 1024).toFixed(2)} KB)</div>`;
-            };
-            reader.readAsDataURL(file);
-        } else if (fileType === 'application/pdf') {
-            const pdfUrl = URL.createObjectURL(file);
-            previewContainer.innerHTML = `<iframe src="${pdfUrl}" class="pdf-preview"></iframe><div class="file-info"> ${file.name} (${(file.size / 1024).toFixed(2)} KB)</div>`;
-        } else {
-            previewContainer.innerHTML = `<span class="material-symbols-outlined" style="font-size: 60px; color: #223381;">description</span><div class="file-info"> ${file.name} (${(file.size / 1024).toFixed(2)} KB)</div><small style="color:#666;">Click Save to upload this file</small>`;
-        }
-    }
+        
+        card.innerHTML = `
+            ${content}
+            <div class="file-name" title="${fileNameDisplay}">${fileNameDisplay.length > 20 ? fileNameDisplay.substring(0,18)+'...' : fileNameDisplay}</div>
+            <button class="view-file-btn" onclick="window.open('${fileUrl}')">View</button>
+        `;
+        grid.appendChild(card);
+    });
+    
+    previewContainer.appendChild(grid);
+    fileNameText.innerText = `${filesArray.length} file(s) uploaded for ${currentFileName}`;
+    uploadBtn.style.display = 'none';
+    successActions.style.display = 'block';
 }
 
 function resetUploadUI() {
     fileInput.value = '';
     uploadContent.style.display = 'flex';
-    previewContainer.style.display = 'none';
     previewContainer.innerHTML = '';
+    previewContainer.style.display = 'none';
     uploadActions.style.display = 'none';
     successActions.style.display = 'none';
     uploadBtn.style.display = 'inline-block';
     uploadBox.classList.remove('has-file');
     uploadBox.classList.remove('disabled');
-
     const badges = uploadBox.querySelectorAll('.approved-badge, .verification-note');
     badges.forEach(badge => badge.remove());
-    
     resetGDriveUI();
+    selectedFiles = [];
 }
 
-/* ================= UPDATE DOCUMENT ITEM UI ================= */
+function renderMultiplePreviews() {
+    previewContainer.innerHTML = '';
+    previewContainer.style.display = 'flex';
+    uploadContent.style.display = 'none';
+    uploadActions.style.display = 'block';
+    uploadBox.classList.add('has-file');
+    const grid = document.createElement('div');
+    grid.className = 'files-grid';
+    selectedFiles.forEach((file, index) => {
+        const card = document.createElement('div');
+        card.className = 'file-preview-card';
+        let thumb = '';
+        if (file.type.startsWith('image/')) {
+            thumb = `<img src="${URL.createObjectURL(file)}" style="height:100px;object-fit:cover;">`;
+        } else if (file.type === 'application/pdf') {
+            thumb = `<span class="material-symbols-outlined file-icon">picture_as_pdf</span>`;
+        } else {
+            thumb = `<span class="material-symbols-outlined file-icon">description</span>`;
+        }
+        card.innerHTML = `
+            ${thumb}
+            <div class="file-name">${file.name}</div>
+            <button class="remove-preview-btn" data-index="${index}">×</button>
+        `;
+        grid.appendChild(card);
+    });
+    previewContainer.appendChild(grid);
+    document.querySelectorAll('.remove-preview-btn').forEach(btn => {
+        btn.addEventListener('click', e => {
+            e.stopPropagation();
+            const idx = parseInt(btn.dataset.index);
+            selectedFiles.splice(idx, 1);
+            if (!selectedFiles.length) resetUploadUI();
+            else renderMultiplePreviews();
+        });
+    });
+}
+
 function updateDocumentItemUI(docItem, hasFile, filePath = null, gdriveLink = null, submissionType = null) {
     if (!docItem) return;
     const iconDiv = docItem.querySelector('div:first-child');
-    
     if (hasFile) {
         docItem.classList.add('completed');
-        if (iconDiv) {
-            iconDiv.className = 'check-icon';
-            iconDiv.innerHTML = '<span class="material-symbols-outlined">check</span>';
-        }
+        if (iconDiv) { iconDiv.className = 'check-icon'; iconDiv.innerHTML = '<span class="material-symbols-outlined">check</span>'; }
         docItem.dataset.completed = 'true';
         if (filePath) docItem.dataset.filepath = filePath;
         if (gdriveLink) docItem.dataset.gdriveLink = gdriveLink;
         if (submissionType) docItem.dataset.submissionType = submissionType;
     } else {
         docItem.classList.remove('completed');
-        if (iconDiv) {
-            iconDiv.className = 'circle-icon';
-            iconDiv.innerHTML = '';
-        }
+        if (iconDiv) { iconDiv.className = 'circle-icon'; iconDiv.innerHTML = ''; }
         docItem.dataset.completed = 'false';
         docItem.dataset.filepath = '';
         docItem.dataset.gdriveLink = '';
     }
 }
 
-/* ================= UPDATE RECENT TABLE ================= */
-function updateRecentTable(newUpload) {
+function addToRecentTable(filePath, fileName) {
     if (!recentTableBody) return;
-    
     const now = new Date();
-    const formattedDate = new Intl.DateTimeFormat('en-US', {
-        month: 'short', day: 'numeric', year: 'numeric',
-        hour: 'numeric', minute: '2-digit', hour12: true
-    }).format(now);
-
-    const actionButton = newUpload.submission_type === 'gdrive_link' 
-        ? `<button class="btn-view" onclick="window.open('${newUpload.submission_value}')">View Link</button>`
-        : `<button class="btn-view" onclick="window.open('${newUpload.file_path}')">View</button>`;
-    
+    const formattedDate = now.toLocaleString('en-US', { month:'short', day:'numeric', year:'numeric', hour:'numeric', minute:'2-digit', hour12:true });
     const newRow = document.createElement('tr');
-    newRow.innerHTML = `<td>${newUpload.requirement_name}</td><td>${formattedDate}</td><td class="status-verified"><span style="color: #EF7631;">Pending</span></td><td>${actionButton}</td>`;
-    
-    if (recentTableBody.firstChild) {
-        recentTableBody.insertBefore(newRow, recentTableBody.firstChild);
-    } else {
-        recentTableBody.appendChild(newRow);
-    }
+    newRow.innerHTML = `
+        <td>${currentFileName}</td>
+        <td>${formattedDate}</td>
+        <td class="status-verified"><span style="color: #EF7631;">Pending</span></td>
+        <td><button class="btn-view" onclick="window.open('${filePath}')">View</button></td>
+    `;
+    if (recentTableBody.firstChild) recentTableBody.insertBefore(newRow, recentTableBody.firstChild);
+    else recentTableBody.appendChild(newRow);
 }
 
-/* ================= DOCUMENT ITEM CLICK ================= */
+// DOCUMENT ITEM CLICK - load existing files from recentUploads
 document.querySelectorAll('.doc-item').forEach(item => {
     item.addEventListener('click', function(e) {
         e.stopPropagation();
-        
         document.querySelectorAll('.doc-item').forEach(i => i.classList.remove('active'));
         this.classList.add('active');
         
@@ -775,52 +837,43 @@ document.querySelectorAll('.doc-item').forEach(item => {
         
         if (submissionType === 'gdrive_link') {
             showGDriveSection(true);
-            if (isDone && gdriveLink) {
-                setGDriveExisting(gdriveLink, docStatus, docReason);
-            }
+            if (isDone && gdriveLink) setGDriveExisting(gdriveLink, docStatus, docReason);
         } else {
             showGDriveSection(false);
-            if (isDone && filePath) {
-                if (docStatus === 'approved') {
-                    uploadBox.classList.add('disabled');
-                    showFilePreview(null, true, filePath, name);
-                    uploadBtn.style.display = 'none';
-                    successActions.style.display = 'none';
-                    fileNameText.innerText = `✓ Approved: ${name}`;
-                    const approvedBadge = document.createElement('div');
-                    approvedBadge.className = 'approved-badge';
-                    approvedBadge.innerHTML = '<span class="material-symbols-outlined">verified</span> Document Verified and Approved';
-                    uploadBox.appendChild(approvedBadge);
-                } else if (docStatus === 'rejected' || docStatus === 'incomplete') {
-                    showFilePreview(null, true, filePath, name);
-                    uploadBtn.style.display = 'none';
-                    successActions.style.display = 'block';
-                    fileNameText.innerText = `Uploaded: ${name}`;
-                    const note = document.createElement('div');
-                    note.className = 'verification-note';
-                    note.innerHTML = `<span class="material-symbols-outlined">info</span> ${docStatus.toUpperCase()}: ${docReason || 'Please re-upload the correct document'}`;
-                    uploadBox.appendChild(note);
-                } else {
-                    showFilePreview(null, true, filePath, name);
-                    uploadBtn.style.display = 'none';
-                    successActions.style.display = 'block';
-                    fileNameText.innerText = `Uploaded: ${name}`;
+            // Collect all uploaded files for this requirement from the recent table
+            const filesForThisReq = [];
+            const rows = document.querySelectorAll('#recent-table-body tr');
+            rows.forEach(row => {
+                const nameCell = row.cells[0];
+                if (nameCell && nameCell.innerText === name) {
+                    const actionBtn = row.cells[3]?.querySelector('.btn-view');
+                    if (actionBtn && actionBtn.getAttribute('onclick')) {
+                        const match = actionBtn.getAttribute('onclick').match(/window\.open\('([^']+)'\)/);
+                        if (match) {
+                            filesForThisReq.push({
+                                file_path: match[1],
+                                file_name: name + ' file'
+                            });
+                        }
+                    }
                 }
+            });
+            currentUploadedFiles = filesForThisReq;
+            if (filesForThisReq.length > 0) {
+                displayUploadedFilesInPreview(filesForThisReq);
+            } else if (isDone && filePath) {
+                // Single file fallback
+                displayUploadedFilesInPreview([{ file_path: filePath, file_name: name }]);
             } else {
                 fileNameText.innerText = "Click to select: " + name;
             }
         }
         
         showUploadSection();
-        
-        if (window.innerWidth > 1024 && uploadSection) {
-            uploadSection.style.opacity = '1';
-            uploadSection.style.pointerEvents = 'auto';
-        }
+        if (window.innerWidth > 1024 && uploadSection) { uploadSection.style.opacity = '1'; uploadSection.style.pointerEvents = 'auto'; }
     });
 });
 
-/* ================= UPLOAD BOX CLICK ================= */
 if (uploadBox) {
     uploadBox.addEventListener('click', e => {
         if (!selectedRequirementId) { showToast("Please select a document first", "error"); return; }
@@ -830,42 +883,37 @@ if (uploadBox) {
             showToast("This document is already approved and verified. No changes allowed.", "error");
             return;
         }
-        if (isRequirementCompleted) {
-            showToast("This document already has a file. Use Re-upload to replace it.", "error");
-            return;
-        }
         fileInput.click();
     });
 }
 
-/* ================= FILE SELECTION ================= */
 if (fileInput) {
     fileInput.addEventListener('change', () => {
-        if (!fileInput.files[0]) return;
-        showFilePreview(fileInput.files[0], false);
+        selectedFiles = Array.from(fileInput.files);
+        if (!selectedFiles.length) return;
+        renderMultiplePreviews();
         uploadBtn.style.display = 'inline-block';
         successActions.style.display = 'none';
     });
 }
 
-/* ================= SAVE FILE BUTTON ================= */
+// SAVE BUTTON - upload files then display ALL in preview
 if (uploadBtn) {
     uploadBtn.addEventListener('click', () => {
-        if (!fileInput.files[0]) { showToast("Please select a file first", "error"); return; }
+        if (!selectedFiles.length) { showToast("Please select at least one file", "error"); return; }
         if (!selectedRequirementId) { showToast("Please select a document first", "error"); return; }
         if (selectedSubmissionType !== 'file_upload') return;
         
         Swal.fire({
             title: 'Confirm Upload?',
-            html: `<strong>File:</strong> ${fileInput.files[0].name}<br><strong>Document:</strong> ${currentFileName}`,
+            html: `<strong>${selectedFiles.length} file(s)</strong> for <strong>${currentFileName}</strong>`,
             icon: 'question', showCancelButton: true, confirmButtonColor: '#223381', confirmButtonText: 'Yes, Upload'
         }).then((result) => {
             if (!result.isConfirmed) return;
-            
             Swal.fire({ title: 'Uploading...', allowOutsideClick: false, showConfirmButton: false, didOpen: () => Swal.showLoading() });
             
             const formData = new FormData();
-            formData.append('file', fileInput.files[0]);
+            selectedFiles.forEach(file => formData.append('files[]', file));
             formData.append('requirement_id', selectedRequirementId);
             formData.append('submission_type', 'file_upload');
             if (isReuploadingAction) formData.append('is_reuploaded', 'true');
@@ -878,14 +926,30 @@ if (uploadBtn) {
                 Swal.close();
                 if (data.success) {
                     isReuploadingAction = false;
-                    updateDocumentItemUI(currentDocItem, true, data.file_path || `/storage/${data.path}`, null, 'file_upload');
+                    updateDocumentItemUI(currentDocItem, true, null, null, 'file_upload');
                     isRequirementCompleted = true;
-                    uploadBtn.style.display = 'none';
-                    successActions.style.display = 'block';
-                    fileNameText.innerText = `Uploaded: ${currentFileName}`;
-                    updateRecentTable({ requirement_name: currentFileName, submission_type: 'file_upload', file_path: data.file_path, submission_value: null });
-                    showToast("File uploaded successfully");
-                    setTimeout(() => location.reload(), 1000);
+                    
+                    // Add each uploaded file to recent table and collect for display
+                    const newFiles = [];
+                    if (data.files && Array.isArray(data.files)) {
+                        data.files.forEach(f => {
+                            const fullPath = f.file_path;
+                            newFiles.push({ file_path: fullPath, file_name: f.file_name });
+                            addToRecentTable(fullPath, f.file_name);
+                        });
+                    } else {
+                        const filePath = data.file_path || `/storage/${data.path}`;
+                        newFiles.push({ file_path: filePath, file_name: selectedFiles[0]?.name || 'Document' });
+                        addToRecentTable(filePath, selectedFiles[0]?.name || 'Document');
+                    }
+                    
+                    // Merge with existing files for this requirement and display ALL
+                    const allFiles = [...currentUploadedFiles, ...newFiles];
+                    currentUploadedFiles = allFiles;
+                    displayUploadedFilesInPreview(allFiles);
+                    
+                    showToast(`${selectedFiles.length} file(s) uploaded successfully`);
+                    selectedFiles = [];
                 } else { showToast(data.message || "Upload failed", "error"); }
             })
             .catch(() => { Swal.close(); showToast("Upload error", "error"); });
@@ -893,22 +957,79 @@ if (uploadBtn) {
     });
 }
 
-/* ================= SAVE GDRIVE LINK BUTTON ================= */
+// REUPLOAD BUTTON
+if (reuploadBtn) {
+    reuploadBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        if (!selectedRequirementId || selectedSubmissionType !== 'file_upload') return;
+        isReuploadingAction = true;
+        isRequirementCompleted = false;
+        fileInput.click();
+    });
+}
+
+// REMOVE BUTTON
+if (removeBtn) {
+    removeBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!selectedRequirementId || selectedSubmissionType !== 'file_upload') return;
+        Swal.fire({
+            title: 'Delete Files',
+            html: `Delete ALL uploaded files for "${currentFileName}"?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'Yes, Delete All'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({ title: 'Deleting...', allowOutsideClick: false, showConfirmButton: false, didOpen: () => Swal.showLoading() });
+                fetch("{{ route('applicant.upload.remove') }}", {
+                    method: "POST",
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
+                    body: JSON.stringify({ requirement_id: selectedRequirementId })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    Swal.close();
+                    if (data.success) {
+                        updateDocumentItemUI(currentDocItem, false);
+                        isRequirementCompleted = false;
+                        currentUploadedFiles = [];
+                        selectedFiles = [];
+                        resetUploadUI();
+                        fileNameText.innerText = "Click to select: " + currentFileName;
+                        uploadBtn.style.display = 'inline-block';
+                        successActions.style.display = 'none';
+                        showToast("Files removed successfully");
+                        // Remove rows from recent table for this requirement
+                        const rows = document.querySelectorAll('#recent-table-body tr');
+                        rows.forEach(row => {
+                            if (row.cells[0] && row.cells[0].innerText === currentFileName) {
+                                row.remove();
+                            }
+                        });
+                    } else { showToast(data.message || "Remove failed", "error"); }
+                })
+                .catch(() => { Swal.close(); showToast("Error removing files", "error"); });
+            }
+        });
+    });
+}
+
+// GDRIVE SAVE
 if (saveGDriveBtn) {
     saveGDriveBtn.addEventListener('click', () => {
         const gdriveLink = gdriveLinkInput?.value.trim();
         if (!gdriveLink) { showToast("Please enter a Google Drive link", "error"); return; }
         if (!selectedRequirementId) { showToast("Please select a document first", "error"); return; }
-        
         Swal.fire({
             title: 'Confirm Submission?',
             html: `<strong>Document:</strong> ${currentFileName}<br><strong>Link:</strong> ${gdriveLink.substring(0, 50)}...`,
             icon: 'question', showCancelButton: true, confirmButtonColor: '#223381', confirmButtonText: 'Yes, Submit Link'
         }).then((result) => {
             if (!result.isConfirmed) return;
-            
             Swal.fire({ title: 'Submitting...', allowOutsideClick: false, showConfirmButton: false, didOpen: () => Swal.showLoading() });
-            
             fetch("{{ route('applicant.upload.save') }}", {
                 method: "POST", headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
                 body: JSON.stringify({ requirement_id: selectedRequirementId, submission_type: 'gdrive_link', submission_value: gdriveLink })
@@ -923,7 +1044,6 @@ if (saveGDriveBtn) {
                     gdriveActions.style.display = 'block';
                     gdriveLinkDisplay.style.display = 'block';
                     gdriveLinkDisplay.innerHTML = `<a href="${gdriveLink}" target="_blank">${gdriveLink.substring(0, 60)}...</a>`;
-                    updateRecentTable({ requirement_name: currentFileName, submission_type: 'gdrive_link', file_path: null, submission_value: gdriveLink });
                     showToast("Google Drive link submitted successfully");
                     setTimeout(() => location.reload(), 1000);
                 } else { showToast(data.message || "Submission failed", "error"); }
@@ -933,24 +1053,10 @@ if (saveGDriveBtn) {
     });
 }
 
-/* ================= REUPLOAD BUTTON ================= */
-if (reuploadBtn) {
-    reuploadBtn.addEventListener('click', e => {
-        e.stopPropagation();
-        if (!selectedRequirementId) return;
-        if (selectedSubmissionType !== 'file_upload') return;
-        isReuploadingAction = true;
-        isRequirementCompleted = false;
-        fileInput.click();
-    });
-}
-
-/* ================= CHANGE GDRIVE LINK BUTTON ================= */
 if (changeGDriveBtn) {
     changeGDriveBtn.addEventListener('click', e => {
         e.stopPropagation();
         if (!selectedRequirementId || selectedSubmissionType !== 'gdrive_link') return;
-        
         Swal.fire({
             title: 'Change Link', input: 'url', inputLabel: 'Enter new Google Drive link',
             inputValue: currentGDriveLink, showCancelButton: true, confirmButtonText: 'Submit'
@@ -958,9 +1064,7 @@ if (changeGDriveBtn) {
             if (result.isConfirmed && result.value) {
                 const newLink = result.value.trim();
                 if (!newLink) { showToast("Please enter a valid link", "error"); return; }
-                
                 Swal.fire({ title: 'Updating...', allowOutsideClick: false, showConfirmButton: false, didOpen: () => Swal.showLoading() });
-                
                 fetch("{{ route('applicant.upload.update') }}", {
                     method: "POST", headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
                     body: JSON.stringify({ requirement_id: selectedRequirementId, submission_type: 'gdrive_link', submission_value: newLink })
@@ -984,58 +1088,17 @@ if (changeGDriveBtn) {
     });
 }
 
-/* ================= REMOVE BUTTON (FILE) ================= */
-if (removeBtn) {
-    removeBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        if (!selectedRequirementId || selectedSubmissionType !== 'file_upload') return;
-        
-        Swal.fire({
-            title: 'Delete File', html: `Delete "${currentFileName}"?`, icon: 'warning',
-            showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Yes, Delete'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                Swal.fire({ title: 'Deleting...', allowOutsideClick: false, showConfirmButton: false, didOpen: () => Swal.showLoading() });
-                
-                fetch("{{ route('applicant.upload.remove') }}", {
-                    method: "POST", headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
-                    body: JSON.stringify({ requirement_id: selectedRequirementId })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    Swal.close();
-                    if (data.success) {
-                        updateDocumentItemUI(currentDocItem, false);
-                        isRequirementCompleted = false;
-                        resetUploadUI();
-                        fileNameText.innerText = "Click to select: " + currentFileName;
-                        uploadBtn.style.display = 'inline-block';
-                        successActions.style.display = 'none';
-                        showToast("File removed successfully");
-                        setTimeout(() => location.reload(), 1000);
-                    } else { showToast(data.message || "Remove failed", "error"); }
-                })
-                .catch(() => { Swal.close(); showToast("Error removing file", "error"); });
-            }
-        });
-    });
-}
-
-/* ================= REMOVE GDRIVE BUTTON ================= */
 if (removeGDriveBtn) {
     removeGDriveBtn.addEventListener('click', function(e) {
         e.preventDefault();
         e.stopPropagation();
         if (!selectedRequirementId || selectedSubmissionType !== 'gdrive_link') return;
-        
         Swal.fire({
             title: 'Remove Link', html: `Remove Google Drive link for "${currentFileName}"?`, icon: 'warning',
             showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Yes, Remove'
         }).then((result) => {
             if (result.isConfirmed) {
                 Swal.fire({ title: 'Removing...', allowOutsideClick: false, showConfirmButton: false, didOpen: () => Swal.showLoading() });
-                
                 fetch("{{ route('applicant.upload.remove') }}", {
                     method: "POST", headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
                     body: JSON.stringify({ requirement_id: selectedRequirementId })
@@ -1057,14 +1120,12 @@ if (removeGDriveBtn) {
     });
 }
 
-/* ================= PASSWORD UPDATE ================= */
 async function updatePassword() {
     const newPassword = document.getElementById('newPassword')?.value;
     const confirmPassword = document.getElementById('confirmPassword')?.value;
     if (!newPassword) { showToast("Please enter a new password", "error"); return; }
     if (newPassword !== confirmPassword) { showToast("Passwords do not match", "error"); return; }
     if (newPassword.length < 6) { showToast("Password must be at least 6 characters", "error"); return; }
-    
     try {
         const response = await fetch("{{ url('/update-password') }}", {
             method: "POST", headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
@@ -1075,18 +1136,9 @@ async function updatePassword() {
     } catch (error) { showToast("Error updating password", "error"); }
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    const savedDocId = localStorage.getItem('activeDocumentId');
-    if (savedDocId) { const savedDoc = document.querySelector(`.doc-item[data-id="${savedDocId}"]`); if (savedDoc) savedDoc.click(); localStorage.removeItem('activeDocumentId'); }
-});
-
-window.addEventListener('beforeunload', function() { if (selectedRequirementId) localStorage.setItem('activeDocumentId', selectedRequirementId); });
-
-/* ================= ONSITE SUBMISSION VERIFICATION ================= */
+// Onsite functions (unchanged)
 const onsiteBtn = document.querySelector('.onsite-btn');
-let isOnsiteMode = false;
-let isVerified = false;
-
+let isOnsiteMode = false, isVerified = false;
 function setOnsiteMode(disabled) {
     const allDocItems = document.querySelectorAll('.doc-item');
     if (disabled) {
@@ -1113,35 +1165,20 @@ function setOnsiteMode(disabled) {
         if (removeGDriveBtn) removeGDriveBtn.disabled = false;
     }
 }
-
 function checkOnsiteStatus() {
     fetch("{{ route('applicant.onsite.status') }}", { method: "GET", headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken } })
     .then(response => response.json())
     .then(data => {
-        if (data.verified) {
-            isVerified = true;
-            onsiteBtn.classList.add('verified');
-            onsiteBtn.innerHTML = '<span class="material-symbols-outlined">verified</span> Onsite Verified';
-            onsiteBtn.disabled = true;
-            setOnsiteMode(false);
-        } else if (data.pending_verification) {
-            isOnsiteMode = true;
-            setOnsiteMode(true);
-            onsiteBtn.classList.add('pending');
-            onsiteBtn.innerHTML = '<span class="material-symbols-outlined">schedule</span> Pending Verification';
-        } else {
-            onsiteBtn.classList.remove('pending', 'verified');
-            onsiteBtn.innerHTML = 'Already Submitted Onsite';
-        }
+        if (data.verified) { isVerified = true; onsiteBtn.classList.add('verified'); onsiteBtn.innerHTML = '<span class="material-symbols-outlined">verified</span> Onsite Verified'; onsiteBtn.disabled = true; setOnsiteMode(false); }
+        else if (data.pending_verification) { isOnsiteMode = true; setOnsiteMode(true); onsiteBtn.classList.add('pending'); onsiteBtn.innerHTML = '<span class="material-symbols-outlined">schedule</span> Pending Verification'; }
+        else { onsiteBtn.classList.remove('pending', 'verified'); onsiteBtn.innerHTML = 'Already Submitted Onsite'; }
     })
     .catch(error => console.error('Error checking onsite status:', error));
 }
-
 if (onsiteBtn) {
     onsiteBtn.addEventListener('click', () => {
         if (isVerified) { showToast("Your documents are already verified onsite", "error"); return; }
         if (isOnsiteMode) { showToast("Verification already requested. Please wait for staff confirmation.", "error"); return; }
-        
         Swal.fire({
             title: 'Onsite Submission Request',
             html: `<div style="text-align: left;"><p>By confirming, you declare that you have submitted your documents <strong>ONSITE</strong> at the BU-ETEEAP office.</p><br><p><strong>What happens next:</strong></p><ul><li>Your document upload functions will be temporarily disabled</li><li>A staff member will verify your onsite submission</li></ul></div>`,
@@ -1153,18 +1190,13 @@ if (onsiteBtn) {
             .then(response => response.json())
             .then(data => {
                 Swal.close();
-                if (data.success) {
-                    isOnsiteMode = true; setOnsiteMode(true);
-                    onsiteBtn.classList.add('pending');
-                    onsiteBtn.innerHTML = '<span class="material-symbols-outlined">schedule</span> Pending Verification';
-                    showToast("Onsite verification requested.", "success");
-                } else { showToast(data.message || "Request failed", "error"); }
+                if (data.success) { isOnsiteMode = true; setOnsiteMode(true); onsiteBtn.classList.add('pending'); onsiteBtn.innerHTML = '<span class="material-symbols-outlined">schedule</span> Pending Verification'; showToast("Onsite verification requested.", "success"); }
+                else { showToast(data.message || "Request failed", "error"); }
             })
             .catch(() => { Swal.close(); showToast("Error requesting verification", "error"); });
         });
     });
 }
-
 window.confirmOnsiteSubmission = function() {
     Swal.fire({
         title: 'Confirm Onsite Submission', html: `Confirm student submitted documents <strong>ONSITE</strong>?`,
@@ -1176,24 +1208,21 @@ window.confirmOnsiteSubmission = function() {
         .then(response => response.json())
         .then(data => {
             Swal.close();
-            if (data.success) {
-                isOnsiteMode = false; isVerified = true; setOnsiteMode(false);
-                onsiteBtn.classList.remove('pending'); onsiteBtn.classList.add('verified');
-                onsiteBtn.innerHTML = '<span class="material-symbols-outlined">verified</span> Onsite Verified';
-                onsiteBtn.disabled = true;
-                showToast("Onsite submission confirmed!", "success");
-            } else { showToast(data.message || "Confirmation failed", "error"); }
+            if (data.success) { isOnsiteMode = false; isVerified = true; setOnsiteMode(false); onsiteBtn.classList.remove('pending'); onsiteBtn.classList.add('verified'); onsiteBtn.innerHTML = '<span class="material-symbols-outlined">verified</span> Onsite Verified'; onsiteBtn.disabled = true; showToast("Onsite submission confirmed!", "success"); }
+            else { showToast(data.message || "Confirmation failed", "error"); }
         })
         .catch(() => { Swal.close(); showToast("Error confirming submission", "error"); });
     });
 };
-
 checkOnsiteStatus();
 
 document.querySelectorAll('.upload-date-cell').forEach(cell => {
     const timestamp = cell.getAttribute('data-timestamp');
     if (timestamp) { cell.innerText = new Date(timestamp).toLocaleString(); }
 });
+
+window.addEventListener('beforeunload', function() { if (selectedRequirementId) localStorage.setItem('activeDocumentId', selectedRequirementId); });
+document.addEventListener('DOMContentLoaded', function() { const savedDocId = localStorage.getItem('activeDocumentId'); if (savedDocId) { const savedDoc = document.querySelector(`.doc-item[data-id="${savedDocId}"]`); if (savedDoc) savedDoc.click(); localStorage.removeItem('activeDocumentId'); } });
 </script>
 </body>
 </html>
