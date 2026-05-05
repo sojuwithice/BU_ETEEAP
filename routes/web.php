@@ -25,6 +25,10 @@ Route::middleware(['auth'])->group(function () {
     
     Route::get('/staff_dash', [StaffDashboardController::class, 'index'])->name('staff.dashboard');
 
+    Route::get('/admin-dashboard', function () {
+        return view('admin'); // Ito yung admin.blade.php mo
+    })->middleware('auth')->name('admin.dashboard');
+
     Route::get('/profile', function () {
         return view('applicant_profile');
     })->name('applicant.profile');
@@ -179,3 +183,4 @@ Route::get('/preview-payment-stub', function () {
 Route::get('/reports', function () {
     return view('reports');
 })->name('reports');
+

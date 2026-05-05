@@ -84,38 +84,53 @@ if (!($verify['success'] ?? false)) {
 
     // ================= LOGIN =================
     public function login(Request $request)
-        {
-            $validator = validator($request->all(), [
-                'email'    => 'required|email',
-                'password' => 'required',
-                'role'     => 'required'
-            ]);
+    {
+        $validator = validator($request->all(), [
+            'email'    => 'required|email',
+            'password' => 'required',
+            'role'     => 'required'
+        ]);
 
-            if ($validator->fails()) {
-                return back()
-                    ->withErrors($validator, 'login')
-                    ->withInput();
-            }
-
-            $credentials = $request->only('email', 'password', 'role');
-
-            if (Auth::attempt($credentials)) {
-                return $this->redirectRole(Auth::user());
-            }
-
-            return back()
-                ->withErrors([
-                    'email' => 'Invalid credentials or role mismatch'
-                ], 'login')
-                ->withInput();
+        if ($validator->fails()) {
+            return back()->withErrors($validator, 'login')->withInput();
         }
 
-    // ================= ROLE REDIRECT =================
-    private function redirectRole($user)
+        $credentials = $request->only('email', 'password');
+
+        if (Auth::attempt($credentials)) {
+            $user = Auth::user();
+
+            if ($request->role === 'staff') {
+                if ($user->role === 'staff' || $user->role === 'admin') {
+                    return $this->redirectRole($user);
+                }
+            }
+
+            if ($request->role === 'student') {
+                if ($user->role === 'applicant') {
+                    return $this->redirectRole($user);
+                }
+            }
+
+            Auth::logout();
+            return back()->withErrors(['email' => 'Role mismatch. Please select the correct role.'], 'login')->withInput();
+        }
+
+        return back()->withErrors(['email' => 'Invalid credentials'], 'login')->withInput();
+    }
+
+        private function redirectRole($user)
     {
-        return $user->role === 'staff'
-            ? redirect()->route('staff.dashboard')
-            : redirect()->route('applicant.dashboard');
+        
+        if ($user->role === 'admin') {
+            return redirect()->route('admin.dashboard');
+        }
+        
+        if ($user->role === 'staff') {
+            return redirect()->route('staff.dashboard');
+        }
+
+        return redirect()->route('applicant.dashboard');
     }
 
     // ================= LOGOUT =================
