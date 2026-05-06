@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Dashboard | ETEEAP Analytics</title>
-    
+    <link rel="icon" type="image/png" href="{{ asset('images/eteeap_logo.png') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -250,7 +250,11 @@
                 <span class="user-name">{{ auth()->user()->first_name }} {{ auth()->user()->last_name }}</span>
                 <span class="admin-badge">{{ ucfirst(auth()->user()->role) }}</span>
             </div>
-            <div class="avatar-circle"></div>
+            <img 
+    src="{{ auth()->user()->profile_image ? asset('storage/' . auth()->user()->profile_image) : asset('images/default-profile.png') }}" 
+    id="navbarAvatar" 
+    class="avatar-circle"
+>
         </div>
     </header>
 
@@ -788,7 +792,15 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
+                            // update modal preview
                             document.getElementById('modalProfilePreview').src = base64;
+
+                            // update navbar avatar (ITO ANG FIX)
+                            const navbarAvatar = document.getElementById('navbarAvatar');
+                            if (navbarAvatar) {
+                                navbarAvatar.src = base64;
+                            }
+
                             showToast("Profile photo updated!", "success");
                             cancelAdjustment();
                         } else {

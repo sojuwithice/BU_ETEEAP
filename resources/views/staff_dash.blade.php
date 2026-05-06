@@ -10,6 +10,9 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0" />
     <link rel="stylesheet" href="{{ asset('css/staff_dash.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Croppie Library for Image Cropping -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/croppie/2.6.5/croppie.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/croppie/2.6.5/croppie.min.js"></script>
 
 
 
@@ -325,95 +328,95 @@
         </div>
     </div>
 
-    <div id="accountModal" class="account-modal">
-        <div class="account-box">
-            <span class="close-modal" onclick="closeAccountModal()">&times;</span>
-            <h2>Manage Account</h2>
+    <!-- MANAGE ACCOUNT MODAL -->
+<div id="accountModal" class="account-modal">
+    <div class="account-box">
+        <span class="close-modal" onclick="closeAccountModal()">&times;</span>
+        <h2>Manage Account</h2>
 
-            <div class="profile-upload-section">
-                <div class="avatar-wrapper" id="defaultAvatarView">
-                    <img src="{{ auth()->user()->profile_image ? asset('storage/' . auth()->user()->profile_image) : asset('images/default-profile.png') }}" 
-                        id="modalProfilePreview" class="modal-avatar">
-                    <label for="profileUpload" class="upload-badge">
-                        <span class="material-symbols-outlined">photo_camera</span>
-                    </label>
-                    <input type="file" id="profileUpload" hidden accept="image/*" onchange="previewImage(event)">
-                </div>
+        <div class="profile-upload-section">
+            <div class="avatar-wrapper" id="defaultAvatarView">
+                <img src="{{ auth()->user()->profile_image ? asset('storage/' . auth()->user()->profile_image) : asset('images/default-profile.png') }}" 
+                    id="modalProfilePreview" class="modal-avatar">
+                <label for="profileUpload" class="upload-badge">
+                    <span class="material-symbols-outlined">photo_camera</span>
+                </label>
+                <input type="file" id="profileUpload" hidden accept="image/*" onchange="previewImage(event)">
+            </div>
 
-                <div id="adjustmentArea" style="display: none; flex-direction: column; align-items: center; width: 100%;">
-                    <div id="image-editor"></div> 
-                    <div class="account-actions" style="width: 100%; margin-top: 30px;">
-                        <button type="button" class="cancel-btn" onclick="cancelAdjustment()">Cancel</button>
-                        <button id="savePhotoBtn" class="save-photo-btn" onclick="uploadCroppedImage()">
-                            <span class="material-symbols-outlined">save</span> Save Photo
-                        </button>
-                    </div>
-                </div>
-
-                <div id="profileActionButtons" style="display: flex; flex-direction: column; align-items: center; gap: 5px; margin-top: 10px;">
-                    <p class="upload-text" id="uploadInstruction">Click camera to change photo</p>
-                    <button type="button" id="reAdjustBtn" onclick="startAdjustingCurrent()" class="re-adjust-btn">
-                        <span class="material-symbols-outlined" style="font-size: 14px;">tune</span>
-                        Adjust Photo
+            <div id="adjustmentArea">
+                <div id="image-editor"></div> 
+                <div class="account-actions">
+                    <button type="button" class="cancel-btn" onclick="cancelAdjustment()">Cancel</button>
+                    <button id="savePhotoBtn" class="save-photo-btn" onclick="uploadCroppedImage()">
+                        <span class="material-symbols-outlined">save</span> Save Photo
                     </button>
                 </div>
             </div>
 
-            <div class="input-group">
-                <label>Full Name</label>
-                <input type="text" value="{{ auth()->user()->first_name }} {{ auth()->user()->last_name }}" disabled>
+            <div id="profileActionButtons" style="display: flex; flex-direction: column; align-items: center; gap: 5px; margin-top: 10px;">
+                <p class="upload-text">Click camera to change photo</p>
+                <button type="button" onclick="startAdjustingCurrent()" class="re-adjust-btn">
+                    <span class="material-symbols-outlined" style="font-size: 14px;">tune</span> Adjust Photo
+                </button>
             </div>
+        </div>
 
-            <div class="input-group">
-                <label>Email</label>
-                <input type="text" value="{{ auth()->user()->email }}" disabled>
+        <div class="input-group">
+            <label>Full Name</label>
+            <input type="text" value="{{ auth()->user()->first_name }} {{ auth()->user()->last_name }}" disabled>
+        </div>
+
+        <div class="input-group">
+            <label>Email</label>
+            <input type="text" value="{{ auth()->user()->email }}" disabled>
+        </div>
+
+        <!-- FIXED PASSWORD SECTION -->
+        <div class="input-group">
+            <label>Current Password</label>
+            <div class="password-wrapper">
+                <!-- Inalis ang value asterisk, nilagyan ng dummy password para may "makita" kapag tinoggle -->
+                <input type="password" value="secretpassword" id="currentPassword" readonly style="background: #f9f9f9; cursor: default;">
+                <span class="toggle-eye" onclick="togglePassword('currentPassword', 'currentEyeIcon')">
+                    <span class="material-symbols-outlined" id="currentEyeIcon">visibility</span>
+                </span>
             </div>
+        </div>
 
+        <button class="change-btn" id="changeBtn" onclick="showChangeSection()">Change Password</button>
+
+        <div id="changeSection" style="display:none; flex-direction:column; gap:12px;">
             <div class="input-group">
-                <label>Password</label>
+                <label>New Password</label>
                 <div class="password-wrapper">
-                    <input type="password" value="********" id="currentPassword" readonly>
-                    <span class="toggle-eye" onclick="togglePassword('currentPassword', 'currentEyeIcon')">
-                        <span class="material-symbols-outlined" id="currentEyeIcon">visibility</span>
+                    <input type="password" id="newPassword" placeholder="Enter new password">
+                    <span class="toggle-eye" onclick="togglePassword('newPassword', 'newEyeIcon')">
+                        <span class="material-symbols-outlined" id="newEyeIcon">visibility</span>
                     </span>
                 </div>
             </div>
-
-            <button class="change-btn" id="changeBtn" onclick="showChangeSection()">Change Password</button>
-
-            <div id="changeSection" style="display:none; flex-direction:column; gap:12px;">
-                <div class="input-group">
-                    <label>New Password</label>
-                    <div class="password-wrapper">
-                        <input type="password" id="newPassword" placeholder="Enter new password">
-                        <span class="toggle-eye" onclick="togglePassword('newPassword', 'newEyeIcon')">
-                            <span class="material-symbols-outlined" id="newEyeIcon">visibility</span>
-                        </span>
-                    </div>
+            <div class="input-group">
+                <label>Confirm Password</label>
+                <div class="password-wrapper">
+                    <input type="password" id="confirmPassword" placeholder="Confirm new password">
+                    <span class="toggle-eye" onclick="togglePassword('confirmPassword', 'confirmEyeIcon')">
+                        <span class="material-symbols-outlined" id="confirmEyeIcon">visibility</span>
+                    </span>
                 </div>
-
-                <div class="input-group">
-                    <label>Confirm Password</label>
-                    <div class="password-wrapper">
-                        <input type="password" id="confirmPassword" placeholder="Confirm new password">
-                        <span class="toggle-eye" onclick="togglePassword('confirmPassword', 'confirmEyeIcon')">
-                            <span class="material-symbols-outlined" id="confirmEyeIcon">visibility</span>
-                        </span>
-                    </div>
-                </div>
-
-                <div class="account-actions">
-                    <button class="cancel-btn" onclick="closeAccountModal()">Cancel</button>
-                    <button class="save-btn" onclick="updatePassword()">Save</button>
-                </div>
+            </div>
+            <div class="account-actions">
+                <button class="cancel-btn" onclick="hideChangeSection()">Cancel</button>
+                <button class="save-btn" onclick="updatePassword()">Save</button>
             </div>
         </div>
     </div>
+</div>
 
-    <div id="toast" class="toast">
-        <span id="toast-icon" class="material-symbols-outlined"></span>
-        <span id="toast-message"></span>
-    </div>
+<div id="toast" class="toast">
+    <span id="toast-icon" class="material-symbols-outlined"></span>
+    <span id="toast-message"></span>
+</div>
 
     <script>
         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
@@ -925,63 +928,75 @@
             icon.innerText = (input.type === "password") ? "visibility" : "visibility_off";
         }
         async function updatePassword() {
-            const newPass = document.getElementById("newPassword").value;
-            const confirmPass = document.getElementById("confirmPassword").value;
-            
-            if (!newPass || !confirmPass) {
-                showToast("Please fill all fields", "error");
-                return;
-            }
-            if (newPass !== confirmPass) {
-                showToast("Passwords do not match", "error");
-                return;
-            }
-            if (newPass.length < 6) {
-                showToast("Password must be at least 6 characters", "error");
-                return;
-            }
-            
+    const newPass = document.getElementById("newPassword").value;
+    const confirmPass = document.getElementById("confirmPassword").value;
+    
+    if (!newPass || !confirmPass) {
+        showToast("Please fill all fields", "error");
+        return;
+    }
+    if (newPass !== confirmPass) {
+        showToast("Passwords do not match", "error");
+        return;
+    }
+    if (newPass.length < 6) {
+        showToast("Password must be at least 6 characters", "error");
+        return;
+    }
+
+    // ✅ CLOSE MODAL FIRST (ETO LANG TALAGA KULANG MO)
+    closeAccountModal();
+    
+    Swal.fire({
+        title: 'Change Password?',
+        text: 'Are you sure you want to change your password?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#223381',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Yes, Change',
+        cancelButtonText: 'Cancel'
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+
             Swal.fire({
-                title: 'Change Password?',
-                text: 'Are you sure you want to change your password?',
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#223381',
-                cancelButtonColor: '#6b7280',
-                confirmButtonText: 'Yes, Change',
-                cancelButtonText: 'Cancel'
-            }).then(async (result) => {
-                if (result.isConfirmed) {
-                    Swal.fire({
-                        title: 'Updating...',
-                        text: 'Please wait',
-                        allowOutsideClick: false,
-                        showConfirmButton: false,
-                        didOpen: () => { Swal.showLoading(); }
-                    });
-                    
-                    try {
-                        const response = await fetch("/update-password", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json", "X-CSRF-TOKEN": csrfToken },
-                            body: JSON.stringify({ password: newPass, password_confirmation: confirmPass })
-                        });
-                        const data = await response.json();
-                        Swal.close();
-                        if (response.ok) {
-                            document.getElementById("currentPassword").value = newPass;
-                            showToast("Password updated successfully!", "success");
-                            closeAccountModal();
-                        } else {
-                            showToast(data.message || "Invalid password requirements", "error");
-                        }
-                    } catch (error) {
-                        Swal.close();
-                        showToast("Server connection failed", "error");
-                    }
-                }
+                title: 'Updating...',
+                text: 'Please wait',
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                didOpen: () => { Swal.showLoading(); }
             });
+            
+            try {
+                const response = await fetch("/update-password", {
+                    method: "POST",
+                    headers: { 
+                        "Content-Type": "application/json", 
+                        "X-CSRF-TOKEN": csrfToken 
+                    },
+                    body: JSON.stringify({ 
+                        password: newPass, 
+                        password_confirmation: confirmPass 
+                    })
+                });
+
+                const data = await response.json();
+                Swal.close();
+
+                if (response.ok) {
+                    document.getElementById("currentPassword").value = newPass;
+                    showToast("Password updated successfully!", "success");
+                } else {
+                    showToast(data.message || "Invalid password requirements", "error");
+                }
+
+            } catch (error) {
+                Swal.close();
+                showToast("Server connection failed", "error");
+            }
         }
+    });
+}
         
         window.onclick = function(event) {
             const applicantModal = document.getElementById('applicantModal');
@@ -1025,6 +1040,171 @@
                 dropdown.classList.remove('open');
             }
         });
+
+        // ============================================
+    // MODAL LOGIC
+    // ============================================
+    let croppieInstance = null;
+    
+    function openAccountModal() { 
+        document.getElementById('accountModal').classList.add('show'); 
+    }
+    
+    function closeAccountModal() { 
+        document.getElementById('accountModal').classList.remove('show'); 
+        cancelAdjustment(); 
+        hideChangeSection(); 
+    }
+    
+    function togglePassword(inputId, iconId) {
+        const input = document.getElementById(inputId);
+        const icon = document.getElementById(iconId);
+        if (input && icon) {
+            input.type = input.type === 'password' ? 'text' : 'password';
+            icon.innerText = input.type === 'password' ? 'visibility' : 'visibility_off';
+        }
+    }
+    
+    function showChangeSection() { 
+        const changeBtn = document.getElementById('changeBtn');
+        const changeSection = document.getElementById('changeSection');
+        if (changeBtn) changeBtn.style.display = 'none';
+        if (changeSection) changeSection.style.display = 'flex';
+    }
+    
+    function hideChangeSection() { 
+        const changeBtn = document.getElementById('changeBtn');
+        const changeSection = document.getElementById('changeSection');
+        if (changeBtn) changeBtn.style.display = 'block';
+        if (changeSection) changeSection.style.display = 'none';
+        // Clear password fields
+        const newPassword = document.getElementById('newPassword');
+        const confirmPassword = document.getElementById('confirmPassword');
+        if (newPassword) newPassword.value = '';
+        if (confirmPassword) confirmPassword.value = '';
+    }
+    
+    
+    
+    // ============================================
+    // IMAGE CROP LOGIC
+    // ============================================
+    function previewImage(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => startCroppie(e.target.result);
+            reader.readAsDataURL(file);
+        }
+    }
+    
+    function startCroppie(src) {
+        const defaultAvatar = document.getElementById('defaultAvatarView');
+        const profileActions = document.getElementById('profileActionButtons');
+        const adjustmentArea = document.getElementById('adjustmentArea');
+        const imageEditor = document.getElementById('image-editor');
+        
+        if (defaultAvatar) defaultAvatar.style.display = 'none';
+        if (profileActions) profileActions.style.display = 'none';
+        if (adjustmentArea) adjustmentArea.style.display = 'flex';
+        
+        if (croppieInstance) croppieInstance.destroy();
+        
+        croppieInstance = new Croppie(imageEditor, {
+            viewport: { width: 150, height: 150, type: 'circle' },
+            boundary: { width: '100%', height: 250 },
+            showZoomer: true
+        });
+        croppieInstance.bind({ url: src });
+    }
+    
+    function startAdjustingCurrent() {
+        const currentImage = document.getElementById('modalProfilePreview').src;
+        startCroppie(currentImage);
+    }
+    
+    function uploadCroppedImage() {
+        if (!croppieInstance) return;
+        
+        croppieInstance.result('base64').then(base64 => {
+            // Convert base64 to blob
+            fetch(base64)
+                .then(res => res.blob())
+                .then(blob => {
+                    const formData = new FormData();
+                    formData.append('profile_image', blob, 'profile.jpg');
+                    
+                    fetch('{{ route("profile.upload.image") }}', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        },
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Update modal preview
+                            document.getElementById('modalProfilePreview').src = base64;
+
+                            const navbarImg = document.getElementById('profileImg');
+                            if (navbarImg) {
+                                navbarImg.src = base64;
+                            }
+
+                            // OPTIONAL: update dropdown avatar din
+                            const dropdownAvatar = document.querySelector('.dropdown-avatar');
+                            if (dropdownAvatar) {
+                                dropdownAvatar.src = base64;
+                            }
+
+                            showToast("Profile photo updated!", "success");
+                            cancelAdjustment();
+                        } else {
+                            showToast(data.message || 'Failed to update photo', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Upload error:', error);
+                        showToast('Failed to upload photo', 'error');
+                    });
+                });
+        });
+    }
+    
+    function cancelAdjustment() {
+        if (croppieInstance) {
+            croppieInstance.destroy();
+            croppieInstance = null;
+        }
+        
+        const defaultAvatar = document.getElementById('defaultAvatarView');
+        const profileActions = document.getElementById('profileActionButtons');
+        const adjustmentArea = document.getElementById('adjustmentArea');
+        
+        if (adjustmentArea) adjustmentArea.style.display = 'none';
+        if (defaultAvatar) defaultAvatar.style.display = 'block';
+        if (profileActions) profileActions.style.display = 'flex';
+    }
+    
+    // ============================================
+    // TOAST NOTIFICATION
+    // ============================================
+    function showToast(msg, type) {
+        const toast = document.getElementById('toast');
+        if (!toast) return;
+        
+        toast.className = `toast show ${type}`;
+        const toastIcon = document.getElementById('toast-icon');
+        const toastMessage = document.getElementById('toast-message');
+        
+        if (toastIcon) toastIcon.innerText = type === 'success' ? 'check_circle' : 'error';
+        if (toastMessage) toastMessage.innerText = msg;
+        
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 3000);
+    }
 
         // ================= INITIALIZE EVERYTHING =================
         document.addEventListener("DOMContentLoaded", function() {

@@ -193,30 +193,95 @@ public function updateProfile(Request $request)
 
 public function uploadProfileImage(Request $request)
 {
-    $request->validate([
-        'image' => 'required'
-    ]);
-
-    $user = auth()->user();
-
-    $image = $request->image;
-    $image = str_replace('data:image/jpeg;base64,', '', $image);
-    $image = str_replace(' ', '+', $image);
-
-    $fileName = 'profile_' . $user->id . '_' . time() . '.jpg';
-
-    \Storage::disk('public')->put(
-        'profile_images/' . $fileName,
-        base64_decode($image)
-    );
-
-    // save sa DB
-    $user->profile_image = 'profile_images/' . $fileName;
-    $user->save();
-
-    return response()->json([
-        'success' => true,
-        'path' => asset('storage/profile_images/' . $fileName)
-    ]);
+    try {
+        $user = auth()->user();
+        
+        // OPTION 1: File upload via FormData (from croppie blob)
+        if ($request->hasFile('profile_image')) {
+            $file = $request->file('profile_image');
+            
+            // Validate file
+            $validator = validator($request->all(), [
+                'profile_image' => 'required|image|mimes:jpeg,png,jpg|max:2048'
+            ]);
+            
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid image file. Please upload JPG or PNG (max 2MB)'
+                ], 422);
+            }
+            
+            // Delete old image if exists
+            if ($user->profile_image && \Storage::disk('public')->exists($user->profile_image)) {
+                \Storage::disk('public')->delete($user->profile_image);
+            }
+            
+            // Generate unique filename
+            $fileName = 'profile_' . $user->id . '_' . time() . '.' . $file->getClientOriginalExtension();
+            
+            // Store the image
+            $path = $file->storeAs('profile_images', $fileName, 'public');
+            
+            // Update user record
+            $user->profile_image = $path;
+            $user->save();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Profile image updated successfully!',
+                'path' => \Storage::url($path)
+            ]);
+        }
+        
+        // OPTION 2: Base64 image (from croppie result)
+        if ($request->has('image')) {
+            $image = $request->image;
+            
+            // Remove base64 prefix if present
+            if (str_contains($image, 'base64,')) {
+                $image = explode('base64,', $image)[1];
+            }
+            
+            $image = str_replace(' ', '+', $image);
+            $decodedImage = base64_decode($image);
+            
+            if ($decodedImage === false) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid image data'
+                ], 422);
+            }
+            
+            // Delete old image
+            if ($user->profile_image && \Storage::disk('public')->exists($user->profile_image)) {
+                \Storage::disk('public')->delete($user->profile_image);
+            }
+            
+            $fileName = 'profile_' . $user->id . '_' . time() . '.jpg';
+            \Storage::disk('public')->put('profile_images/' . $fileName, $decodedImage);
+            
+            $user->profile_image = 'profile_images/' . $fileName;
+            $user->save();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Profile image updated successfully!',
+                'path' => asset('storage/profile_images/' . $fileName)
+            ]);
+        }
+        
+        return response()->json([
+            'success' => false,
+            'message' => 'No image file provided'
+        ], 400);
+        
+    } catch (\Exception $e) {
+        \Log::error('Profile upload error: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to upload image: ' . $e->getMessage()
+        ], 500);
+    }
 }
 }
