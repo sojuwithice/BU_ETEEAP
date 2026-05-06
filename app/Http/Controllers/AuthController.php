@@ -74,6 +74,8 @@ if (!($verify['success'] ?? false)) {
             'role'       => $request->role
         ]);
 
+         $user->last_login_at = now();
+        $user->save();
     
         session(['raw_password' => $request->password]);
 
@@ -82,42 +84,47 @@ if (!($verify['success'] ?? false)) {
         return $this->redirectRole($user);
     }
 
-    // ================= LOGIN =================
-    public function login(Request $request)
-    {
-        $validator = validator($request->all(), [
-            'email'    => 'required|email',
-            'password' => 'required',
-            'role'     => 'required'
-        ]);
+// ================= LOGIN =================
+public function login(Request $request)
+{
+    $validator = validator($request->all(), [
+        'email'    => 'required|email',
+        'password' => 'required',
+        'role'     => 'required'
+    ]);
 
-        if ($validator->fails()) {
-            return back()->withErrors($validator, 'login')->withInput();
-        }
-
-        $credentials = $request->only('email', 'password');
-
-        if (Auth::attempt($credentials)) {
-            $user = Auth::user();
-
-            if ($request->role === 'staff') {
-                if ($user->role === 'staff' || $user->role === 'admin') {
-                    return $this->redirectRole($user);
-                }
-            }
-
-            if ($request->role === 'student') {
-                if ($user->role === 'applicant') {
-                    return $this->redirectRole($user);
-                }
-            }
-
-            Auth::logout();
-            return back()->withErrors(['email' => 'Role mismatch. Please select the correct role.'], 'login')->withInput();
-        }
-
-        return back()->withErrors(['email' => 'Invalid credentials'], 'login')->withInput();
+    if ($validator->fails()) {
+        return back()->withErrors($validator, 'login')->withInput();
     }
+
+    $credentials = $request->only('email', 'password');
+
+    if (Auth::attempt($credentials)) {
+        $user = Auth::user();
+
+        // ✅ IDAGDAG ITO - I-save ang last login timestamp
+        $user->last_login_at = now();
+        $user->save();
+
+        // Role check
+        if ($request->role === 'staff') {
+            if ($user->role === 'staff' || $user->role === 'admin') {
+                return $this->redirectRole($user);
+            }
+        }
+
+        if ($request->role === 'student') {
+            if ($user->role === 'student') {
+                return $this->redirectRole($user);
+            }
+        }
+
+        Auth::logout();
+        return back()->withErrors(['email' => 'Role mismatch. Please select the correct role.'], 'login')->withInput();
+    }
+
+    return back()->withErrors(['email' => 'Invalid credentials'], 'login')->withInput();
+}
 
         private function redirectRole($user)
     {

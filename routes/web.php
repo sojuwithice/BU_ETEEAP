@@ -9,6 +9,7 @@ use App\Http\Controllers\ApplicantDocumentController;
 use App\Http\Controllers\StaffDashboardController;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\Admin\AdminDashboardController;
 
 Route::get('/', function () { return view('landing'); });
 
@@ -25,10 +26,11 @@ Route::middleware(['auth'])->group(function () {
     
     Route::get('/staff_dash', [StaffDashboardController::class, 'index'])->name('staff.dashboard');
 
-    Route::get('/admin-dashboard', function () {
-        return view('admin'); // Ito yung admin.blade.php mo
-    })->middleware('auth')->name('admin.dashboard');
-
+    // ============================================
+// ADMIN DASHBOARD ROUTES
+// ============================================
+Route::get('/admin-dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
+Route::get('/admin/dashboard/stats', [AdminDashboardController::class, 'getStats'])->name('admin.dashboard.stats');
     Route::get('/profile', function () {
         return view('applicant_profile');
     })->name('applicant.profile');
@@ -109,7 +111,7 @@ Route::post('/staff/applicant/{id}/verify-payment', [StaffDashboardController::c
 Route::get('/applicant/get-payment-proof', [DashboardController::class, 'getPaymentProof'])->name('applicant.get-payment-proof');
     
     // Password and profile routes
-    Route::post('/update-password', [AuthController::class, 'updatePassword']);
+    Route::post('/update-password', [AuthController::class, 'updatePassword'])->name('update-password');
     Route::post('/profile/update', [AuthController::class, 'updateProfile'])->name('profile.update');
     Route::post('/profile/upload-image', [AuthController::class, 'uploadProfileImage'])->name('profile.upload.image');
 
@@ -143,6 +145,7 @@ Route::get('/applicant/uploads/{requirementId}', [ApplicantDocumentController::c
 Route::delete('/applicant/upload/delete/gdrive/{requirementId}', [ApplicantDocumentController::class, 'deleteGDriveLink'])->name('applicant.upload.delete-gdrive');
 
 Route::get('/staff/applicant/{id}/all-uploads/{requirementId}', [StaffDashboardController::class, 'getAllUploads'])->name('staff.applicant.all-uploads');
+
 
 
 });

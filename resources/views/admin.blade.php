@@ -280,11 +280,31 @@
                     <canvas id="programPieChart"></canvas>
                 </div>
                 <div class="legend-grid" id="legendGrid">
-                    <div class="legend-item"><span class="dot b-orange" style="background:#f57c1f"></span> BUCS <span id="bucsCount" class="legend-count">42</span></div>
-                    <div class="legend-item"><span class="dot b-lblue" style="background:#82c8f8"></span> BUCN <span id="bucnCount" class="legend-count">18</span></div>
-                    <div class="legend-item"><span class="dot b-dorange" style="background:#e66a00"></span> BUCAL <span id="bucalCount" class="legend-count">15</span></div>
-                    <div class="legend-item"><span class="dot b-dblue" style="background:#1b2e63"></span> BUCIT <span id="bucitCount" class="legend-count">22</span></div>
-                    <div class="legend-item"><span class="dot b-vdark" style="background:#111e42"></span> BUTC <span id="butcCount" class="legend-count">8</span></div>
+                    <div class="legend-item">
+                        <span class="dot" style="background:#f57c1f"></span> 
+                        BS Computer Science 
+                        <span id="bscsCount" class="legend-count">0</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="dot" style="background:#82c8f8"></span> 
+                        BS Fisheries 
+                        <span id="bsfCount" class="legend-count">0</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="dot" style="background:#e66a00"></span> 
+                        BS Nursing 
+                        <span id="bsnCount" class="legend-count">0</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="dot" style="background:#1b2e63"></span> 
+                        BS Automotive Technology 
+                        <span id="bsatCount" class="legend-count">0</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="dot" style="background:#111e42"></span> 
+                        AB Communication 
+                        <span id="abcCount" class="legend-count">0</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -417,8 +437,20 @@
     (function() {
         'use strict';
         
+        // Program mapping
+        let programCounts = {
+            'BS Computer Science': 0,
+            'BS Fisheries': 0,
+            'BS Nursing': 0,
+            'BS Automotive Technology': 0,
+            'AB Communication': 0
+        };
+        let monthlyData = [];
+        let trendData = [];
+        let chartLabels = [];
+        
         // ============================================
-        // SMOOTH SIDEBAR TOGGLE
+        // SIDEBAR TOGGLE
         // ============================================
         const sidebar = document.getElementById('sidebar');
         const toggleBtn = document.getElementById('sidebarToggleBtn');
@@ -459,132 +491,350 @@
         setInterval(updateDateTime, 1000);
         
         // ============================================
-        // DATA & CHARTS (All your original charts)
+        // FETCH DASHBOARD DATA
         // ============================================
-        let programCounts = { BUCS: 42, BUCN: 18, BUCAL: 15, BUCIT: 22, BUTC: 8 };
-        let monthlyData = [65, 80, 45, 90, 75];
-        let trendData = [42, 58, 72, 88, 94, 105];
-
+        async function fetchDashboardData() {
+            try {
+                const response = await fetch('/admin/dashboard/stats', {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    const data = result.data;
+                    
+                    // Update stat numbers
+                    document.getElementById('totalReg').innerText = data.totalRegistrations || 0;
+                    document.getElementById('approvedCount').innerText = data.approvedCount || 0;
+                    document.getElementById('pendingCount').innerText = data.pendingCount || 0;
+                    document.getElementById('sysHealth').innerHTML = (data.systemHealth || 100) + '<span class="percent-sign">%</span>';
+                    
+                    // Update program counts
+                    programCounts = data.programCounts;
+                    document.getElementById('bscsCount').innerText = programCounts['BS Computer Science'] || 0;
+                    document.getElementById('bsfCount').innerText = programCounts['BS Fisheries'] || 0;
+                    document.getElementById('bsnCount').innerText = programCounts['BS Nursing'] || 0;
+                    document.getElementById('bsatCount').innerText = programCounts['BS Automotive Technology'] || 0;
+                    document.getElementById('abcCount').innerText = programCounts['AB Communication'] || 0;
+                    
+                    // Update chart data
+                    chartLabels = data.monthlyLabels;
+                    monthlyData = data.monthlyData;
+                    trendData = data.trendData;
+                    
+                    updateCharts();
+                } else {
+                    console.error('API Error:', result.message);
+                }
+            } catch (error) {
+                console.error('Fetch error:', error);
+            }
+        }
+        
+        // ============================================
+        // UPDATE CHARTS
+        // ============================================
+        function updateCharts() {
+            // Update Pie Chart
+            if (window.pieChart) {
+                const pieData = [
+                    programCounts['BS Computer Science'] || 0,
+                    programCounts['BS Fisheries'] || 0,
+                    programCounts['BS Nursing'] || 0,
+                    programCounts['BS Automotive Technology'] || 0,
+                    programCounts['AB Communication'] || 0
+                ];
+                window.pieChart.data.datasets[0].data = pieData;
+                window.pieChart.update();
+            }
+            
+            // Update Bar Chart
+            if (window.barChart && chartLabels.length > 0) {
+                window.barChart.data.labels = chartLabels;
+                window.barChart.data.datasets[0].data = monthlyData;
+                window.barChart.update();
+            }
+            
+            // Update Trend Chart
+            if (window.trendChart && chartLabels.length > 0) {
+                window.trendChart.data.labels = chartLabels;
+                window.trendChart.data.datasets[0].data = trendData;
+                window.trendChart.update();
+            }
+        }
+        
+        // ============================================
+        // INITIALIZE CHARTS
+        // ============================================
         window.pieChart = new Chart(document.getElementById('programPieChart'), {
             type: 'pie',
             data: {
-                labels: ['BUCS', 'BUCN', 'BUCAL', 'BUCIT', 'BUTC'],
+                labels: ['BS Computer Science', 'BS Fisheries', 'BS Nursing', 'BS Automotive Technology', 'AB Communication'],
                 datasets: [{
-                    data: Object.values(programCounts),
+                    data: [0, 0, 0, 0, 0],
                     backgroundColor: ['#f57c1f', '#82c8f8', '#e66a00', '#1b2e63', '#111e42'],
                     borderWidth: 0
                 }]
             },
-            options: { responsive: true, plugins: { legend: { display: false } } }
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: true,
+                plugins: { legend: { display: false } }
+            }
         });
-
+        
         window.barChart = new Chart(document.getElementById('monthlyBarChart'), {
             type: 'bar',
             data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
-                datasets: [{ label: 'Apps', data: monthlyData, backgroundColor: '#f57c1f', borderRadius: 6 }]
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [{ 
+                    label: 'Applications', 
+                    data: [0, 0, 0, 0, 0, 0], 
+                    backgroundColor: '#f57c1f', 
+                    borderRadius: 6 
+                }]
             },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true } }
+            }
         });
-
+        
         window.trendChart = new Chart(document.getElementById('trendCanvas'), {
             type: 'line',
             data: {
                 labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                datasets: [{ label: 'Users', data: trendData, borderColor: '#1b2e63', tension: 0.3, pointBackgroundColor: '#f57c1f',
-                        pointBorderColor: '#fff',
-                        pointRadius: 4,fill: true, backgroundColor: 'rgba(27, 46, 99, 0.05)' }]
+                datasets: [{ 
+                    label: 'Cumulative Registrations', 
+                    data: [0, 0, 0, 0, 0, 0], 
+                    borderColor: '#1b2e63', 
+                    tension: 0.3, 
+                    pointBackgroundColor: '#f57c1f',
+                    pointBorderColor: '#fff',
+                    pointRadius: 5,
+                    fill: true, 
+                    backgroundColor: 'rgba(27, 46, 99, 0.05)' 
+                }]
             },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true } }
+            }
         });
-
-        // ============================================
-        // AUTO-UPDATE SIMULATION (Inalis ko ito dati, binalik ko na ngayon)
-        // ============================================
-        function randomUpdate() {
-            const keys = Object.keys(programCounts);
-            programCounts[keys[Math.floor(Math.random() * keys.length)]]++;
-            window.pieChart.data.datasets[0].data = Object.values(programCounts);
-            window.pieChart.update('none');
-            document.getElementById('totalReg').innerText = Object.values(programCounts).reduce((a, b) => a + b, 0);
-        }
-        setInterval(randomUpdate, 12000);
-
-        // ============================================
-        // NAVIGATION & LOGOUT HANDLING (FIXED)
-        // ============================================
-        const navItems = document.querySelectorAll('.nav-item');
         
+        // Load data
+        fetchDashboardData();
+        setInterval(fetchDashboardData, 30000);
+        
+        // Navigation active state
+        const navItems = document.querySelectorAll('.nav-item');
         navItems.forEach(item => {
-            item.addEventListener('click', function () {
+            item.addEventListener('click', function() {
                 navItems.forEach(nav => nav.classList.remove('active'));
                 this.classList.add('active');
             });
         });
     })();
-
-    // --- MODAL LOGIC ---
+    
+    // ============================================
+    // MODAL LOGIC
+    // ============================================
     let croppieInstance = null;
-
-    function openAccountModal() { document.getElementById('accountModal').classList.add('show'); }
-    function closeAccountModal() { document.getElementById('accountModal').classList.remove('show'); cancelAdjustment(); hideChangeSection(); }
+    
+    function openAccountModal() { 
+        document.getElementById('accountModal').classList.add('show'); 
+    }
+    
+    function closeAccountModal() { 
+        document.getElementById('accountModal').classList.remove('show'); 
+        cancelAdjustment(); 
+        hideChangeSection(); 
+    }
     
     function togglePassword(inputId, iconId) {
         const input = document.getElementById(inputId);
         const icon = document.getElementById(iconId);
-        input.type = input.type === 'password' ? 'text' : 'password';
-        icon.innerText = input.type === 'password' ? 'visibility' : 'visibility_off';
+        if (input && icon) {
+            input.type = input.type === 'password' ? 'text' : 'password';
+            icon.innerText = input.type === 'password' ? 'visibility' : 'visibility_off';
+        }
     }
-
-    function showChangeSection() { document.getElementById('changeBtn').style.display = 'none'; document.getElementById('changeSection').style.display = 'flex'; }
-    function hideChangeSection() { document.getElementById('changeBtn').style.display = 'block'; document.getElementById('changeSection').style.display = 'none'; }
-
-    // --- IMAGE CROP LOGIC ---
+    
+    function showChangeSection() { 
+        const changeBtn = document.getElementById('changeBtn');
+        const changeSection = document.getElementById('changeSection');
+        if (changeBtn) changeBtn.style.display = 'none';
+        if (changeSection) changeSection.style.display = 'flex';
+    }
+    
+    function hideChangeSection() { 
+        const changeBtn = document.getElementById('changeBtn');
+        const changeSection = document.getElementById('changeSection');
+        if (changeBtn) changeBtn.style.display = 'block';
+        if (changeSection) changeSection.style.display = 'none';
+        // Clear password fields
+        const newPassword = document.getElementById('newPassword');
+        const confirmPassword = document.getElementById('confirmPassword');
+        if (newPassword) newPassword.value = '';
+        if (confirmPassword) confirmPassword.value = '';
+    }
+    
+    function updatePassword() {
+        const newPassword = document.getElementById('newPassword');
+        const confirmPassword = document.getElementById('confirmPassword');
+        
+        if (!newPassword.value || !confirmPassword.value) {
+            showToast('Please fill in all fields', 'error');
+            return;
+        }
+        
+        if (newPassword.value !== confirmPassword.value) {
+            showToast('Passwords do not match', 'error');
+            return;
+        }
+        
+        if (newPassword.value.length < 8) {
+            showToast('Password must be at least 8 characters', 'error');
+            return;
+        }
+        
+        // Send to backend
+        fetch('{{ route("update-password") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify({ password: newPassword.value })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast('Password updated successfully!', 'success');
+                hideChangeSection();
+            } else {
+                showToast(data.message || 'Failed to update password', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('An error occurred', 'error');
+        });
+    }
+    
+    // ============================================
+    // IMAGE CROP LOGIC
+    // ============================================
     function previewImage(event) {
-        const reader = new FileReader();
-        reader.onload = (e) => startCroppie(e.target.result);
-        reader.readAsDataURL(event.target.files[0]);
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => startCroppie(e.target.result);
+            reader.readAsDataURL(file);
+        }
     }
-
+    
     function startCroppie(src) {
-        document.getElementById('defaultAvatarView').style.display = 'none';
-        document.getElementById('profileActionButtons').style.display = 'none';
-        document.getElementById('adjustmentArea').style.display = 'flex';
-        const el = document.getElementById('image-editor');
+        const defaultAvatar = document.getElementById('defaultAvatarView');
+        const profileActions = document.getElementById('profileActionButtons');
+        const adjustmentArea = document.getElementById('adjustmentArea');
+        const imageEditor = document.getElementById('image-editor');
+        
+        if (defaultAvatar) defaultAvatar.style.display = 'none';
+        if (profileActions) profileActions.style.display = 'none';
+        if (adjustmentArea) adjustmentArea.style.display = 'flex';
+        
         if (croppieInstance) croppieInstance.destroy();
-        croppieInstance = new Croppie(el, {
+        
+        croppieInstance = new Croppie(imageEditor, {
             viewport: { width: 150, height: 150, type: 'circle' },
             boundary: { width: '100%', height: 250 },
             showZoomer: true
         });
         croppieInstance.bind({ url: src });
     }
-
+    
+    function startAdjustingCurrent() {
+        const currentImage = document.getElementById('modalProfilePreview').src;
+        startCroppie(currentImage);
+    }
+    
     function uploadCroppedImage() {
+        if (!croppieInstance) return;
+        
         croppieInstance.result('base64').then(base64 => {
-            // Update Modal Image
-            document.getElementById('modalProfilePreview').src = base64;
-            // UPDATE DASHBOARD HEADER IMAGE (TAAS)
-            document.getElementById('headerAvatar').style.backgroundImage = `url('${base64}')`;
-            
-            showToast("Profile photo updated!", "success");
-            cancelAdjustment();
+            // Convert base64 to blob
+            fetch(base64)
+                .then(res => res.blob())
+                .then(blob => {
+                    const formData = new FormData();
+                    formData.append('profile_image', blob, 'profile.jpg');
+                    
+                    fetch('{{ route("profile.upload.image") }}', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        },
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            document.getElementById('modalProfilePreview').src = base64;
+                            showToast("Profile photo updated!", "success");
+                            cancelAdjustment();
+                        } else {
+                            showToast(data.message || 'Failed to update photo', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Upload error:', error);
+                        showToast('Failed to upload photo', 'error');
+                    });
+                });
         });
     }
-
+    
     function cancelAdjustment() {
-        if (croppieInstance) croppieInstance.destroy();
-        document.getElementById('adjustmentArea').style.display = 'none';
-        document.getElementById('defaultAvatarView').style.display = 'block';
-        document.getElementById('profileActionButtons').style.display = 'flex';
+        if (croppieInstance) {
+            croppieInstance.destroy();
+            croppieInstance = null;
+        }
+        
+        const defaultAvatar = document.getElementById('defaultAvatarView');
+        const profileActions = document.getElementById('profileActionButtons');
+        const adjustmentArea = document.getElementById('adjustmentArea');
+        
+        if (adjustmentArea) adjustmentArea.style.display = 'none';
+        if (defaultAvatar) defaultAvatar.style.display = 'block';
+        if (profileActions) profileActions.style.display = 'flex';
     }
-
+    
+    // ============================================
+    // TOAST NOTIFICATION
+    // ============================================
     function showToast(msg, type) {
         const toast = document.getElementById('toast');
+        if (!toast) return;
+        
         toast.className = `toast show ${type}`;
-        document.getElementById('toast-icon').innerText = 'check_circle';
-        document.getElementById('toast-message').innerText = msg;
-        setTimeout(() => toast.classList.remove('show'), 3000);
+        const toastIcon = document.getElementById('toast-icon');
+        const toastMessage = document.getElementById('toast-message');
+        
+        if (toastIcon) toastIcon.innerText = type === 'success' ? 'check_circle' : 'error';
+        if (toastMessage) toastMessage.innerText = msg;
+        
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 3000);
     }
 </script>
 </body>
