@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&family=Raleway:wght@400;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/user_management.css') }}">
    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/croppie/2.6.5/croppie.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/croppie/2.6.5/croppie.min.js"></script>
@@ -19,177 +19,6 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
-    <style>
-        /* ============================================
-           DASHBOARD EXTENSION STYLES
-           Smooth animations & responsive layout
-           ============================================ */
-        
-        /* Sidebar Smooth Animation */
-        .sidebar {
-            transition: width 0.28s cubic-bezier(0.2, 0.9, 0.4, 1.1), padding 0.2s ease;
-            will-change: width;
-            backface-visibility: hidden;
-            transform: translateZ(0);
-        }
-        
-        .sidebar.collapsed {
-            width: 85px;
-        }
-        
-        .sidebar.collapsed .brand-name,
-        .sidebar.collapsed .nav-item span {
-            display: none;
-        }
-        
-        .sidebar.collapsed .nav-item {
-            justify-content: center;
-            padding: 15px 0;
-        }
-        
-        .sidebar.collapsed .nav-item i {
-            margin: 0 auto;
-        }
-        
-        .sidebar.collapsed .logo-section {
-            justify-content: center;
-        }
-        
-        .sidebar.collapsed .logo-placeholder {
-            width: 45px;
-            height: 45px;
-        }
-        
-        /* Toggle button smooth */
-        .sidebar-toggle {
-            transition: all 0.2s ease;
-            cursor: pointer;
-        }
-        
-        .sidebar-toggle:hover {
-            transform: scale(1.08);
-            background: var(--accent-orange, #f57c1f);
-            color: white;
-        }
-        
-        /* Main content smooth transition */
-        .main-content {
-            transition: padding 0.25s ease;
-        }
-        
-        /* Pie chart wrapper styles */
-        .pie-chart-card .pie-content-wrapper {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex: 1;
-            gap: 20px;
-            min-height: 0;
-        }
-        
-        .pie-chart-card .chart-container {
-            flex: 1.5;
-            min-height: 180px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .pie-chart-card canvas {
-            max-height: 180px !important;
-            max-width: 100% !important;
-        }
-        
-        .pie-chart-card .legend-grid {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            justify-content: center;
-        }
-        
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 13px;
-            font-weight: 700;
-            color: var(--text-dark, #1a3c7a);
-        }
-        
-        .legend-count {
-            margin-left: auto;
-            font-weight: 800;
-            color: var(--accent-orange, #f57c1f);
-            background: #f0f4f8;
-            padding: 2px 8px;
-            border-radius: 20px;
-            font-size: 12px;
-        }
-        
-        .dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 3px;
-        }
-        
-        /* Chart containers */
-        .chart-container {
-            flex: 1;
-            min-height: 0;
-            position: relative;
-            width: 100%;
-        }
-        
-        .chart-container canvas {
-            max-height: 100%;
-            width: 100%;
-        }
-        
-        /* Bar chart and trend card heights */
-        .bar-chart-card .chart-container,
-        .trend-card .chart-container {
-            min-height: 200px;
-        }
-        
-        /* Stat card adjustments */
-        .stat-number {
-            font-size: clamp(28px, 4vh, 44px);
-        }
-        
-        .percent-sign {
-            font-size: 24px;
-        }
-        
-        /* Toast notification */
-        .toast-notification {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: var(--primary-blue, #1b2e63);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 40px;
-            font-weight: bold;
-            z-index: 999;
-            font-size: 14px;
-            font-family: 'Raleway', sans-serif;
-            animation: slideIn 0.3s ease;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-        
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-        
-    </style>
 </head>
 <body>
 
@@ -205,26 +34,26 @@
     </div>
     
     <nav class="nav-menu">
-    <a href="{{ route('admin.dashboard') }}" 
-       class="nav-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
-        <i class="fas fa-th-large"></i> <span>Dashboard</span>
-    </a>
+        <a href="{{ route('admin.dashboard') }}" 
+        class="nav-item {{ request()->routeIs('admin-dashboard') ? 'active' : '' }}">
+            <i class="fas fa-th-large"></i> <span>Dashboard</span>
+        </a>
 
-    <a href="{{ route('user_management') }}" 
-       class="nav-item {{ request()->routeIs('user_management') ? 'active' : '' }}">
-        <i class="fas fa-users"></i> <span>User Management</span>
-    </a>
+        <a href="{{ route('user_management') }}" 
+        class="nav-item {{ request()->routeIs('user_management') ? 'active' : '' }}">
+            <i class="fas fa-users"></i> <span>User Management</span>
+        </a>
 
-    <a href="{{ route('audit_logs') }}" 
-       class="nav-item {{ request()->routeIs('audit_logs') ? 'active' : '' }}">
-        <i class="fas fa-user-check"></i> <span>Audit Logs</span>
-    </a>
+        <a href="{{ route('audit_logs') }}" 
+        class="nav-item {{ request()->routeIs('audit_logs') ? 'active' : '' }}">
+            <i class="fas fa-user-check"></i> <span>Audit Logs</span>
+        </a>
 
-    <a href="{{ route('homepage_management') }}" 
-       class="nav-item {{ request()->routeIs('homepage_management') ? 'active' : '' }}">
-        <i class="fas fa-house-user"></i> <span>Homepage Management</span>
-    </a>
-</nav>
+        <a href="{{ route('homepage_management') }}" 
+        class="nav-item {{ request()->routeIs('homepage_management') ? 'active' : '' }}">
+            <i class="fas fa-house-user"></i> <span>Homepage Management</span>
+        </a>
+    </nav>
 
     <div class="sidebar-footer">
         <a href="#" onclick="openAccountModal()" class="nav-item footer-item">
@@ -242,7 +71,7 @@
 <main class="main-content">
     <header class="header">
         <div class="header-left">
-            <h1>Dashboard Overview</h1>
+            <h1>User Management</h1>
             <p class="date-display" id="liveDateTime">May 4, 2026 | 3:19 PM</p>
         </div>
         <div class="user-profile">
@@ -254,73 +83,66 @@
         </div>
     </header>
 
-    <div class="dashboard-grid">
-        <!-- Stat Cards -->
-        <div class="card stat-card">
-            <div class="stat-label">
-                <span class="icon-bg"><i class="fas fa-users"></i></span>
-                Total Registration
+    <!-- USER MANAGEMENT CONTAINER -->
+    <div class="user-container">
+        <div class="table-controls">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search logs or admin names...">
             </div>
-            <div class="stat-number" id="totalReg">105</div>
+            <button class="add-user-btn"><i class="fas fa-plus"></i> Add New User</button>
         </div>
 
-        <div class="card stat-card">
-            <div class="stat-label">
-                <span class="icon-bg"><i class="fas fa-user-plus"></i></span>
-                Approved Applicants
-            </div>
-            <div class="stat-number" id="approvedCount">96</div>
-        </div>
-
-        <!-- Program Statistics -->
-        <div class="card pie-chart-card">
-            <h3>Program Statistics</h3>
-            <div class="pie-content-wrapper">
-                <div class="chart-container">
-                    <canvas id="programPieChart"></canvas>
-                </div>
-                <div class="legend-grid" id="legendGrid">
-                    <div class="legend-item"><span class="dot b-orange" style="background:#f57c1f"></span> BUCS <span id="bucsCount" class="legend-count">42</span></div>
-                    <div class="legend-item"><span class="dot b-lblue" style="background:#82c8f8"></span> BUCN <span id="bucnCount" class="legend-count">18</span></div>
-                    <div class="legend-item"><span class="dot b-dorange" style="background:#e66a00"></span> BUCAL <span id="bucalCount" class="legend-count">15</span></div>
-                    <div class="legend-item"><span class="dot b-dblue" style="background:#1b2e63"></span> BUCIT <span id="bucitCount" class="legend-count">22</span></div>
-                    <div class="legend-item"><span class="dot b-vdark" style="background:#111e42"></span> BUTC <span id="butcCount" class="legend-count">8</span></div>
-                </div>
-            </div>
-        </div>
-
-        <div class="card stat-card">
-            <div class="stat-label">
-                <span class="icon-bg"><i class="fas fa-hourglass-half"></i></span>
-                Pending Status
-            </div>
-            <div class="stat-number" id="pendingCount">9</div>
-        </div>
-
-        <div class="card stat-card">
-            <div class="stat-label">
-                <span class="icon-bg"><i class="fas fa-clipboard-check"></i></span>
-                System Health
-            </div>
-            <div class="stat-number" id="sysHealth">100<span class="percent-sign">%</span></div>
-        </div>
-
-        <!-- Monthly Application (Bar Chart) -->
-        <div class="card bar-chart-card">
-            <h3>Monthly Application</h3>
-            <div class="chart-container">
-                <canvas id="monthlyBarChart"></canvas>
-            </div>
-        </div>
-
-        <!-- Trend Chart (Line Chart) -->
-        <div class="card trend-card">
-            <h3>User Registration Trend</h3>
-            <div class="chart-container">
-                <canvas id="trendCanvas"></canvas>
-            </div>
+        <div class="table-wrapper">
+            <table class="user-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email Address</th>
+                        <th>Security Status</th> <!-- Dito makikita ang login attempts -->
+                        <th>Last Pass Change</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="name-cell">
+                            <div class="user-avatar-sm">MS</div>
+                            Maria Santos
+                        </td>
+                        <td class="email-text">mariasntr@eteeap.com</td>
+                        <td>
+                            <!-- Color coded based sa severity ng attempts -->
+                            <span class="status-pill success">0 Failed Attempts</span>
+                        </td>
+                        <td>May 2, 2026</td>
+                        <td class="actions-cell">
+                            <button class="action-btn key" title="Reset Password"><i class="fas fa-key"></i></button>
+                            <button class="action-btn lock" title="Suspend User"><i class="fas fa-user-lock"></i></button>
+                            <button class="action-btn delete" title="Delete User"><i class="fas fa-trash-alt"></i></button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="name-cell">
+                            <div class="user-avatar-sm warning">JD</div>
+                            Juan Dela Cruz
+                        </td>
+                        <td class="email-text">juandela@gmail.com</td>
+                        <td>
+                            <span class="status-pill danger">5 Failed Attempts</span>
+                        </td>
+                        <td>April 15, 2026</td>
+                        <td class="actions-cell">
+                            <button class="action-btn key" title="Reset Password"><i class="fas fa-key"></i></button>
+                            <button class="action-btn lock" title="Suspend User"><i class="fas fa-user-lock"></i></button>
+                            <button class="action-btn delete" title="Delete User"><i class="fas fa-trash-alt"></i></button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
+    
 </main>
 
 <!-- MANAGE ACCOUNT MODAL -->
@@ -458,45 +280,6 @@
         updateDateTime();
         setInterval(updateDateTime, 1000);
         
-        // ============================================
-        // DATA & CHARTS (All your original charts)
-        // ============================================
-        let programCounts = { BUCS: 42, BUCN: 18, BUCAL: 15, BUCIT: 22, BUTC: 8 };
-        let monthlyData = [65, 80, 45, 90, 75];
-        let trendData = [42, 58, 72, 88, 94, 105];
-
-        window.pieChart = new Chart(document.getElementById('programPieChart'), {
-            type: 'pie',
-            data: {
-                labels: ['BUCS', 'BUCN', 'BUCAL', 'BUCIT', 'BUTC'],
-                datasets: [{
-                    data: Object.values(programCounts),
-                    backgroundColor: ['#f57c1f', '#82c8f8', '#e66a00', '#1b2e63', '#111e42'],
-                    borderWidth: 0
-                }]
-            },
-            options: { responsive: true, plugins: { legend: { display: false } } }
-        });
-
-        window.barChart = new Chart(document.getElementById('monthlyBarChart'), {
-            type: 'bar',
-            data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
-                datasets: [{ label: 'Apps', data: monthlyData, backgroundColor: '#f57c1f', borderRadius: 6 }]
-            },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-        });
-
-        window.trendChart = new Chart(document.getElementById('trendCanvas'), {
-            type: 'line',
-            data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                datasets: [{ label: 'Users', data: trendData, borderColor: '#1b2e63', tension: 0.3, pointBackgroundColor: '#f57c1f',
-                        pointBorderColor: '#fff',
-                        pointRadius: 4,fill: true, backgroundColor: 'rgba(27, 46, 99, 0.05)' }]
-            },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-        });
 
         // ============================================
         // AUTO-UPDATE SIMULATION (Inalis ko ito dati, binalik ko na ngayon)

@@ -248,158 +248,7 @@ body {
     font-weight: 600;
 }
 
-/* ============================================
-   DASHBOARD GRID - THE FIX (NO SCROLL)
-   ============================================ */
-.dashboard-grid {
-    flex: 1;
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    /* Ginamit natin ang 1fr para sa rows para saktong hatu-hati sila sa screen */
-    grid-template-rows: repeat(2, auto) 1fr; 
-    gap: 15px;
-    min-height: 0;
-    overflow: hidden; /* Inalis ang auto scroll */
-    padding-bottom: 10px;
-}
 
-/* Base Card Style */
-.card {
-    background: var(--white);
-    border-radius: 20px;
-    padding: 20px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-    display: flex;
-    flex-direction: column;
-    height: 100%; /* Saktong 100% height para walang butal */
-}
-
-/* Stat Cards */
-.stat-card {
-    grid-column: span 1;
-    justify-content: center; 
-    padding: 25px 20px !important; /* Adjusted padding para mas compact */
-}
-
-.stat-label {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: 700;
-    color: #444;
-    margin-bottom: 10px;
-    font-size: 15px;
-}
-
-.icon-bg {
-    background: #f0f4f8;
-    padding: 6px 8px;
-    border-radius: 8px;
-    color: var(--primary-blue);
-}
-
-.stat-number {
-    font-size: clamp(35px, 4.5vh, 45px);
-    font-weight: 800;
-    color: var(--accent-orange);
-    text-align: center;
-    font-family: 'Poppins', sans-serif;
-}
-
-/* Program Statistics (Pie Chart) */
-.pie-chart-card {
-    grid-column: 3 / span 2;
-    grid-row: 1 / span 2;
-}
-
-.pie-chart-card h3 {
-    margin-bottom: 10px;
-    font-weight: 800;
-    font-size: 18px;
-}
-
-.pie-content-wrapper {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex: 1;
-    gap: 20px;
-    min-height: 0;
-}
-
-.pie-chart-card .chart-container {
-    flex: 1.5;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.pie-chart-card canvas {
-    max-height: 160px !important; /* Binawasan ng konti para umangat */
-    max-width: 100% !important;
-}
-
-.legend-grid {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.legend-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 12px;
-    font-weight: 700;
-}
-
-.legend-count {
-    margin-left: auto;
-    font-weight: 800;
-    color: var(--accent-orange);
-    background: #f0f4f8;
-    padding: 1px 6px;
-    border-radius: 20px;
-}
-
-.dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 3px;
-}
-
-.b-orange { background: var(--accent-orange); }
-.b-lblue { background: #82c8f8; }
-.b-dorange { background: #e66a00; }
-.b-dblue { background: var(--primary-blue); }
-.b-vdark { background: #111e42; }
-
-/* Bottom Charts (Monthly & Trend) - PINA-ANGAT */
-.bar-chart-card {
-    grid-column: 1 / span 2;
-    grid-row: 3;
-    margin-top: -5px; /* Inangat ang card */
-}
-
-.trend-card {
-    grid-column: 3 / span 2;
-    grid-row: 3;
-    margin-top: -5px; /* Inangat ang card */
-}
-
-.chart-container {
-    flex: 1;
-    min-height: 0; /* Pinayagan na mag-shrink para magkasya sa screen */
-    position: relative;
-    width: 100%;
-}
-
-.chart-container canvas {
-    max-height: 100%;
-    width: 100%;
-}
 
 /* Toast */
 .toast-notification {
@@ -794,3 +643,165 @@ body {
     font-size: 20px;
     color: white; 
 }
+
+/* ============================================
+   AUDIT LOGS TABLE STYLING
+   ============================================ */
+.audit-container {
+    background: var(--white);
+    border-radius: 20px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    flex: 1;
+    overflow: hidden;
+}
+
+.table-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+}
+
+.search-box {
+    position: relative;
+    flex: 1;
+    max-width: 400px;
+}
+
+.search-box i {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #999;
+}
+
+.search-box input {
+    width: 100%;
+    padding: 12px 15px 12px 45px;
+    border-radius: 12px;
+    border: 1.5px solid #eee;
+    outline: none;
+    font-size: 14px;
+}
+
+.filter-group {
+    display: flex;
+    gap: 10px;
+}
+
+.filter-select, .filter-date {
+    padding: 10px 15px;
+    border-radius: 10px;
+    border: 1.5px solid #eee;
+    color: var(--text-dark);
+    font-weight: 600;
+}
+
+.export-btn {
+    background: var(--primary-blue);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.export-btn:hover { background: #1a2763; transform: translateY(-2px); }
+
+.table-wrapper {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.audit-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.audit-table th {
+    background: #f8faff;
+    padding: 15px;
+    color: #555;
+    font-weight: 700;
+    font-size: 13px;
+    text-transform: uppercase;
+    position: sticky;
+    top: 0;
+}
+
+.audit-table td {
+    padding: 15px;
+    border-bottom: 1px solid #f1f1f1;
+    font-size: 14px;
+    color: #444;
+}
+
+.timestamp { font-family: 'Poppins', sans-serif; font-weight: 500; color: #666; }
+
+.user-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+}
+
+.admin-initials {
+    width: 30px;
+    height: 30px;
+    background: #e0e7ff;
+    color: var(--primary-blue);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+}
+
+.cat-badge {
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.user-cat { background: #e0f2fe; color: #0369a1; }
+.login-cat { background: #fef3c7; color: #92400e; }
+
+.table-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+.pagination {
+    display: flex;
+    gap: 5px;
+}
+
+.pagination button {
+    width: 35px;
+    height: 35px;
+    border-radius: 8px;
+    border: 1px solid #eee;
+    background: white;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.pagination button.active {
+    background: var(--primary-blue);
+    color: white;
+    border-color: var(--primary-blue);
+}
+
+.pagination button:hover:not(:disabled) { background: #f0f0f0; }

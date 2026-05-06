@@ -184,3 +184,14 @@ Route::get('/reports', function () {
     return view('reports');
 })->name('reports');
 
+Route::get('/user_management', function () {
+    return view('user_management');
+})->name('user_management');
+
+Route::get('/audit_logs', function () {
+    return view('audit_logs');
+})->name('audit_logs');
+
+Route::get('/homepage_management', function () {
+    return view('homepage_management');
+})->name('homepage_management');

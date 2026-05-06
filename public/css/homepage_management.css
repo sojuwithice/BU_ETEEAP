@@ -6,6 +6,8 @@
     --accent-orange: #f57c1f;
     --text-dark: #223381;
     --white: #ffffff;
+    --danger: #d32f2f;
+    --success: #25c14a;
 }
 
 * {
@@ -44,11 +46,13 @@ body {
 }
 
 .sidebar.collapsed .brand-name,
-.sidebar.collapsed .nav-item span {
+.sidebar.collapsed .nav-item span,
+.sidebar.collapsed .sidebar-footer span {
     display: none;
 }
 
-.sidebar.collapsed .nav-item {
+.sidebar.collapsed .nav-item,
+.sidebar.collapsed .footer-item {
     justify-content: center;
     padding: 15px 0;
 }
@@ -75,48 +79,6 @@ body {
     transform: scale(1.08);
     background: var(--accent-orange);
     color: white;
-}
-
-/* Siguraduhin na ang nav-menu ay kakainin ang space sa gitna */
-.nav-menu {
-    flex: 1; /* Ito ang magtutulak sa footer pababa */
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-top: 30px;
-}
-
-/* Footer Section styling */
-.sidebar-footer {
-    margin-top: auto; /* Push to bottom */
-    padding-top: 20px;
-    border-top: 1px solid #eee;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-/* Para sa Collapsed state */
-.sidebar.collapsed .sidebar-footer span {
-    display: none;
-}
-
-.sidebar.collapsed .footer-item {
-    justify-content: center;
-    padding: 15px 0;
-}
-
-.footer-item {
-    color: #666;
-    transition: all 0.2s ease;
-}
-
-.logout-btn {
-    color: #d32f2f !important; /* Red color para sa logout */
-}
-
-.logout-btn:hover {
-    background: #fff5f5 !important;
 }
 
 .logo-section {
@@ -151,9 +113,11 @@ body {
 }
 
 .nav-menu {
+    flex: 1;
     display: flex;
     flex-direction: column;
     gap: 10px;
+    margin-top: 30px;
 }
 
 .nav-item {
@@ -174,8 +138,34 @@ body {
     color: var(--primary-blue);
 }
 
+.sidebar-footer {
+    margin-top: auto;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.footer-item {
+    color: #666;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.logout-btn {
+    color: var(--danger) !important;
+}
+
+.logout-btn:hover {
+    background: #fff5f5 !important;
+}
+
 /* ============================================
-   MAIN CONTENT AREA
+   MAIN CONTENT & HEADER
    ============================================ */
 .main-content {
     flex: 1;
@@ -249,179 +239,8 @@ body {
 }
 
 /* ============================================
-   DASHBOARD GRID - THE FIX (NO SCROLL)
+   ACCOUNT SETTINGS MODAL (FULL)
    ============================================ */
-.dashboard-grid {
-    flex: 1;
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    /* Ginamit natin ang 1fr para sa rows para saktong hatu-hati sila sa screen */
-    grid-template-rows: repeat(2, auto) 1fr; 
-    gap: 15px;
-    min-height: 0;
-    overflow: hidden; /* Inalis ang auto scroll */
-    padding-bottom: 10px;
-}
-
-/* Base Card Style */
-.card {
-    background: var(--white);
-    border-radius: 20px;
-    padding: 20px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-    display: flex;
-    flex-direction: column;
-    height: 100%; /* Saktong 100% height para walang butal */
-}
-
-/* Stat Cards */
-.stat-card {
-    grid-column: span 1;
-    justify-content: center; 
-    padding: 25px 20px !important; /* Adjusted padding para mas compact */
-}
-
-.stat-label {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: 700;
-    color: #444;
-    margin-bottom: 10px;
-    font-size: 15px;
-}
-
-.icon-bg {
-    background: #f0f4f8;
-    padding: 6px 8px;
-    border-radius: 8px;
-    color: var(--primary-blue);
-}
-
-.stat-number {
-    font-size: clamp(35px, 4.5vh, 45px);
-    font-weight: 800;
-    color: var(--accent-orange);
-    text-align: center;
-    font-family: 'Poppins', sans-serif;
-}
-
-/* Program Statistics (Pie Chart) */
-.pie-chart-card {
-    grid-column: 3 / span 2;
-    grid-row: 1 / span 2;
-}
-
-.pie-chart-card h3 {
-    margin-bottom: 10px;
-    font-weight: 800;
-    font-size: 18px;
-}
-
-.pie-content-wrapper {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex: 1;
-    gap: 20px;
-    min-height: 0;
-}
-
-.pie-chart-card .chart-container {
-    flex: 1.5;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.pie-chart-card canvas {
-    max-height: 160px !important; /* Binawasan ng konti para umangat */
-    max-width: 100% !important;
-}
-
-.legend-grid {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.legend-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 12px;
-    font-weight: 700;
-}
-
-.legend-count {
-    margin-left: auto;
-    font-weight: 800;
-    color: var(--accent-orange);
-    background: #f0f4f8;
-    padding: 1px 6px;
-    border-radius: 20px;
-}
-
-.dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 3px;
-}
-
-.b-orange { background: var(--accent-orange); }
-.b-lblue { background: #82c8f8; }
-.b-dorange { background: #e66a00; }
-.b-dblue { background: var(--primary-blue); }
-.b-vdark { background: #111e42; }
-
-/* Bottom Charts (Monthly & Trend) - PINA-ANGAT */
-.bar-chart-card {
-    grid-column: 1 / span 2;
-    grid-row: 3;
-    margin-top: -5px; /* Inangat ang card */
-}
-
-.trend-card {
-    grid-column: 3 / span 2;
-    grid-row: 3;
-    margin-top: -5px; /* Inangat ang card */
-}
-
-.chart-container {
-    flex: 1;
-    min-height: 0; /* Pinayagan na mag-shrink para magkasya sa screen */
-    position: relative;
-    width: 100%;
-}
-
-.chart-container canvas {
-    max-height: 100%;
-    width: 100%;
-}
-
-/* Toast */
-.toast-notification {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background: var(--primary-blue);
-    color: white;
-    padding: 10px 20px;
-    border-radius: 40px;
-    font-weight: bold;
-    z-index: 999;
-    animation: slideIn 0.3s ease;
-}
-
-@keyframes slideIn {
-    from { transform: translateX(100%); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
-}
-
-
-/* BACKDROP */
 .account-modal {
     position: fixed;
     inset: 0;
@@ -433,12 +252,10 @@ body {
     backdrop-filter: blur(4px);
 }
 
-/* SHOW */
 .account-modal.show {
     display: flex;
 }
 
-/* BOX CONTAINER */
 .account-box {
     background: #ffffff;
     width: 420px; 
@@ -455,18 +272,15 @@ body {
     box-sizing: border-box;
 }
 
-/* CUSTOM SCROLLBAR */
 .account-box::-webkit-scrollbar { width: 6px; }
 .account-box::-webkit-scrollbar-thumb { background: #e0e0e0; border-radius: 10px; }
 
-/* IMAGE EDITOR & CROPPIE FIXES */
 #image-editor {
     width: 100%;
     height: 250px !important;
     margin-bottom: 20px; 
 }
 
-/* Adjustment Area Layout */
 #adjustmentArea {
     display: none; 
     flex-direction: column;
@@ -492,95 +306,6 @@ body {
     letter-spacing: 0.5px;
 }
 
-/* PROFILE SECTION */
-.profile-upload-section {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: 5px;
-    width: 100%;
-}
-
-.avatar-wrapper {
-    position: relative;
-    width: 110px;
-    height: 110px;
-    margin-bottom: 10px;
-}
-
-
-/* BACKDROP */
-.account-modal {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.6);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-    backdrop-filter: blur(4px);
-}
-
-/* SHOW */
-.account-modal.show {
-    display: flex;
-}
-
-/* BOX CONTAINER */
-.account-box {
-    background: #ffffff;
-    width: 420px; 
-    max-height: 90vh;
-    overflow-y: auto;
-    padding: 30px;
-    border-radius: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 15px; 
-    position: relative;
-    box-shadow: 0 15px 40px rgba(0,0,0,0.2);
-    animation: pop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    box-sizing: border-box;
-}
-
-/* CUSTOM SCROLLBAR */
-.account-box::-webkit-scrollbar { width: 6px; }
-.account-box::-webkit-scrollbar-thumb { background: #e0e0e0; border-radius: 10px; }
-
-/* IMAGE EDITOR & CROPPIE FIXES */
-#image-editor {
-    width: 100%;
-    height: 250px !important;
-    margin-bottom: 20px; 
-}
-
-/* Adjustment Area Layout */
-#adjustmentArea {
-    display: none; 
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-    padding-bottom: 10px;
-}
-
-.cr-slider-wrap {
-    width: 80% !important;
-    margin: 10px auto 25px auto !important; 
-    position: relative;
-    z-index: 99;
-}
-
-.upload-text {
-    font-size: 11px;
-    color: #666;
-    margin:10px 0;
-    font-weight: 700;
-    text-align: center;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-/* PROFILE SECTION */
 .profile-upload-section {
     display: flex;
     flex-direction: column;
@@ -601,7 +326,7 @@ body {
     height: 100%;
     border-radius: 50%;
     object-fit: cover;
-    border: 3px solid #223381;
+    border: 3px solid var(--primary-blue);
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
@@ -625,7 +350,6 @@ body {
 
 .upload-badge:hover { transform: scale(1.1); background: #d66528; }
 
-/* BUTTONS */
 .account-actions {
     display: flex;
     justify-content: space-between;
@@ -683,17 +407,11 @@ body {
 .cancel-btn { background: #f1f1f1; color: #444; flex: 1; }
 .cancel-btn:hover { background: #e5e5e5; }
 
-.save-btn { background: #223381; color: white; flex: 1; }
+.save-btn { background: var(--primary-blue); color: white; flex: 1; }
 .save-btn:hover { background: #1a2763; }
 
-.change-btn {
-    background: #EF7631;
-    color: white;
-    width: 100%;
-    margin-top: 5px;
-}
+.change-btn { background: #EF7631; color: white; width: 100%; margin-top: 5px; }
 
-/* INPUTS & PASSWORD */
 .input-group {
     display: flex;
     flex-direction: column;
@@ -714,13 +432,9 @@ body {
     transition: all 0.2s;
 }
 
-.account-box input:focus { border-color: #223381; background: #fff; }
+.account-box input:focus { border-color: var(--primary-blue); background: #fff; }
 
-.password-wrapper {
-    position: relative;
-    display: flex;
-    align-items: center;
-}
+.password-wrapper { position: relative; display: flex; align-items: center; }
 
 .toggle-eye {
     position: absolute;
@@ -731,7 +445,6 @@ body {
     align-items: center;
 }
 
-/* UTILS */
 .close-modal {
     position: absolute; top: 15px; right: 20px;
     font-size: 24px; color: #bbb; cursor: pointer;
@@ -741,21 +454,147 @@ body {
 
 .account-box h2 {
     margin-bottom: 10px;
-    color: #223381;
+    color: var(--primary-blue);
     font-size: 22px;
     font-weight: 700;
     text-align: center;
 }
 
-@keyframes pop {
-    from { transform: scale(0.9); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
+/* ============================================
+   DASHBOARD & ADMIN COMPONENTS
+   ============================================ */
+.dashboard-container {
+    padding: 24px;
+    background: #f8fafc;
+    border-radius: 20px;
+    flex: 1;
+    overflow-y: auto;
 }
 
-/* Croppie specific UI overrides */
-.cr-viewport { border: 3px solid #223381 !important; box-shadow: 0 0 0 1000px rgba(0,0,0,0.5) !important; }
+.page-header h2 {
+    color: #1e293b;
+    font-weight: 700;
+    margin-bottom: 5px;
+}
 
-/* Toast notification styles - TOP position */
+.admin-tabs-container {
+    display: flex;
+    gap: 5px;
+    background: white;
+    padding: 10px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+    margin-bottom: 20px;
+    overflow-x: auto;
+}
+
+.admin-tab {
+    padding: 10px 25px;
+    border: none;
+    background: none;
+    font-weight: 700;
+    color: #64748b;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: 0.3s;
+    white-space: nowrap;
+}
+
+.admin-tab i { margin-right: 8px; }
+
+.admin-tab.active {
+    background: #2f3c86;
+    color: white;
+}
+
+.admin-tab:hover:not(.active) {
+    background: #f1f5f9;
+}
+
+.admin-card {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    border: 1px solid #f1f5f9;
+    margin-bottom: 20px;
+}
+
+.card-header {
+    padding: 18px 25px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.card-header h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+}
+
+.card-body { padding: 25px; }
+
+.form-group { margin-bottom: 20px; }
+.form-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    color: #64748b;
+    margin-bottom: 8px;
+}
+
+.admin-input, .admin-textarea, .admin-input-bold {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 14px;
+}
+
+.admin-input-bold { font-weight: 700; margin-bottom: 5px; }
+
+.tab-panel { display: none; }
+.tab-panel.active { 
+    display: block; 
+    animation: fadeIn 0.3s ease;
+}
+
+.list-item, .list-item-dynamic { display: flex; gap: 10px; margin-bottom: 10px; }
+
+.btn-delete, .list-item-dynamic button { 
+    background: #fee2e2; 
+    color: #ef4444; 
+    border: none; 
+    padding: 10px; 
+    border-radius: 8px; 
+    cursor: pointer; 
+}
+
+.add-btn-outline { 
+    width: 100%; padding: 10px; border: 1px dashed #2f3c86; 
+    color: #2f3c86; background: none; border-radius: 10px; 
+    cursor: pointer; font-weight: 700; margin-top: 10px; 
+}
+
+.faq-admin-item { 
+    background: #f8fafc; padding: 15px; border-radius: 12px; 
+    margin-bottom: 15px; border: 1px solid #e2e8f0; 
+}
+
+.btn-remove-faq { 
+    background: none; border: none; color: #ef4444; 
+    font-size: 12px; font-weight: 700; cursor: pointer; margin-top: 5px; 
+}
+
+.img-edit { position: relative; border: 1px solid #ddd; padding: 5px; border-radius: 8px; }
+
+.btn-delete-small { 
+    position: absolute; top: -5px; right: -5px; background: #ef4444; 
+    color: white; border: none; border-radius: 4px; font-size: 9px; cursor: pointer; padding: 2px 5px; 
+}
+
+/* ============================================
+   TOASTS & ANIMATIONS
+   ============================================ */
 .toast {
     position: fixed;
     top: -100px;
@@ -776,21 +615,68 @@ body {
     transition: top 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
-.toast.show {
-    top: 25px;
+.toast.show { top: 25px; }
+.toast.success { background: #25c14a; }
+.toast.error { background: #e03d4d; }
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-/* Success & Error Colors */
-.toast.success { 
-    background: #25c14a; 
+@keyframes pop {
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
 }
 
-.toast.error { 
-    background: #e03d4d; 
+.cr-viewport { border: 3px solid var(--primary-blue) !important; box-shadow: 0 0 0 1000px rgba(0,0,0,0.5) !important; }
+
+/* ================= IMAGE PREVIEW RATIOS ================= */
+
+/* HERO – Landscape */
+.preview-hero {
+    width: 100%;
+    max-width: 320px;
+    aspect-ratio: 16 / 9;
+    background-size: cover;
+    background-position: center;
+    border-radius: 10px;
+    border: 1px solid #ddd;
 }
 
-/* Icon Styling */
-.toast .material-symbols-outlined {
-    font-size: 20px;
-    color: white; 
+/* ABOUT – Portrait */
+.preview-portrait {
+    width: 120px;
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 1px solid #ddd;
 }
+
+/* ONSITE – Free ratio */
+.preview-free {
+    max-width: 140px;
+    max-height: 140px;
+    object-fit: contain;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}
+
+/* PDF preview list */
+.pdf-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #f8fafc;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+}
+.pdf-item button {
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: red;
+    cursor: pointer;
+}
+
