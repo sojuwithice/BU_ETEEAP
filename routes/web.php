@@ -10,6 +10,7 @@ use App\Http\Controllers\StaffDashboardController;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\AdminUserController;
 
 Route::get('/', function () { return view('landing'); });
 
@@ -147,6 +148,25 @@ Route::delete('/applicant/upload/delete/gdrive/{requirementId}', [ApplicantDocum
 Route::get('/staff/applicant/{id}/all-uploads/{requirementId}', [StaffDashboardController::class, 'getAllUploads'])->name('staff.applicant.all-uploads');
 
 
+// ============================================
+// USER MANAGEMENT ROUTES
+// ============================================
+
+Route::get('/user_management', [AdminUserController::class, 'index'])
+->name('user_management');
+
+Route::post('/admin/users/store', [AdminUserController::class, 'store']);
+
+Route::post('/admin/users/{id}/reset-password', [AdminUserController::class, 'resetPassword']);
+
+Route::post('/admin/users/{id}/toggle-status', [AdminUserController::class, 'toggleStatus']);
+
+Route::delete('/admin/users/{id}', [AdminUserController::class, 'destroy']);
+
+Route::post('/admin/users/{id}/update-password', [AdminUserController::class, 'updatePassword'])
+    ->name('admin.users.update-password');
+
+Route::post('/admin/upload-profile', [AdminUserController::class, 'uploadProfile']);
 
 });
 
@@ -187,9 +207,6 @@ Route::get('/reports', function () {
     return view('reports');
 })->name('reports');
 
-Route::get('/user_management', function () {
-    return view('user_management');
-})->name('user_management');
 
 Route::get('/audit_logs', function () {
     return view('audit_logs');

@@ -79,7 +79,11 @@
                 <span class="user-name">{{ auth()->user()->first_name }} {{ auth()->user()->last_name }}</span>
                 <span class="admin-badge">{{ ucfirst(auth()->user()->role) }}</span>
             </div>
-            <div class="avatar-circle" id="headerAvatar"></div>
+            <img 
+    src="{{ auth()->user()->profile_image ? asset('storage/' . auth()->user()->profile_image) : asset('images/default-profile.png') }}" 
+    id="navbarAvatar" 
+    class="avatar-circle"
+>
         </div>
     </header>
 

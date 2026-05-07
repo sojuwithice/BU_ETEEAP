@@ -69,9 +69,13 @@ if (!($verify['success'] ?? false)) {
             'first_name' => $request->first_name,
             'last_name'  => $request->last_name,
             'email'      => $request->email,
-            'password'   => Hash::make($request->password), // Hashed (One-way)
-            'password_plain' => $request->password,         // Encrypted (Two-way, safe for Privacy)
-            'role'       => $request->role
+            'password'   => Hash::make($request->password),
+            'password_plain' => $request->password,
+            'role'       => $request->role,
+
+            'failed_attempts' => 0,
+            'is_suspended' => 0,
+            'password_changed_at' => now(),
         ]);
 
          $user->last_login_at = now();
@@ -84,7 +88,6 @@ if (!($verify['success'] ?? false)) {
         return $this->redirectRole($user);
     }
 
-// ================= LOGIN =================
 public function login(Request $request)
 {
     $validator = validator($request->all(), [
@@ -94,36 +97,113 @@ public function login(Request $request)
     ]);
 
     if ($validator->fails()) {
-        return back()->withErrors($validator, 'login')->withInput();
+        return back()
+        ->withErrors($validator, 'login')
+        ->withInput();
     }
 
-    $credentials = $request->only('email', 'password');
+    // ============================================
+    // FIND USER
+    // ============================================
 
-    if (Auth::attempt($credentials)) {
-        $user = Auth::user();
+    $user = User::where('email', $request->email)->first();
 
-        // ✅ IDAGDAG ITO - I-save ang last login timestamp
-        $user->last_login_at = now();
-        $user->save();
+    // ============================================
+    // USER NOT FOUND
+    // ============================================
 
-        // Role check
-        if ($request->role === 'staff') {
-            if ($user->role === 'staff' || $user->role === 'admin') {
-                return $this->redirectRole($user);
-            }
-        }
+    if (!$user) {
 
-        if ($request->role === 'student') {
-            if ($user->role === 'student') {
-                return $this->redirectRole($user);
-            }
-        }
-
-        Auth::logout();
-        return back()->withErrors(['email' => 'Role mismatch. Please select the correct role.'], 'login')->withInput();
+        return back()
+        ->withErrors([
+            'email' => 'Invalid credentials'
+        ], 'login')
+        ->withInput();
     }
 
-    return back()->withErrors(['email' => 'Invalid credentials'], 'login')->withInput();
+    // ============================================
+    // ACCOUNT SUSPENDED
+    // ============================================
+
+    if ($user->is_suspended) {
+
+        return back()
+        ->withErrors([
+            'email' => 'This account has been suspended.'
+        ], 'login')
+        ->withInput();
+    }
+
+    // ============================================
+    // CHECK PASSWORD
+    // ============================================
+
+    if (!Hash::check($request->password, $user->password)) {
+
+        // FAILED ATTEMPTS +1
+        $user->increment('failed_attempts');
+
+        // AUTO SUSPEND AFTER 5 ATTEMPTS
+        if ($user->failed_attempts >= 5) {
+
+            $user->is_suspended = true;
+            $user->save();
+
+            return back()
+            ->withErrors([
+                'email' => 'Account suspended after too many failed attempts.'
+            ], 'login')
+            ->withInput();
+        }
+
+        return back()
+        ->withErrors([
+            'email' => 'Invalid credentials'
+        ], 'login')
+        ->withInput();
+    }
+
+    // ============================================
+    // LOGIN SUCCESS
+    // ============================================
+
+    Auth::login($user);
+
+    // RESET FAILED ATTEMPTS
+    $user->failed_attempts = 0;
+
+    // SAVE LAST LOGIN
+    $user->last_login_at = now();
+
+    $user->save();
+
+    // ============================================
+    // ROLE CHECK
+    // ============================================
+
+    if ($request->role === 'staff') {
+
+        if ($user->role === 'staff' || $user->role === 'admin') {
+
+            return $this->redirectRole($user);
+        }
+    }
+
+    if ($request->role === 'student') {
+
+        if ($user->role === 'student') {
+
+            return $this->redirectRole($user);
+        }
+    }
+
+    Auth::logout();
+
+    return back()
+    ->withErrors([
+        'email' => 'Role mismatch. Please select the correct role.'
+    ], 'login')
+    ->withInput();
 }
 
         private function redirectRole($user)
@@ -153,16 +233,21 @@ public function login(Request $request)
         'password' => 'required|min:6|confirmed'
     ]);
 
-    
     $user = Auth::user();
+
     $user->password = Hash::make($request->password);
-    $user->password_plain = $request->password; 
+    $user->password_plain = $request->password;
+
+    
+    $user->password_changed_at = now();
+
     $user->save();
 
     session(['raw_password' => $request->password]);
 
     return response()->json([
-        'message' => 'Password updated successfully!'
+        'message' => 'Password updated successfully!',
+        'changed_at' => $user->password_changed_at->format('F d, Y h:i A')
     ]);
 }
 

@@ -37,6 +37,10 @@ class User extends Authenticatable
         'interview_location',
         'interview_date',
         'interview_time',
+
+        'failed_attempts',
+        'is_suspended',
+        'password_changed_at',
     ];
 
     /**

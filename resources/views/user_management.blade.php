@@ -15,6 +15,7 @@
    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/croppie/2.6.5/croppie.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/croppie/2.6.5/croppie.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -79,7 +80,11 @@
                 <span class="user-name">{{ auth()->user()->first_name }} {{ auth()->user()->last_name }}</span>
                 <span class="admin-badge">{{ ucfirst(auth()->user()->role) }}</span>
             </div>
-            <div class="avatar-circle"></div>
+            <img 
+    src="{{ auth()->user()->profile_image ? asset('storage/' . auth()->user()->profile_image) : asset('images/default-profile.png') }}" 
+    id="navbarAvatar" 
+    class="avatar-circle"
+>
         </div>
     </header>
 
@@ -90,7 +95,6 @@
                 <i class="fas fa-search"></i>
                 <input type="text" placeholder="Search logs or admin names...">
             </div>
-            <button class="add-user-btn"><i class="fas fa-plus"></i> Add New User</button>
         </div>
 
         <div class="table-wrapper">
@@ -99,46 +103,108 @@
                     <tr>
                         <th>Name</th>
                         <th>Email Address</th>
-                        <th>Security Status</th> <!-- Dito makikita ang login attempts -->
+                        <th>Role</th>
+                        <th>Security Status</th>
                         <th>Last Pass Change</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr>
-                        <td class="name-cell">
-                            <div class="user-avatar-sm">MS</div>
-                            Maria Santos
-                        </td>
-                        <td class="email-text">mariasntr@eteeap.com</td>
-                        <td>
-                            <!-- Color coded based sa severity ng attempts -->
-                            <span class="status-pill success">0 Failed Attempts</span>
-                        </td>
-                        <td>May 2, 2026</td>
-                        <td class="actions-cell">
-                            <button class="action-btn key" title="Reset Password"><i class="fas fa-key"></i></button>
-                            <button class="action-btn lock" title="Suspend User"><i class="fas fa-user-lock"></i></button>
-                            <button class="action-btn delete" title="Delete User"><i class="fas fa-trash-alt"></i></button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="name-cell">
-                            <div class="user-avatar-sm warning">JD</div>
-                            Juan Dela Cruz
-                        </td>
-                        <td class="email-text">juandela@gmail.com</td>
-                        <td>
-                            <span class="status-pill danger">5 Failed Attempts</span>
-                        </td>
-                        <td>April 15, 2026</td>
-                        <td class="actions-cell">
-                            <button class="action-btn key" title="Reset Password"><i class="fas fa-key"></i></button>
-                            <button class="action-btn lock" title="Suspend User"><i class="fas fa-user-lock"></i></button>
-                            <button class="action-btn delete" title="Delete User"><i class="fas fa-trash-alt"></i></button>
-                        </td>
-                    </tr>
-                </tbody>
+                <tbody id="userTableBody">
+
+@foreach($users as $user)
+
+<tr id="userRow{{ $user->id }}">
+
+<td class="name-cell">
+
+<div class="user-info-wrapper">
+
+<img 
+src="{{ $user->profile_image 
+? asset('storage/' . $user->profile_image) 
+: asset('images/default-profile.png') }}"
+class="user-avatar-sm"
+alt="Profile"
+>
+
+<div class="user-details">
+    <span class="user-fullname">
+        {{ $user->first_name }} {{ $user->last_name }}
+    </span>
+</div>
+
+</div>
+
+</td>
+
+<td class="email-text">
+{{ $user->email }}
+</td>
+
+<!-- ROLE COLUMN -->
+<td>
+    <span class="role-pill {{ $user->role }}">
+        {{ ucfirst($user->role) }}
+    </span>
+</td>
+
+<td>
+
+@if($user->failed_attempts >= 5)
+
+<span class="status-pill danger">
+{{ $user->failed_attempts }} Failed Attempts
+</span>
+
+@else
+
+<span class="status-pill success">
+{{ $user->failed_attempts }} Failed Attempts
+</span>
+
+@endif
+
+</td>
+
+<td>
+
+{{ $user->password_changed_at
+? \Carbon\Carbon::parse($user->password_changed_at)->format('F d, Y h:i A')
+: 'Never'
+}}
+
+</td>
+
+<td class="actions-cell">
+
+<button class="action-btn key"
+onclick="resetPassword({{ $user->id }})">
+
+<i class="fas fa-key"></i>
+
+</button>
+
+<button class="action-btn lock"
+onclick="toggleStatus({{ $user->id }})">
+
+<i class="fas fa-user-lock"></i>
+
+</button>
+
+<button class="action-btn delete"
+onclick="deleteUser({{ $user->id }})">
+
+<i class="fas fa-trash-alt"></i>
+
+</button>
+
+</td>
+
+</tr>
+
+@endforeach
+
+</tbody>
             </table>
         </div>
     </div>
@@ -205,23 +271,24 @@
 
         <div id="changeSection" style="display:none; flex-direction:column; gap:12px;">
             <div class="input-group">
-                <label>New Password</label>
-                <div class="password-wrapper">
-                    <input type="password" id="newPassword" placeholder="Enter new password">
-                    <span class="toggle-eye" onclick="togglePassword('newPassword', 'newEyeIcon')">
-                        <span class="material-symbols-outlined" id="newEyeIcon">visibility</span>
-                    </span>
-                </div>
-            </div>
-            <div class="input-group">
-                <label>Confirm Password</label>
-                <div class="password-wrapper">
-                    <input type="password" id="confirmPassword" placeholder="Confirm new password">
-                    <span class="toggle-eye" onclick="togglePassword('confirmPassword', 'confirmEyeIcon')">
-                        <span class="material-symbols-outlined" id="confirmEyeIcon">visibility</span>
-                    </span>
-                </div>
-            </div>
+<div class="input-group">
+    <label>New Password</label>
+    <div class="password-wrapper">
+        <input type="password" id="newPassword" placeholder="Enter new password" autocomplete="new-password">
+        <span class="toggle-eye" onclick="togglePassword('newPassword', 'newEyeIcon')">
+            <span class="material-symbols-outlined" id="newEyeIcon">visibility</span>
+        </span>
+    </div>
+</div>
+<div class="input-group">
+    <label>Confirm Password</label>
+    <div class="password-wrapper">
+        <input type="password" id="confirmPassword" placeholder="Confirm new password" autocomplete="new-password">
+        <span class="toggle-eye" onclick="togglePassword('confirmPassword', 'confirmEyeIcon')">
+            <span class="material-symbols-outlined" id="confirmEyeIcon">visibility</span>
+        </span>
+    </div>
+</div>
             <div class="account-actions">
                 <button class="cancel-btn" onclick="hideChangeSection()">Cancel</button>
                 <button class="save-btn" onclick="updatePassword()">Save</button>
@@ -306,69 +373,422 @@
         });
     })();
 
-    // --- MODAL LOGIC ---
+// ============================================
+    // MODAL LOGIC
+    // ============================================
     let croppieInstance = null;
-
-    function openAccountModal() { document.getElementById('accountModal').classList.add('show'); }
-    function closeAccountModal() { document.getElementById('accountModal').classList.remove('show'); cancelAdjustment(); hideChangeSection(); }
+    
+    function openAccountModal() { 
+        document.getElementById('accountModal').classList.add('show'); 
+    }
+    
+    function closeAccountModal() { 
+        document.getElementById('accountModal').classList.remove('show'); 
+        cancelAdjustment(); 
+        hideChangeSection(); 
+    }
     
     function togglePassword(inputId, iconId) {
         const input = document.getElementById(inputId);
         const icon = document.getElementById(iconId);
-        input.type = input.type === 'password' ? 'text' : 'password';
-        icon.innerText = input.type === 'password' ? 'visibility' : 'visibility_off';
+        if (input && icon) {
+            input.type = input.type === 'password' ? 'text' : 'password';
+            icon.innerText = input.type === 'password' ? 'visibility' : 'visibility_off';
+        }
+    }
+    
+    function showChangeSection() { 
+        const changeBtn = document.getElementById('changeBtn');
+        const changeSection = document.getElementById('changeSection');
+        if (changeBtn) changeBtn.style.display = 'none';
+        if (changeSection) changeSection.style.display = 'flex';
+    }
+    
+    function hideChangeSection() { 
+        const changeBtn = document.getElementById('changeBtn');
+        const changeSection = document.getElementById('changeSection');
+        if (changeBtn) changeBtn.style.display = 'block';
+        if (changeSection) changeSection.style.display = 'none';
+        // Clear password fields
+        const newPassword = document.getElementById('newPassword');
+        const confirmPassword = document.getElementById('confirmPassword');
+        if (newPassword) newPassword.value = '';
+        if (confirmPassword) confirmPassword.value = '';
+    }
+    
+    function updatePassword() {
+    // .value ang kunin natin agad
+    const newPass = document.getElementById('newPassword').value;
+    const confirmPass = document.getElementById('confirmPassword').value;
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+    if (!newPass || !confirmPass) {
+        showToast('Please fill in all fields', 'error');
+        return;
     }
 
-    function showChangeSection() { document.getElementById('changeBtn').style.display = 'none'; document.getElementById('changeSection').style.display = 'flex'; }
-    function hideChangeSection() { document.getElementById('changeBtn').style.display = 'block'; document.getElementById('changeSection').style.display = 'none'; }
+    if (newPass !== confirmPass) {
+        showToast('Passwords do not match on client side', 'error');
+        return;
+    }
 
-    // --- IMAGE CROP LOGIC ---
+    fetch('{{ route("update-password") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrfToken,
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({ 
+            password: newPass,
+            password_confirmation: confirmPass // DAPAT SAKTO ITONG SPELLING NA ITO
+        })
+    })
+    .then(async response => {
+        const data = await response.json();
+        if (!response.ok) {
+            // Dito natin kukunin yung error na nakita mo sa screenshot
+            let errorMsg = data.message;
+            if (data.errors && data.errors.password) {
+                errorMsg = data.errors.password[0]; // "The password field confirmation does not match."
+            }
+            throw new Error(errorMsg || 'Validation failed');
+        }
+        return data;
+    })
+    .then(data => {
+        showToast('Password updated successfully!', 'success');
+        hideChangeSection();
+        // Clear inputs
+        document.getElementById('newPassword').value = '';
+        document.getElementById('confirmPassword').value = '';
+    })
+    .catch(error => {
+        console.error('Final Error Debug:', error);
+        showToast(error.message, 'error');
+    });
+}
+    
+    // ============================================
+    // IMAGE CROP LOGIC
+    // ============================================
     function previewImage(event) {
-        const reader = new FileReader();
-        reader.onload = (e) => startCroppie(e.target.result);
-        reader.readAsDataURL(event.target.files[0]);
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => startCroppie(e.target.result);
+            reader.readAsDataURL(file);
+        }
     }
-
+    
     function startCroppie(src) {
-        document.getElementById('defaultAvatarView').style.display = 'none';
-        document.getElementById('profileActionButtons').style.display = 'none';
-        document.getElementById('adjustmentArea').style.display = 'flex';
-        const el = document.getElementById('image-editor');
+        const defaultAvatar = document.getElementById('defaultAvatarView');
+        const profileActions = document.getElementById('profileActionButtons');
+        const adjustmentArea = document.getElementById('adjustmentArea');
+        const imageEditor = document.getElementById('image-editor');
+        
+        if (defaultAvatar) defaultAvatar.style.display = 'none';
+        if (profileActions) profileActions.style.display = 'none';
+        if (adjustmentArea) adjustmentArea.style.display = 'flex';
+        
         if (croppieInstance) croppieInstance.destroy();
-        croppieInstance = new Croppie(el, {
+        
+        croppieInstance = new Croppie(imageEditor, {
             viewport: { width: 150, height: 150, type: 'circle' },
             boundary: { width: '100%', height: 250 },
             showZoomer: true
         });
         croppieInstance.bind({ url: src });
     }
-
+    
+    function startAdjustingCurrent() {
+        const currentImage = document.getElementById('modalProfilePreview').src;
+        startCroppie(currentImage);
+    }
+    
     function uploadCroppedImage() {
+        if (!croppieInstance) return;
+        
         croppieInstance.result('base64').then(base64 => {
-            // Update Modal Image
-            document.getElementById('modalProfilePreview').src = base64;
-            // UPDATE DASHBOARD HEADER IMAGE (TAAS)
-            document.getElementById('headerAvatar').style.backgroundImage = `url('${base64}')`;
-            
-            showToast("Profile photo updated!", "success");
-            cancelAdjustment();
+            // Convert base64 to blob
+            fetch(base64)
+                .then(res => res.blob())
+                .then(blob => {
+                    const formData = new FormData();
+                    formData.append('profile_image', blob, 'profile.jpg');
+                    
+                    fetch('{{ route("profile.upload.image") }}', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        },
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // update modal preview
+                            document.getElementById('modalProfilePreview').src = base64;
+
+                            // update navbar avatar (ITO ANG FIX)
+                            const navbarAvatar = document.getElementById('navbarAvatar');
+                            if (navbarAvatar) {
+                                navbarAvatar.src = base64;
+                            }
+
+                            showToast("Profile photo updated!", "success");
+                            cancelAdjustment();
+                        } else {
+                            showToast(data.message || 'Failed to update photo', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Upload error:', error);
+                        showToast('Failed to upload photo', 'error');
+                    });
+                });
         });
     }
-
+    
     function cancelAdjustment() {
-        if (croppieInstance) croppieInstance.destroy();
-        document.getElementById('adjustmentArea').style.display = 'none';
-        document.getElementById('defaultAvatarView').style.display = 'block';
-        document.getElementById('profileActionButtons').style.display = 'flex';
+        if (croppieInstance) {
+            croppieInstance.destroy();
+            croppieInstance = null;
+        }
+        
+        const defaultAvatar = document.getElementById('defaultAvatarView');
+        const profileActions = document.getElementById('profileActionButtons');
+        const adjustmentArea = document.getElementById('adjustmentArea');
+        
+        if (adjustmentArea) adjustmentArea.style.display = 'none';
+        if (defaultAvatar) defaultAvatar.style.display = 'block';
+        if (profileActions) profileActions.style.display = 'flex';
     }
-
+    
+    // ============================================
+    // TOAST NOTIFICATION
+    // ============================================
     function showToast(msg, type) {
         const toast = document.getElementById('toast');
+        if (!toast) return;
+        
         toast.className = `toast show ${type}`;
-        document.getElementById('toast-icon').innerText = 'check_circle';
-        document.getElementById('toast-message').innerText = msg;
-        setTimeout(() => toast.classList.remove('show'), 3000);
+        const toastIcon = document.getElementById('toast-icon');
+        const toastMessage = document.getElementById('toast-message');
+        
+        if (toastIcon) toastIcon.innerText = type === 'success' ? 'check_circle' : 'error';
+        if (toastMessage) toastMessage.innerText = msg;
+        
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 3000);
     }
+
+    /* ============================================
+   USER SEARCH (REAL-TIME FILTER + NO RESULTS)
+============================================ */
+const searchInput = document.querySelector('.search-box input');
+const tableBody = document.getElementById('userTableBody');
+
+if (searchInput && tableBody) {
+    searchInput.addEventListener('input', function () {
+        const keyword = this.value.toLowerCase();
+
+        let visibleCount = 0;
+
+        const rows = tableBody.querySelectorAll('tr');
+
+        rows.forEach(row => {
+            const name = row.querySelector('.user-fullname')?.innerText.toLowerCase() || '';
+            const email = row.querySelector('.email-text')?.innerText.toLowerCase() || '';
+            const role = row.querySelector('.role-pill')?.innerText.toLowerCase() || '';
+
+            const match =
+                name.includes(keyword) ||
+                email.includes(keyword) ||
+                role.includes(keyword);
+
+            if (match) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        // REMOVE OLD "NO RESULTS" ROW IF EXISTS
+        const oldNoResult = document.getElementById('noResultsRow');
+        if (oldNoResult) oldNoResult.remove();
+
+        // ADD NO RESULTS ROW IF NONE FOUND
+        if (visibleCount === 0) {
+            const noRow = document.createElement('tr');
+            noRow.id = 'noResultsRow';
+
+            noRow.innerHTML = `
+                <td colspan="6" style="
+                    text-align:center;
+                    padding: 20px;
+                    color:#888;
+                    font-weight:500;
+                ">
+                    No results found
+                </td>
+            `;
+
+            tableBody.appendChild(noRow);
+        }
+    });
+}
+
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+/* ============================================
+   RESET PASSWORD
+============================================ */
+function resetPassword(id) {
+    Swal.fire({
+        title: 'Reset Password?',
+        text: "This will reset the user's password to default.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, reset it',
+        cancelButtonText: 'Cancel',
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33'
+    }).then((result) => {
+        if (!result.isConfirmed) return;
+
+        fetch(`/admin/users/${id}/reset-password`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+
+                showToast('Password reset successfully', 'success');
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Reset Successful',
+                    text: `New Password: ${data.new_password}`,
+                    timer: 2500,
+                    showConfirmButton: false
+                });
+
+            } else {
+                showToast('Failed to reset password', 'error');
+            }
+        })
+        .catch(() => {
+            showToast('Server error occurred', 'error');
+        });
+    });
+}
+
+/* ============================================
+   TOGGLE USER STATUS (LOCK / UNLOCK)
+============================================ */
+function toggleStatus(id) {
+    fetch(`/admin/users/${id}/toggle-status`, {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': csrfToken,
+            'Accept': 'application/json'
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (!data.success) {
+            showToast('Failed to update status', 'error');
+            return;
+        }
+
+        const statusText = data.status ? 'User suspended' : 'User activated';
+
+        showToast(statusText, 'success');
+
+        Swal.fire({
+            icon: 'success',
+            title: statusText,
+            timer: 1500,
+            showConfirmButton: false
+        });
+
+        // OPTIONAL: update UI without reload
+        const row = document.getElementById(`userRow${id}`);
+        if (row) {
+            const statusPill = row.querySelector('.status-pill');
+
+            if (statusPill) {
+                if (data.status) {
+                    statusPill.classList.remove('success');
+                    statusPill.classList.add('danger');
+                    statusPill.innerText = 'Suspended';
+                } else {
+                    statusPill.classList.remove('danger');
+                    statusPill.classList.add('success');
+                    statusPill.innerText = 'Active';
+                }
+            }
+        }
+    })
+    .catch(() => {
+        showToast('Server error', 'error');
+    });
+}
+
+/* ============================================
+   DELETE USER
+============================================ */
+function deleteUser(id) {
+    Swal.fire({
+        title: 'Delete User?',
+        text: "This cannot be undone.",
+        icon: 'error',
+        showCancelButton: true,
+        confirmButtonText: 'Delete',
+        cancelButtonText: 'Cancel',
+        confirmButtonColor: '#d33'
+    }).then((result) => {
+        if (!result.isConfirmed) return;
+
+        fetch(`/admin/users/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+
+                showToast('User deleted successfully', 'success');
+
+                const row = document.getElementById(`userRow${id}`);
+                if (row) row.remove();
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Deleted',
+                    timer: 1200,
+                    showConfirmButton: false
+                });
+
+            } else {
+                showToast('Delete failed', 'error');
+            }
+        })
+        .catch(() => {
+            showToast('Server error', 'error');
+        });
+    });
+}
 </script>
 </body>
 </html>
