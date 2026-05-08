@@ -727,9 +727,9 @@ body {
 }
 
 .audit-table th {
-    background: #f8faff;
+    background: #223381;
     padding: 15px;
-    color: #555;
+    color: #ffffff;
     font-weight: 700;
     font-size: 13px;
     text-transform: uppercase;
@@ -805,3 +805,32 @@ body {
 }
 
 .pagination button:hover:not(:disabled) { background: #f0f0f0; }
+
+.audit-profile-img{
+    width:40px;
+    height:40px;
+    border-radius:50%;
+    object-fit:cover;
+    border:2px solid #ddd;
+}
+
+.user-cell{
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.user-meta{
+    display:flex;
+    flex-direction:column;
+}
+
+.user-name-text{
+    font-weight:600;
+    font-size:14px;
+}
+
+.user-email-text{
+    font-size:12px;
+    color:#777;
+}

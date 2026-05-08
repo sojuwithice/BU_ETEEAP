@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
+use App\Helpers\AuditLogger;
 
 class AuthController extends Controller
 {
@@ -80,6 +81,13 @@ if (!($verify['success'] ?? false)) {
 
          $user->last_login_at = now();
         $user->save();
+
+        // ADD AUDIT LOG
+        AuditLogger::log(
+            'User Management',
+            'Registered new account',
+            "New registration: {$user->email} as {$user->role}"
+        );
     
         session(['raw_password' => $request->password]);
 
@@ -149,6 +157,12 @@ public function login(Request $request)
             $user->is_suspended = true;
             $user->save();
 
+            AuditLogger::log(
+                    'Security',
+                    'Account suspended',
+                    "Account suspended due to failed attempts: {$user->email}"
+                );
+
             return back()
             ->withErrors([
                 'email' => 'Account suspended after too many failed attempts.'
@@ -176,6 +190,12 @@ public function login(Request $request)
     $user->last_login_at = now();
 
     $user->save();
+
+    AuditLogger::log(
+            'Security',
+            'Login successful',
+            "User logged in: {$user->email}"
+        );
 
     // ============================================
     // ROLE CHECK
@@ -223,6 +243,15 @@ public function login(Request $request)
     // ================= LOGOUT =================
     public function logout()
     {
+        // ADD AUDIT LOG BEFORE LOGOUT
+        if (Auth::check()) {
+            AuditLogger::log(
+                'Security',
+                'Logout',
+                "User logged out: " . Auth::user()->email
+            );
+        }
+
         Auth::logout();
         return redirect('/login');
     }
@@ -242,6 +271,14 @@ public function login(Request $request)
     $user->password_changed_at = now();
 
     $user->save();
+
+    // ADD AUDIT LOG
+        AuditLogger::log(
+            'Security',
+            'Changed password',
+            "Changed password for account: {$user->email}"
+        );
+
 
     session(['raw_password' => $request->password]);
 
@@ -268,6 +305,13 @@ public function updateProfile(Request $request)
             'permanent_address' => $request->permanent_address,
             'current_address' => $request->current_address,
         ]);
+
+        // ADD AUDIT LOG
+            AuditLogger::log(
+                'User Management',
+                'Updated profile',
+                "Updated profile information for: {$user->email}"
+            );
 
         return back()->with('success', 'Profile updated successfully!');
 
@@ -311,6 +355,14 @@ public function uploadProfileImage(Request $request)
             // Update user record
             $user->profile_image = $path;
             $user->save();
+
+            // ADD AUDIT LOG
+                AuditLogger::log(
+                    'User Management',
+                    'Uploaded profile image',
+                    "Uploaded new profile image for: {$user->email}"
+                );
+
             
             return response()->json([
                 'success' => true,
@@ -348,6 +400,13 @@ public function uploadProfileImage(Request $request)
             
             $user->profile_image = 'profile_images/' . $fileName;
             $user->save();
+
+            // ADD AUDIT LOG
+                AuditLogger::log(
+                    'User Management',
+                    'Uploaded profile image',
+                    "Uploaded new profile image for: {$user->email}"
+                );
             
             return response()->json([
                 'success' => true,

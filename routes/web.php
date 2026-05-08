@@ -11,6 +11,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminUserController;
+use App\Http\Controllers\Admin\AuditLogController;
 
 Route::get('/', function () { return view('landing'); });
 
@@ -168,6 +169,12 @@ Route::post('/admin/users/{id}/update-password', [AdminUserController::class, 'u
 
 Route::post('/admin/upload-profile', [AdminUserController::class, 'uploadProfile']);
 
+
+Route::get('/audit_logs', [AuditLogController::class, 'index'])->name('audit_logs');
+
+Route::get('/audit_logs/fetch', [AuditLogController::class, 'fetch']);
+Route::get('/audit_logs/export', [AuditLogController::class, 'export']);
+
 });
 
 Route::get('/verify-documents', function () {
@@ -208,10 +215,18 @@ Route::get('/reports', function () {
 })->name('reports');
 
 
-Route::get('/audit_logs', function () {
-    return view('audit_logs');
-})->name('audit_logs');
-
 Route::get('/homepage_management', function () {
     return view('homepage_management');
 })->name('homepage_management');
+
+
+Route::get('/test-log', function () {
+
+    \App\Helpers\AuditLogger::log(
+        'System',
+        'Test',
+        'Testing audit log'
+    );
+
+    return 'logged';
+});

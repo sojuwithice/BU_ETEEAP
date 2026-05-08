@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
+use App\Helpers\AuditLogger;
 
 class AdminUserController extends Controller
 {
@@ -49,6 +50,12 @@ class AdminUserController extends Controller
             'password_changed_at' => now() // FIXED
         ]);
 
+            AuditLogger::log(
+        'User Management',
+        'Created user',
+        "Created user: {$user->email} with role: {$user->role}"
+    );
+
         return response()->json([
             'success' => true,
             'message' => 'User added successfully.'
@@ -82,37 +89,52 @@ class AdminUserController extends Controller
     // TOGGLE STATUS
     // ============================================
     public function toggleStatus($id)
-    {
-        $user = User::findOrFail($id);
+{
+    $user = User::findOrFail($id);
 
-        $user->is_suspended = !$user->is_suspended;
+    $user->is_suspended = !$user->is_suspended;
 
-        $user->save();
+    $user->save();
 
-        return response()->json([
-            'success' => true,
-            'status' => $user->is_suspended
-        ]);
-    }
+    // AUDIT LOG
+    AuditLogger::log(
+        'Security',
+        $user->is_suspended ? 'Suspended account' : 'Reactivated account',
+        ($user->is_suspended ? 'Suspended' : 'Reactivated') . " account: {$user->email}"
+    );
+
+    return response()->json([
+        'success' => true,
+        'status' => $user->is_suspended
+    ]);
+}
 
     // ============================================
-    // DELETE USER
-    // ============================================
-    public function destroy($id)
-    {
-        $user = User::findOrFail($id);
+// DELETE USER
+// ============================================
+public function destroy($id)
+{
+    $user = User::findOrFail($id);
+    $userEmail = $user->email; // <- I-ADD TO (nawala to)
 
-        if ($user->profile_image) {
-            Storage::disk('public')->delete($user->profile_image);
-        }
-
-        $user->delete();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'User deleted successfully.'
-        ]);
+    if ($user->profile_image) {
+        Storage::disk('public')->delete($user->profile_image);
     }
+
+    $user->delete();
+
+    // ADD AUDIT LOG
+    AuditLogger::log(
+        'User Management',
+        'Deleted user',
+        "Deleted user: {$userEmail}" // <- ITO GAMITIN
+    );
+
+    return response()->json([
+        'success' => true,
+        'message' => 'User deleted successfully.'
+    ]);
+}
 
     // ============================================
     // UPDATE PASSWORD (MAIN FIX HERE)
@@ -132,6 +154,13 @@ class AdminUserController extends Controller
         $user->failed_attempts = 0;
 
         $user->save();
+
+        // ADD AUDIT LOG
+            AuditLogger::log(
+                'Security',
+                'Updated password',
+                "Updated password for user: {$user->email}"
+            );
 
         return response()->json([
             'success' => true,
@@ -179,6 +208,13 @@ class AdminUserController extends Controller
 
         $user->save();
 
+        // ADD AUDIT LOG
+        AuditLogger::log(
+            'User Management',
+            'Updated profile image',
+            "Updated profile image for: {$user->email}"
+        );
+
         return response()->json([
             'success' => true,
             'image' => asset('storage/profile_images/' . $imageName)
@@ -209,6 +245,12 @@ class AdminUserController extends Controller
         $user->failed_attempts = 0;
 
         $user->save();
+
+        AuditLogger::log(
+            'Security',
+            'Changed own password',
+            "Changed password for account: {$user->email}"
+        );
 
         return response()->json([
             'success' => true,

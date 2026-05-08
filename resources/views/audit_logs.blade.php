@@ -96,13 +96,13 @@
             </div>
             <div class="filter-group">
                 <select class="filter-select">
-                    <option value="">Filter by Action</option>
-                    <option value="login">Login/Logout</option>
-                    <option value="user">User Management</option>
-                    <option value="system">System Settings</option>
+                    <option value="">All</option>
+                    <option value="Security">Security</option>
+                    <option value="User Management">User Management</option>
+                    <option value="System">System</option>
                 </select>
                 <input type="date" class="filter-date">
-                <button class="export-btn">
+                <button class="export-btn" onclick="exportLogs()">
                     <i class="fas fa-file-export"></i> Export CSV
                 </button>
             </div>
@@ -119,29 +119,9 @@
                         <th>Details</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr>
-                        <td class="timestamp">2026-05-05 16:34:22</td>
-                        <td class="user-cell">
-                            <span class="admin-initials">JD</span>
-                            j.doe@example.com
-                        </td>
-                        <td><span class="cat-badge user-cat">User Management</span></td>
-                        <td>Edited User Role</td>
-                        <td class="details">Changed user <strong>jsmith</strong> role from User to Editor</td>
-                    </tr>
-                    <tr>
-                        <td class="timestamp">2026-05-05 15:20:10</td>
-                        <td class="user-cell">
-                            <span class="admin-initials">AA</span>
-                            admin.ann@example.com
-                        </td>
-                        <td><span class="cat-badge login-cat">Security</span></td>
-                        <td>Admin Login</td>
-                        <td class="details">Successful login from IP 192.168.1.1</td>
-                    </tr>
-                    <!-- Dagdagan pa dito -->
-                </tbody>
+                <tbody id="auditTableBody">
+    <!-- AJAX LOADED LOGS -->
+</tbody>
             </table>
         </div>
 
@@ -295,18 +275,6 @@
         
 
         // ============================================
-        // AUTO-UPDATE SIMULATION (Inalis ko ito dati, binalik ko na ngayon)
-        // ============================================
-        function randomUpdate() {
-            const keys = Object.keys(programCounts);
-            programCounts[keys[Math.floor(Math.random() * keys.length)]]++;
-            window.pieChart.data.datasets[0].data = Object.values(programCounts);
-            window.pieChart.update('none');
-            document.getElementById('totalReg').innerText = Object.values(programCounts).reduce((a, b) => a + b, 0);
-        }
-        setInterval(randomUpdate, 12000);
-
-        // ============================================
         // NAVIGATION & LOGOUT HANDLING (FIXED)
         // ============================================
         const navItems = document.querySelectorAll('.nav-item');
@@ -382,6 +350,99 @@
         document.getElementById('toast-message').innerText = msg;
         setTimeout(() => toast.classList.remove('show'), 3000);
     }
+
+    function exportLogs() {
+    window.location.href = "/audit_logs/export";
+}
+
+// Replace your existing loadLogs function with this:
+function loadLogs(page = 1) {
+    const search = document.querySelector('.search-box input')?.value || '';
+    const category = document.querySelector('.filter-select')?.value || '';
+    const date = document.querySelector('.filter-date')?.value || '';
+
+    fetch(`/audit_logs/fetch?page=${page}&search=${encodeURIComponent(search)}&category=${encodeURIComponent(category)}&date=${date}`)
+        .then(res => res.json())
+        .then(data => {
+            let rows = '';
+
+            if (!data.data || data.data.length === 0) {
+                rows = `<tr><td colspan="5" style="text-align:center;">No logs found</td></tr>`;
+            } else {
+                data.data.forEach(log => {
+                    const userEmail = log.user?.email || 'System';
+                    const userName = log.user ? `${log.user.first_name || ''} ${log.user.last_name || ''}`.trim() : 'System';
+                    const profileImage = log.user?.profile_image
+    ? `/storage/${log.user.profile_image}`
+    : `/images/default-profile.png`;
+                    
+                    // Format date properly
+                    const logDate = new Date(log.created_at);
+                    const formattedDate = logDate.toLocaleString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+
+                    rows += `
+                    <tr>
+                        <td class="timestamp">${formattedDate}</td>
+                        <td class="user-cell">
+    <img 
+        src="${profileImage}" 
+        alt="Profile"
+        class="audit-profile-img"
+    >
+
+    <div class="user-meta">
+        <div class="user-name-text">${userName}</div>
+        <div class="user-email-text">${userEmail}</div>
+    </div>
+</td>
+                        <td><span class="cat-badge">${log.category || 'System'}</span></td>
+                        <td>${log.action || ''}</td>
+                        <td class="details">${log.details || ''}</td>
+                    </tr>`;
+                });
+            }
+
+            document.getElementById('auditTableBody').innerHTML = rows;
+            
+            // Update pagination info
+            if (data.total) {
+                const from = ((data.current_page - 1) * data.per_page) + 1;
+                const to = Math.min(data.current_page * data.per_page, data.total);
+                document.querySelector('.table-footer span:first-child').innerText = 
+                    `Showing ${from} to ${to} of ${data.total} logs`;
+            }
+        })
+        .catch(error => {
+            console.error('Error loading logs:', error);
+            document.getElementById('auditTableBody').innerHTML = 
+                '<tr><td colspan="5" style="text-align:center; color:red;">Error loading logs</td></tr>';
+        });
+}
+
+// Add event listeners with null checks
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.querySelector('.search-box input');
+    const filterSelect = document.querySelector('.filter-select');
+    const filterDate = document.querySelector('.filter-date');
+    
+    if (searchInput) searchInput.addEventListener('input', () => loadLogs());
+    if (filterSelect) filterSelect.addEventListener('change', () => loadLogs());
+    if (filterDate) filterDate.addEventListener('change', () => loadLogs());
+    
+    // Initial load
+    loadLogs();
+
+    setInterval(() => {
+    loadLogs();
+}, 5000);
+});
+
 </script>
 </body>
 </html>
