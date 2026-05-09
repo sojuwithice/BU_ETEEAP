@@ -12,8 +12,12 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AuditLogController;
+use App\Http\Controllers\LandingController;
+use App\Http\Controllers\HomepageController;
 
-Route::get('/', function () { return view('landing'); });
+Route::get('/', [LandingController::class, 'index'])->name('landing');
+Route::post('/admin/homepage/update', [HomepageController::class, 'update'])->name('homepage.update');
+Route::get('/admin/homepage/settings', [HomepageController::class, 'getSettings'])->name('homepage.settings');
 
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::get('/signup', [AuthController::class, 'showSignup'])->name('register');
@@ -174,6 +178,17 @@ Route::get('/audit_logs', [AuditLogController::class, 'index'])->name('audit_log
 
 Route::get('/audit_logs/fetch', [AuditLogController::class, 'fetch']);
 Route::get('/audit_logs/export', [AuditLogController::class, 'export']);
+
+Route::post('/admin/update-password', [AuthController::class, 'updatePassword'])->name('update.password');
+
+// Update avatar route for admin profile
+Route::post('/admin/update-avatar', [AuthController::class, 'uploadProfileImage'])->name('update.avatar');
+
+Route::get('/admin/homepage-management', [App\Http\Controllers\HomepageController::class, 'index'])->name('homepage_management');
+Route::post('/admin/homepage/update', [App\Http\Controllers\HomepageController::class, 'update'])->name('homepage.update');
+
+Route::post('/upload-program-pdf', [HomepageController::class, 'uploadProgramPdf'])
+    ->name('upload.program.pdf');
 
 });
 

@@ -680,3 +680,54 @@ body {
     cursor: pointer;
 }
 
+.faq-admin-item {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.faq-admin-item .admin-input-bold {
+    font-weight: 600;
+    font-size: 16px;
+    margin-bottom: 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 10px;
+    width: 100%;
+}
+
+.btn-remove-faq {
+    background: #dc2626;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    margin-top: 10px;
+    transition: background 0.2s;
+}
+
+.btn-remove-faq:hover {
+    background: #b91c1c;
+}
+
+.add-btn-outline {
+    background: transparent;
+    border: 2px dashed #2f3c86;
+    color: #2f3c86;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    margin-top: 10px;
+    transition: all 0.2s;
+}
+
+.add-btn-outline:hover {
+    background: #2f3c86;
+    color: white;
+}
