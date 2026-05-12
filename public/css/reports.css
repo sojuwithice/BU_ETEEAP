@@ -355,7 +355,6 @@ body {
     font-weight: bold;
 }
 
-/* TABLE STYLING - SCROLLABLE BODY ONLY WITH HOVER SCROLLBAR */
 .table-container {
     background: white;
     border-radius: 20px;
@@ -364,7 +363,7 @@ body {
     flex-grow: 1; 
     display: flex;
     flex-direction: column;
-    max-height: 600px; /* Fixed max height for container */
+    max-height: 600px; 
 }
 
 .requirements-table {
@@ -388,13 +387,12 @@ body {
 .requirements-table tbody {
     display: block;
     overflow-y: auto;
-    max-height: 500px; /* Adjust this value as needed - only tbody scrolls */
+    max-height: 500px; 
     width: 100%;
     scrollbar-width: thin;
-    scrollbar-color: transparent transparent; /* Hide scrollbar for Firefox */
+    scrollbar-color: transparent transparent; 
 }
 
-/* Hide scrollbar by default for Webkit browsers (Chrome, Safari, Edge) */
 .requirements-table tbody::-webkit-scrollbar {
     width: 6px;
     background: transparent;
@@ -413,7 +411,7 @@ body {
 
 /* Show scrollbar on hover */
 .requirements-table tbody:hover {
-    scrollbar-color: #223381 #f1f1f1; /* Show scrollbar for Firefox on hover */
+    scrollbar-color: #223381 #f1f1f1;
 }
 
 .requirements-table tbody:hover::-webkit-scrollbar {
@@ -506,7 +504,6 @@ body {
     min-width: 45px; 
 }
 
-/* Label Styling for both Edit and Delete */
 .edit-btn span:last-child, 
 .delete-btn span:last-child {
     font-size: 9px; 
@@ -531,7 +528,7 @@ body {
     inset: 0;
     background: rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(3px);
-    display: none; /* Hidden by default */
+    display: none; 
     justify-content: center;
     align-items: center;
     z-index: 2000;
@@ -904,7 +901,6 @@ body {
     position: relative;
 }
 
-/* EXPORT DROPDOWN FIX - Click to toggle */
 .export-format-dropdown {
     position: relative;
     display: inline-block;

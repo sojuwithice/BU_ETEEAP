@@ -186,7 +186,6 @@
         <div class="input-group">
             <label>Current Password</label>
             <div class="password-wrapper">
-                <!-- Inalis ang value asterisk, nilagyan ng dummy password para may "makita" kapag tinoggle -->
                 <input type="password" value="secretpassword" id="currentPassword" readonly style="background: #f9f9f9; cursor: default;">
                 <span class="toggle-eye" onclick="togglePassword('currentPassword', 'currentEyeIcon')">
                     <span class="material-symbols-outlined" id="currentEyeIcon">visibility</span>
@@ -326,9 +325,7 @@
 
     function uploadCroppedImage() {
         croppieInstance.result('base64').then(base64 => {
-            // Update Modal Image
             document.getElementById('modalProfilePreview').src = base64;
-            // UPDATE DASHBOARD HEADER IMAGE (TAAS)
             document.getElementById('headerAvatar').style.backgroundImage = `url('${base64}')`;
             
             showToast("Profile photo updated!", "success");
@@ -355,7 +352,6 @@
     window.location.href = "/audit_logs/export";
 }
 
-// Replace your existing loadLogs function with this:
 function loadLogs(page = 1) {
     const search = document.querySelector('.search-box input')?.value || '';
     const category = document.querySelector('.filter-select')?.value || '';

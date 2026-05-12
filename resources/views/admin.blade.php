@@ -20,12 +20,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
-        /* ============================================
-           DASHBOARD EXTENSION STYLES
-           Smooth animations & responsive layout
-           ============================================ */
-        
-        /* Sidebar Smooth Animation */
+       
         .sidebar {
             transition: width 0.28s cubic-bezier(0.2, 0.9, 0.4, 1.1), padding 0.2s ease;
             will-change: width;
@@ -395,7 +390,6 @@
         <div class="input-group">
             <label>Current Password</label>
             <div class="password-wrapper">
-                <!-- Inalis ang value asterisk, nilagyan ng dummy password para may "makita" kapag tinoggle -->
                 <input type="password" value="secretpassword" id="currentPassword" readonly style="background: #f9f9f9; cursor: default;">
                 <span class="toggle-eye" onclick="togglePassword('currentPassword', 'currentEyeIcon')">
                     <span class="material-symbols-outlined" id="currentEyeIcon">visibility</span>
@@ -818,14 +812,11 @@
                     saveBtn.disabled = false;
                     
                     if (data.success) {
-                        // Update timestamp para ma-reload ang image
                         const timestamp = new Date().getTime();
                         const newImageUrl = data.path + '?t=' + timestamp;
-                        
-                        // Update modal preview
+
                         document.getElementById('modalProfilePreview').src = newImageUrl;
-                        
-                        // Update navbar avatar
+
                         const navbarAvatar = document.getElementById('navbarAvatar');
                         if (navbarAvatar) {
                             navbarAvatar.src = newImageUrl;
@@ -890,7 +881,6 @@
     if (toastIcon) toastIcon.innerText = type === 'success' ? 'check_circle' : 'error';
     if (toastMessage) toastMessage.innerText = msg;
     
-    // Log para malaman kung anong nangyayari
     console.log('Toast type:', type, 'Background:', toast.style.backgroundColor);
     
     setTimeout(() => {

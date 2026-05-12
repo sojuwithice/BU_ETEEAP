@@ -259,7 +259,6 @@ onclick="deleteUser({{ $user->id }})">
         <div class="input-group">
             <label>Current Password</label>
             <div class="password-wrapper">
-                <!-- Inalis ang value asterisk, nilagyan ng dummy password para may "makita" kapag tinoggle -->
                 <input type="password" value="secretpassword" id="currentPassword" readonly style="background: #f9f9f9; cursor: default;">
                 <span class="toggle-eye" onclick="togglePassword('currentPassword', 'currentEyeIcon')">
                     <span class="material-symbols-outlined" id="currentEyeIcon">visibility</span>
@@ -349,7 +348,7 @@ onclick="deleteUser({{ $user->id }})">
         
 
         // ============================================
-        // AUTO-UPDATE SIMULATION (Inalis ko ito dati, binalik ko na ngayon)
+        // AUTO-UPDATE SIMULATION 
         // ============================================
         function randomUpdate() {
             const keys = Object.keys(programCounts);
@@ -441,16 +440,15 @@ onclick="deleteUser({{ $user->id }})">
         },
         body: JSON.stringify({ 
             password: newPass,
-            password_confirmation: confirmPass // DAPAT SAKTO ITONG SPELLING NA ITO
+            password_confirmation: confirmPass 
         })
     })
     .then(async response => {
         const data = await response.json();
         if (!response.ok) {
-            // Dito natin kukunin yung error na nakita mo sa screenshot
             let errorMsg = data.message;
             if (data.errors && data.errors.password) {
-                errorMsg = data.errors.password[0]; // "The password field confirmation does not match."
+                errorMsg = data.errors.password[0]; 
             }
             throw new Error(errorMsg || 'Validation failed');
         }
@@ -530,7 +528,7 @@ onclick="deleteUser({{ $user->id }})">
                             // update modal preview
                             document.getElementById('modalProfilePreview').src = base64;
 
-                            // update navbar avatar (ITO ANG FIX)
+                            // update navbar avatar 
                             const navbarAvatar = document.getElementById('navbarAvatar');
                             if (navbarAvatar) {
                                 navbarAvatar.src = base64;
@@ -719,7 +717,6 @@ function toggleStatus(id) {
             showConfirmButton: false
         });
 
-        // OPTIONAL: update UI without reload
         const row = document.getElementById(`userRow${id}`);
         if (row) {
             const statusPill = row.querySelector('.status-pill');

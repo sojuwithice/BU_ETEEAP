@@ -656,7 +656,6 @@ function processPaymentVerification(status, note) {
         Swal.close();
         if (data.success) {
             showToast(data.message, 'success');
-            // Reload after 1.5 seconds to show updated status
             setTimeout(() => location.reload(), 1500);
         } else {
             showToast(data.message || 'Failed to verify payment', 'error');

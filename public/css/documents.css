@@ -320,8 +320,6 @@ body {
     margin-bottom:15px ;
 }
 
-
-/* DOCS ITEMS CONTAINER - LIMITED TO 7 ITEMS VISIBLE, THEN SCROLL */
 .docs-items {
     list-style: none;
     padding: 0;
@@ -329,7 +327,7 @@ body {
     overflow-y: auto;
     flex: 1;
     min-height: 0;
-    max-height: calc(7 * 65px); /* Approx height for 7 items */
+    max-height: calc(7 * 65px); 
 }
 
 .docs-items::-webkit-scrollbar {
@@ -509,7 +507,6 @@ body {
     align-items: center;
 }
 
-/* Upload box approved badge - Magandang styles */
 .approved-badge {
     background: linear-gradient(135deg, #25c14a 0%, #1eb040 100%);
     color: white;
@@ -971,7 +968,6 @@ body {
     align-items: center;
 }
 
-/* SweetAlert Custom Styles - FIXED */
 .swal2-popup {
     border-radius: 20px !important;
     padding: 1.5rem !important;
@@ -1047,14 +1043,12 @@ body {
     font-size: 2rem !important;
 }
 
-/* IMPORTANT: Fix for cancel button not closing */
 .swal2-cancel:active,
 .swal2-cancel:focus {
     outline: none !important;
     box-shadow: none !important;
 }
 
-/* Ensure modal closes properly */
 .swal2-container {
     pointer-events: auto !important;
 }

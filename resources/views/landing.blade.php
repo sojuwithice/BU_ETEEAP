@@ -51,7 +51,6 @@
   <div class="about-text">
     <h2>About Us</h2>
 
-    <!-- Wrapper para magkadikit ang text at button -->
     <div class="about-description">
       @if(!empty($home->about_main))
         <div class="about-main">
@@ -163,7 +162,6 @@
               <img src="{{ asset('storage/' . $home->apply_qr) }}" alt="Online Application QR" style="width: 150px; height: 150px; border: 1px solid #ddd; padding: 5px;">
             </div>
           @else
-             <!-- Placeholder kung walang QR -->
              <img src="{{ asset('images/default-qr.png') }}" alt="QR Placeholder" style="width: 150px; opacity: 0.5;">
           @endif
         </div>
@@ -290,7 +288,6 @@
       <div class="icon">
         <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
       </div>
-      <!-- Gagamit ng contact_address text, fallback sa placeholder kung wala -->
       <p>{{ $home->contact_address ?? 'Bicol University, Legazpi City' }}</p>
     </a>
     @endif

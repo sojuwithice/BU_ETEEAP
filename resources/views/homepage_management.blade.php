@@ -516,12 +516,11 @@ function addFAQ() {
     
     // Initialize TinyMCE for the new textarea
     tinymce.init({
-    selector: '.rich-text-faq', // Gamitin ang class para sa lahat
+    selector: '.rich-text-faq', 
     height: 200,
     menubar: false,
     plugins: 'lists advlist link',
     toolbar: 'undo redo | bold italic underline | forecolor | bullist numlist outdent indent | alignleft aligncenter alignright | link | removeformat',
-    // Idinagdag ang 'outdent indent' sa toolbar para sa manual indentation
     
     advlist_bullet_styles: 'disc circle square',
     content_style: `
@@ -537,10 +536,9 @@ function addFAQ() {
 });
 }
 
-// Function to remove FAQ item and destroy TinyMCE instance
 function removeFaqItem(button) {
     const faqItem = button.parentElement;
-    // Find and destroy TinyMCE instance for this FAQ
+
     const textarea = faqItem.querySelector('textarea');
     if (textarea && textarea.id) {
         const editor = tinymce.get(textarea.id);
@@ -551,9 +549,7 @@ function removeFaqItem(button) {
     faqItem.remove();
 }
 
-// Initialize TinyMCE for existing FAQ answers on page load
 document.addEventListener('DOMContentLoaded', function () {
-    // Initialize regular rich text editors
     tinymce.init({
         selector: 'textarea.rich-text:not(.rich-text-faq)',
         height: 300,
@@ -775,14 +771,9 @@ document.addEventListener('DOMContentLoaded', function () {
         selector: 'textarea.rich-text',
         height: 300,
         menubar: false,
-
-        // Siguraduhin na kasama ang 'link' sa plugins
         plugins: 'lists advlist link',
-
-        // Idinagdag ang 'link' sa toolbar list sa ibaba
         toolbar: 'undo redo | bold italic underline | forecolor | bullist numlist | alignleft aligncenter alignright | link | removeformat',
 
-        // Pinapayagan ang admin na i-set kung mag-oopen sa bagong tab ang link
         link_default_target: '_blank',
         link_title: false,
 
@@ -790,8 +781,7 @@ document.addEventListener('DOMContentLoaded', function () {
         advlist_number_styles: 'default lower-alpha lower-roman',
 
         content_style: "body { font-family:Raleway, sans-serif; font-size:14px }",
-        
-        // Mahalaga: Para ma-update ang textarea bago i-submit ang form
+    
         setup: function (editor) {
             editor.on('change', function () {
                 tinymce.triggerSave();

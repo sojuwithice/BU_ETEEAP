@@ -11,7 +11,6 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0" />
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;800;900&family=Raleway:wght@400;700&display=swap" rel="stylesheet">
 <style>
-    /* Animation for task removal */
     .req-item.removing {
         animation: slideOut 0.3s ease forwards;
     }

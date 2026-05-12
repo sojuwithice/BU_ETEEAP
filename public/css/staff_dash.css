@@ -322,7 +322,7 @@ body {
 
 .search-box { 
     position: relative; 
-    width: 300px; /* Dati itong 60%, bawasan natin */
+    width: 300px; 
 }
 .search-box input {
     width: 100%; padding: 10px 15px 10px 45px;
@@ -344,7 +344,7 @@ body {
 
 .filter-group {
     display: flex;
-    gap: 12px; /* Space sa pagitan ng dropdowns at reset button */
+    gap: 12px; 
     align-items: center;
 }
 
@@ -441,10 +441,9 @@ body {
     color: #fff;
 }
 .btn-decision span {
-    display: none; /* Hide the icon if it's still there */
+    display: none; 
 }
 
-/* Container ng dropdown at icon */
 .custom-select-wrapper {
     position: relative;
     display: inline-block;
@@ -468,7 +467,6 @@ body {
     min-width: 130px;
 }
 
-/* Hover effect para sa border */
 .filter-select:hover {
     border-color: #f47c20; 
 }
@@ -558,8 +556,8 @@ body {
 }
 
 .option:hover {
-    background-color: #fff4ed; /* Light orange background */
-    color: #f47c20; /* Orange text */
+    background-color: #fff4ed; 
+    color: #f47c20; 
 }
 
 @keyframes slideDown {
@@ -567,10 +565,9 @@ body {
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* Ayusin ang No applicant text para laging nasa gitna ng mismong space ng table */
 .table-wrapper {
     position: relative;
-    min-height: 300px; /* Space para sa empty message */
+    min-height: 300px; 
 }
 
 #noResultsMessage {
@@ -583,14 +580,12 @@ body {
     color: #223381;
 }
 
-/* Container ng dropdown */
 .custom-menu-dropdown {
     position: relative;
     width: 170px;
     user-select: none;
 }
 
-/* Yung main box na nakikita */
 .menu-trigger {
     background: white;
     border: 1px solid #ddd;
@@ -610,7 +605,6 @@ body {
     border-color: #f47c20;
 }
 
-/* Ang lumilitaw na menu list */
 .menu-options {
     position: absolute;
     top: calc(100% + 8px);
@@ -619,20 +613,18 @@ body {
     background: white;
     border-radius: 12px;
     box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-    display: none; /* Hidden by default */
+    display: none; 
     z-index: 100;
     border: 1px solid #eee;
     padding: 5px;
     overflow: hidden;
 }
 
-/* Show class para sa JS */
 .menu-options.active {
     display: block;
     animation: menuFade 0.2s ease-out;
 }
 
-/* Bawat item sa loob ng menu */
 .menu-item {
     padding: 10px 15px;
     font-size: 13px;
@@ -643,8 +635,8 @@ body {
 }
 
 .menu-item:hover {
-    background-color: #fff4ed; /* Light orange background */
-    color: #f47c20; /* Brand color text */
+    background-color: #fff4ed; 
+    color: #f47c20; 
 }
 
 /* Animation */
@@ -657,10 +649,6 @@ body {
     font-size: 18px !important;
     color: #888;
 }
-
-
-
-
 
 /* BACKDROP */
 .account-modal {

@@ -12,7 +12,6 @@ return new class extends Migration
     public function up(): void
 {
     Schema::table('homepage_settings', function (Blueprint $table) {
-        // Idagdag ang mga nawawalang columns
         $table->text('apply_on_site')->nullable();
         $table->text('apply_online')->nullable();
         $table->string('apply_example_toc')->nullable();

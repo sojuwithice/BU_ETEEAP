@@ -313,7 +313,6 @@ input:not([type="checkbox"]) {
   border: 1px solid #ccc;
 }
 
-/* highlight input if may error */
 .input-group input.error {
   border-color: #ff4d4f;
 }
@@ -321,8 +320,6 @@ input:not([type="checkbox"]) {
 .no-animation {
   transition: none !important;
 }
-
-
 
 /* Mobile Adjustments */
 @media (max-width: 768px) {

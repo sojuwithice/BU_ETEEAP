@@ -388,13 +388,12 @@ body {
 .requirements-table tbody {
     display: block;
     overflow-y: auto;
-    max-height: 500px; /* Adjust this value as needed - only tbody scrolls */
+    max-height: 500px; 
     width: 100%;
     scrollbar-width: thin;
-    scrollbar-color: transparent transparent; /* Hide scrollbar for Firefox */
+    scrollbar-color: transparent transparent; 
 }
 
-/* Hide scrollbar by default for Webkit browsers (Chrome, Safari, Edge) */
 .requirements-table tbody::-webkit-scrollbar {
     width: 6px;
     background: transparent;
@@ -413,7 +412,7 @@ body {
 
 /* Show scrollbar on hover */
 .requirements-table tbody:hover {
-    scrollbar-color: #223381 #f1f1f1; /* Show scrollbar for Firefox on hover */
+    scrollbar-color: #223381 #f1f1f1;
 }
 
 .requirements-table tbody:hover::-webkit-scrollbar {
@@ -531,7 +530,7 @@ body {
     inset: 0;
     background: rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(3px);
-    display: none; /* Hidden by default */
+    display: none; 
     justify-content: center;
     align-items: center;
     z-index: 2000;
@@ -907,7 +906,7 @@ body {
 }
 
 .btn-save {
-    background: #EF7631; /* Orange para mag-standout */
+    background: #EF7631; 
     color: white;
     border: none;
     padding: 10px 20px;
@@ -922,7 +921,7 @@ body {
 }
 
 
-    /* Additional styles for submission type - properly aligned */
+    
     .submission-type-group {
         margin-top: 15px;
         margin-bottom: 10px;

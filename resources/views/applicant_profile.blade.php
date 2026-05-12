@@ -456,11 +456,9 @@ document.addEventListener('DOMContentLoaded', function() {
         enableOrientation: true
     });
 
-    // EDIT BUTTON: Kukunin ang image sa preview (galing server) para ma-edit kahit anong device
     editBtn.addEventListener('click', function() {
         const currentSrc = imagePreview ? imagePreview.getAttribute('src') : null;
         
-        // Kung hindi default image ang gamit, ito ang i-load sa croppie
         if (currentSrc && !currentSrc.includes('default-profile.png')) {
             uploadModal.style.display = 'flex';
             croppieInstance.bind({

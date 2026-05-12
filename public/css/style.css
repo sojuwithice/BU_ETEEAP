@@ -73,7 +73,6 @@ html, body {
   width:100%;
 }
 
-/* color effect (exclude login) */
 .nav-links a:not(.login-btn):hover,
 .nav-links a:not(.login-btn).active{
   color:#f47c20;
@@ -123,7 +122,7 @@ html, body {
 }
 
 .apply-btn {
-  display: inline-block; /* Mahalaga para sa animation at transform */
+  display: inline-block; 
   margin-top: 20px;
   background: #f47c20;
   color: #fff;
@@ -133,32 +132,28 @@ html, body {
   font-size: 18px;
   cursor: pointer;
   text-decoration: none;
-  transition: all 0.3s ease; /* Smooth transition para sa hover */
-  
-  /* Dagdag: Pulse Animation (Glow effect na tumitibok) */
-  animation: pulse 2.5s infinite; /* Uulit-ulit ito */
+  transition: all 0.3s ease; 
+  animation: pulse 2.5s infinite; 
 }
 
-/* Hover Effect: Lalaki konti, titingkad ang kulay, at titindi ang glow */
 .apply-btn:hover {
   background: #ff8c3a;
-  transform: translateY(-5px) scale(1.05); /* Aangat at lalaki konti */
-  box-shadow: 0 10px 25px rgba(244, 124, 32, 0.6); /* Mas matinding glow */
+  transform: translateY(-5px) scale(1.05); 
+  box-shadow: 0 10px 25px rgba(244, 124, 32, 0.6); 
 }
 
-/* Keyframes para sa Pulse Animation (Tumitibok na Glow) */
 @keyframes pulse {
   0% {
     transform: scale(1) translateY(0px);
-    box-shadow: 0 0 10px rgba(244, 124, 32, 0.3); /* Default malambot na glow */
+    box-shadow: 0 0 10px rgba(244, 124, 32, 0.3); 
   }
   50% {
-    transform: scale(1.02) translateY(-3px); /* Lalaki at aangat konti */
-    box-shadow: 0 8px 20px rgba(244, 124, 32, 0.7); /* Mas matingkad na glow */
+    transform: scale(1.02) translateY(-3px); 
+    box-shadow: 0 8px 20px rgba(244, 124, 32, 0.7); 
   }
   100% {
     transform: scale(1) translateY(0px);
-    box-shadow: 0 0 10px rgba(244, 124, 32, 0.3); /* Babalik sa default malambot na glow */
+    box-shadow: 0 0 10px rgba(244, 124, 32, 0.3); 
   }
 }
 
@@ -720,13 +715,11 @@ ol li{
     margin-bottom: 12px;
 }
 
-/* FAQ Answer Styling para sa Rich Text */
 .faq-answer {
     line-height: 1.6;
     color: #000000;
 }
 
-/* Siguraduhin na may indent ang mga lists */
 .faq-answer ul, 
 .faq-answer ol {
     margin: 10px 0 10px 20px !important; 
@@ -1162,12 +1155,11 @@ ol li{
   }
 
   .step {
-    width: 100% !important; /* Sakop buong screen */
-    min-width: unset !important; /* Alisin ang 300px limit */
+    width: 100% !important; 
+    min-width: unset !important; 
     padding: 20px !important;
   }
 
-  /* Ayusin ang header na lumalampas din */
   .apply-header {
     width: 100% !important;
     margin-left: 0 !important;
@@ -1235,7 +1227,7 @@ ol li{
   }
 
 }
-/* Para sa mga phone screens */
+
 @media (max-width: 480px) {
   .step {
     min-width: 100%;    

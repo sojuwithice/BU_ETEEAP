@@ -318,13 +318,11 @@
     // ========== FUNCTION TO CONVERT TEXT LINKS TO CLICKABLE HTML ==========
     function autoConvertLinks(text) {
         if (!text) return '';
-        
-        // URL pattern: matches http://, https://, and www. links
+
         const urlPattern = /(\b(https?:\/\/|www\.)[\w\-\.]+\.[a-z]{2,}(?:\/[\w\-\.\/?%&=#]*)?)/gi;
         
         return text.replace(urlPattern, function(url) {
             let href = url;
-            // Add https:// if missing for www links
             if (url.startsWith('www.')) {
                 href = 'https://' + url;
             }

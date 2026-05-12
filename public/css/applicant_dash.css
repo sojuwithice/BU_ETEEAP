@@ -400,7 +400,6 @@ body {
     overflow: hidden;
 }
 
-/* Task header - hindi kasama sa scroll */
 .task-header {
     display: flex;
     gap: 10px;
@@ -425,14 +424,12 @@ body {
     flex-shrink: 0;
 }
 
-/* Task list container - scrollable ito */
 .req-list-container {
     flex: 1;
     overflow-y: auto;
     min-height: 0;
 }
 
-/* Scrollbar - on hover lang lalabas */
 .req-list-container {
     scrollbar-width: thin;
     scrollbar-color: transparent transparent;
@@ -443,7 +440,6 @@ body {
     scrollbar-color: #223381 #e0e0e0;
 }
 
-/* Webkit scrollbar (Chrome, Safari, Edge) */
 .req-list-container::-webkit-scrollbar {
     width: 6px;
     height: 6px;
@@ -615,7 +611,6 @@ body {
     max-height: 320px;
 }
 
-/* Scrollbar - on hover lang lalabas */
 .req-list-container {
     scrollbar-width: thin;
     scrollbar-color: transparent transparent;
@@ -652,7 +647,6 @@ body {
     background: #1a2866;
 }
 
-/* Para hindi mag-scroll ang header at title */
 .task-header {
     flex-shrink: 0;
 }
@@ -665,7 +659,6 @@ body {
     flex-shrink: 0;
 }
 
-/* Adjust req-box to use flex properly */
 .req-box {
     display: flex;
     flex-direction: column;
@@ -1002,7 +995,7 @@ body {
 }
 
 .rem-title {
-    color: #223381 !important; /* Blue color */
+    color: #223381 !important;
     font-size: 1.8rem !important;
     margin: 0 !important;
 }
@@ -1038,7 +1031,7 @@ body {
 }
 
 .cal-item span {
-    color: #EF7631; /* Orange text */
+    color: #EF7631;
     font-weight: 700;
     font-size: 0.9rem;
 }
@@ -1048,7 +1041,6 @@ body {
     color: #000;
 }
 
-/* Highlighted Day (TUE 7) */
 .active-cal {
     background: #FBCB9E; 
     padding: 5px 12px;
@@ -1207,8 +1199,6 @@ body {
     font-weight: 600;
 }
 
-
-/* Ang Vertical Line */
 .line {
     position: absolute;
     top: 45px; 
@@ -1264,7 +1254,6 @@ body {
     flex-shrink: 0; 
 }
 
-/* ITO ANG MAG-I-SCROLL */
 .activity-list {
     max-height: 50px; 
     overflow-y: auto;
@@ -1683,9 +1672,6 @@ body {
     background: #10b981;
 }
 
-/* ========== NEW ADDED CSS (DO NOT MODIFY EXISTING CSS ABOVE) ========== */
-
-/* Improved Task Item Layout - Vertical for payment tasks */
 .req-item.payment-task {
     flex-direction: column;
     align-items: stretch;
@@ -1703,14 +1689,12 @@ body {
     width: 100%;
 }
 
-/* Task description no wrap and better spacing */
 .task-info .task-desc {
     white-space: normal;
     word-break: break-word;
     line-height: 1.4;
 }
 
-/* Upload Preview Area */
 .upload-preview-area {
     margin-top: 20px;
     border: 1px solid #e5e7eb;
@@ -1752,8 +1736,6 @@ body {
     color: #6b7280;
 }
 
-
-/* Preview Area Styles */
 .preview-area {
     border: 2px solid #e5e7eb;
     border-radius: 12px;
@@ -1852,7 +1834,6 @@ body {
     margin-left: auto;
 }
 
-/* Regular task buttons (non-payment) - move to right */
 .req-item:not(.payment-task) .task-actions {
     justify-content: flex-end;
 }
@@ -1861,7 +1842,6 @@ body {
     margin-left: auto;
 }
 
-/* Payment task buttons - keep horizontal on all devices */
 .req-item.payment-task .task-actions {
     display: flex;
     gap: 12px;
@@ -1925,9 +1905,6 @@ body {
     color: white;
 }
 
-
-/* Responsive - stack payment buttons on mobile */
-/* Responsive - stack payment buttons on mobile */
 @media (max-width: 768px) {
     .req-item.payment-task {
         flex-direction: column;
@@ -1940,22 +1917,21 @@ body {
     }
     
     .req-item.payment-task .task-actions {
-        flex-direction: row !important; /* Keep buttons side by side */
+        flex-direction: row !important; 
         justify-content: flex-start;
         width: 100%;
-        gap: 8px;  /* PINALIIT ANG GAP */
+        gap: 8px;  
     }
     
     .req-item.payment-task .task-view-btn,
     .req-item.payment-task .task-upload-btn {
         width: auto;
-        min-width: 80px;  /* PINALIIT FROM 120px TO 80px */
+        min-width: 80px;  
         white-space: nowrap;
-        padding: 5px 10px;  /* DINAGDAGAN - PINALIIT ANG PADDING */
-        font-size: 10px;  /* DINAGDAGAN - PINALIIT ANG FONT */
+        padding: 5px 10px;  
+        font-size: 10px;  
     }
     
-    /* Non-payment tasks - button stays next to text on same row */
     .req-item:not(.payment-task) {
         flex-direction: row;
         align-items: center;
@@ -1971,14 +1947,14 @@ body {
         flex-direction: row;
         justify-content: flex-end;
         margin-top: 0;
-        width: auto;  /* PINALITAN FROM 50px TO auto */
+        width: auto; 
     }
     
     .req-item:not(.payment-task) .task-view-btn {
         width: auto;
         white-space: nowrap;
-        padding: 4px 10px;  /* DINAGDAGAN */
-        font-size: 10px;  /* DINAGDAGAN */
+        padding: 4px 10px;  
+        font-size: 10px;  
     }
 }
 
@@ -2226,9 +2202,9 @@ body {
 
     .req-item.payment-task .task-view-btn,
     .req-item.payment-task .task-upload-btn {
-        min-width: 70px;  /* PINALIIT FROM 100px TO 70px */
-        padding: 4px 8px;  /* PINALIIT ANG PADDING */
-        font-size: 9px;  /* PINALIIT ANG FONT */
+        min-width: 70px;  
+        padding: 4px 8px;  
+        font-size: 9px;  
     }
     
     .req-item:not(.payment-task) .task-view-btn {

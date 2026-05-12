@@ -162,7 +162,7 @@
                     <th>Fullname</th>
                     <th>Sex</th>
                     <th>Degree Program</th>
-                    <th>Mode of Application</th>  <!-- BAGONG COLUMN -->
+                    <th>Mode of Application</th>  
                     <th>Last Update</th>
                     <th>Current Status</th>
                     <th>Remarks</th>
@@ -376,7 +376,6 @@
         <div class="input-group">
             <label>Current Password</label>
             <div class="password-wrapper">
-                <!-- Inalis ang value asterisk, nilagyan ng dummy password para may "makita" kapag tinoggle -->
                 <input type="password" value="secretpassword" id="currentPassword" readonly style="background: #f9f9f9; cursor: default;">
                 <span class="toggle-eye" onclick="togglePassword('currentPassword', 'currentEyeIcon')">
                     <span class="material-symbols-outlined" id="currentEyeIcon">visibility</span>
@@ -781,10 +780,7 @@
     const status = document.getElementById('decisionStatus').value;
     const notes = document.getElementById('decisionNotes').value;
 
-    // 1. ISARA AGAD ang decision modal
     closeDecisionModal();
-
-    // 2. MAGTANONG NG CONFIRMATION
     Swal.fire({
         title: 'Confirm Decision?',
         text: `Set status to "${status}" for this applicant?`,
@@ -804,7 +800,6 @@
                 didOpen: () => { Swal.showLoading(); }
             });
             
-            // 3. AJAX CALL - FIXED URL
             fetch(`/staff/applicant/${id}/status`, {
                 method: 'POST',
                 headers: {
@@ -819,16 +814,13 @@
             })
             .then(response => response.json())
             .then(data => {
-                Swal.close(); // Close the loading Swal
+                Swal.close(); 
                 if (data.success) {
-                    // 4. UPDATE UI MANUALLY
                     const row = document.querySelector(`tr[data-id="${id}"]`);
                     if (row) {
-                        // Update status badge
                         const badge = row.querySelector('.status-badge');
                         badge.innerText = status;
-                        
-                        // Update badge class for color
+
                         let statusClass = 'orange';
                         if (status === 'Approved') statusClass = 'green';
                         else if (status === 'Rejected') statusClass = 'red';
@@ -841,8 +833,7 @@
                         else if (status === 'Completed') statusClass = 'completed';
                         
                         badge.className = `status-badge ${statusClass}`;
-                        
-                        // Update remarks
+
                         const remarksSpan = row.querySelector('.remarks-cell span');
                         const displayNotes = notes && notes !== 'null' ? notes : '';
                         remarksSpan.innerText = displayNotes.length > 30 ? displayNotes.substring(0, 30) + '...' : (displayNotes || 'No remarks');
@@ -852,7 +843,6 @@
                         row.setAttribute('data-status', status);
                         row.setAttribute('data-remarks', displayNotes);
                     }
-                    // 5. TOAST NOTIFICATION
                     showToast("Decision saved successfully!", "success");
                 } else {
                     showToast(data.message || "Failed to update status", "error");
@@ -944,7 +934,6 @@
         return;
     }
 
-    // ✅ CLOSE MODAL FIRST (ETO LANG TALAGA KULANG MO)
     closeAccountModal();
     
     Swal.fire({
@@ -1152,7 +1141,6 @@
                                 navbarImg.src = base64;
                             }
 
-                            // OPTIONAL: update dropdown avatar din
                             const dropdownAvatar = document.querySelector('.dropdown-avatar');
                             if (dropdownAvatar) {
                                 dropdownAvatar.src = base64;

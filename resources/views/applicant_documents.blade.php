@@ -535,7 +535,6 @@ function addToRecentTable(filePath, fileName) {
     else recentTableBody.appendChild(newRow);
 }
 
-// DOCUMENT ITEM CLICK - load existing files from recentUploads
 document.querySelectorAll('.doc-item').forEach(item => {
     item.addEventListener('click', function(e) {
         e.stopPropagation();
@@ -877,7 +876,7 @@ async function updatePassword() {
     } catch (error) { showToast("Error updating password", "error"); }
 }
 
-// Onsite functions (unchanged)
+// Onsite functions
 const onsiteBtn = document.querySelector('.onsite-btn');
 let isOnsiteMode = false, isVerified = false;
 function setOnsiteMode(disabled) {

@@ -331,9 +331,9 @@ body {
 }
 
 .info-item.sex-item .info-box {
-    flex: 1;           /* Para same sa iba */
-    width: auto;       /* Para hindi fixed */
-    justify-content: flex-start; /* Left alignment */
+    flex: 1;           
+    width: auto;       
+    justify-content: flex-start; 
 }
 
 .info-box.wide {
@@ -551,7 +551,6 @@ body {
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
-/* I-update mo 'to sa info.css mo */
 .custom-dropdown.open .dropdown-menu {
     display: block !important;
     opacity: 1;
@@ -1384,7 +1383,6 @@ body {
         cursor: pointer;
         transition: all 0.2s ease;
         outline: none;
-        /* Sigurado tayong nakadikit sa kaliwa */
         align-self: flex-start; 
     }
 

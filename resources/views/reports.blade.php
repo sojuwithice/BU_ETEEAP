@@ -214,20 +214,6 @@
     </div>
 </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         <div id="accountModal" class="account-modal">
     <div class="account-box">
         <span class="close-modal" onclick="closeAccountModal()">&times;</span>
