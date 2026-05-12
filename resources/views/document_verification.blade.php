@@ -241,9 +241,12 @@
                 </div>
                 <div class="dropdown-divider"></div>
                 <a href="#" onclick="openAccountModal()" class="dropdown-item"><span class="material-symbols-outlined">manage_accounts</span><span>Manage Account</span></a>
-                <form method="POST" action="{{ route('logout') }}" style="margin: 0;">
+                <form method="POST" action="{{ route('logout') }}" style="margin: 0;" id="logoutForm">
                     @csrf
-                    <button type="submit" class="dropdown-item"><span class="material-symbols-outlined">logout</span><span>Logout</span></button>
+                    <a href="#" onclick="logout(); return false;" class="dropdown-item">
+                        <span class="material-symbols-outlined">logout</span>
+                        <span>Logout</span>
+                    </a>
                 </form>
             </div>
         </div>
@@ -974,6 +977,10 @@
         const firstDoc = document.querySelector('.doc-item');
         if (firstDoc) selectDocument(firstDoc, firstDoc.getAttribute('data-id'), firstDoc.getAttribute('data-name'));
     });
+
+    function logout() {
+    document.getElementById('logoutForm').submit();
+}
 </script>
 </body>
 </html>
