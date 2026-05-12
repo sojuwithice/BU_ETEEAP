@@ -23,10 +23,11 @@ This is a Laravel-based web application (ETEEAP System) developed for academic a
 
 Make sure you have installed:
 
-- PHP >= 8.x
+- PHP >= 8.0
 - Composer
 - MySQL 
 - Git
+- XAMPP
 
 ---
 
@@ -54,12 +55,13 @@ cp .env.example .env
 Open .env file and update:
 
 ```bash
-APP_NAME=ETEEAP
-APP_URL=http://127.0.0.1:8000
 
-DB_DATABASE=your_database_name
-DB_USERNAME=your_username
-DB_PASSWORD=your_password
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=BU_ETEEAP
+DB_USERNAME=root
+DB_PASSWORD= 
 ```
 
 ### 5. Generate application key
