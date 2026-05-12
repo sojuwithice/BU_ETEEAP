@@ -692,47 +692,65 @@
     }
     
     function updatePassword() {
-        const newPassword = document.getElementById('newPassword');
-        const confirmPassword = document.getElementById('confirmPassword');
-        
-        if (!newPassword.value || !confirmPassword.value) {
-            showToast('Please fill in all fields', 'error');
-            return;
-        }
-        
-        if (newPassword.value !== confirmPassword.value) {
-            showToast('Passwords do not match', 'error');
-            return;
-        }
-        
-        if (newPassword.value.length < 8) {
-            showToast('Password must be at least 8 characters', 'error');
-            return;
-        }
-        
-        // Send to backend
-        fetch('{{ route("update-password") }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-            },
-            body: JSON.stringify({ password: newPassword.value })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                showToast('Password updated successfully!', 'success');
-                hideChangeSection();
-            } else {
-                showToast(data.message || 'Failed to update password', 'error');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showToast('An error occurred', 'error');
-        });
+    const newPassword = document.getElementById('newPassword');
+    const confirmPassword = document.getElementById('confirmPassword');
+    
+    if (!newPassword.value || !confirmPassword.value) {
+        showToast('Please fill in all fields', 'error');
+        return;
     }
+    
+    if (newPassword.value !== confirmPassword.value) {
+        showToast('Passwords do not match', 'error');
+        return;
+    }
+    
+    if (newPassword.value.length < 8) {
+        showToast('Password must be at least 8 characters', 'error');
+        return;
+    }
+    
+    // Show loading state
+    const saveBtn = document.querySelector('#changeSection .save-btn');
+    const originalText = saveBtn.innerHTML;
+    saveBtn.innerHTML = 'Saving...';
+    saveBtn.disabled = true;
+    
+    // Send to backend using correct endpoint
+    fetch('/update-password', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({ 
+            password: newPassword.value,
+            password_confirmation: confirmPassword.value 
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        saveBtn.innerHTML = originalText;
+        saveBtn.disabled = false;
+        
+        if (data.success) {
+            showToast('Password updated successfully!', 'success');
+            hideChangeSection();
+            // Clear fields
+            newPassword.value = '';
+            confirmPassword.value = '';
+        } else {
+            showToast(data.message || 'Failed to update password', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        saveBtn.innerHTML = originalText;
+        saveBtn.disabled = false;
+        showToast('An error occurred. Please try again.', 'error');
+    });
+}
     
     // ============================================
     // IMAGE CROP LOGIC
@@ -772,48 +790,62 @@
     }
     
     function uploadCroppedImage() {
-        if (!croppieInstance) return;
-        
-        croppieInstance.result('base64').then(base64 => {
-            // Convert base64 to blob
-            fetch(base64)
-                .then(res => res.blob())
-                .then(blob => {
-                    const formData = new FormData();
-                    formData.append('profile_image', blob, 'profile.jpg');
+    if (!croppieInstance) return;
+    
+    const saveBtn = document.getElementById('savePhotoBtn');
+    const originalText = saveBtn.innerHTML;
+    saveBtn.innerHTML = 'Saving...';
+    saveBtn.disabled = true;
+    
+    croppieInstance.result('base64').then(base64 => {
+        // Convert base64 to blob
+        fetch(base64)
+            .then(res => res.blob())
+            .then(blob => {
+                const formData = new FormData();
+                formData.append('profile_image', blob, 'profile.jpg');
+                
+                fetch('/profile/upload-image', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    saveBtn.innerHTML = originalText;
+                    saveBtn.disabled = false;
                     
-                    fetch('{{ route("profile.upload.image") }}', {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                        },
-                        body: formData
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            // update modal preview
-                            document.getElementById('modalProfilePreview').src = base64;
-
-                            // update navbar avatar (ITO ANG FIX)
-                            const navbarAvatar = document.getElementById('navbarAvatar');
-                            if (navbarAvatar) {
-                                navbarAvatar.src = base64;
-                            }
-
-                            showToast("Profile photo updated!", "success");
-                            cancelAdjustment();
-                        } else {
-                            showToast(data.message || 'Failed to update photo', 'error');
+                    if (data.success) {
+                        // Update timestamp para ma-reload ang image
+                        const timestamp = new Date().getTime();
+                        const newImageUrl = data.path + '?t=' + timestamp;
+                        
+                        // Update modal preview
+                        document.getElementById('modalProfilePreview').src = newImageUrl;
+                        
+                        // Update navbar avatar
+                        const navbarAvatar = document.getElementById('navbarAvatar');
+                        if (navbarAvatar) {
+                            navbarAvatar.src = newImageUrl;
                         }
-                    })
-                    .catch(error => {
-                        console.error('Upload error:', error);
-                        showToast('Failed to upload photo', 'error');
-                    });
+                        
+                        showToast("Profile photo updated!", "success");
+                        cancelAdjustment();
+                    } else {
+                        showToast(data.message || 'Failed to update photo', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Upload error:', error);
+                    saveBtn.innerHTML = originalText;
+                    saveBtn.disabled = false;
+                    showToast('Failed to upload photo', 'error');
                 });
-        });
-    }
+            });
+    });
+}
     
     function cancelAdjustment() {
         if (croppieInstance) {
@@ -834,20 +866,37 @@
     // TOAST NOTIFICATION
     // ============================================
     function showToast(msg, type) {
-        const toast = document.getElementById('toast');
-        if (!toast) return;
-        
-        toast.className = `toast show ${type}`;
-        const toastIcon = document.getElementById('toast-icon');
-        const toastMessage = document.getElementById('toast-message');
-        
-        if (toastIcon) toastIcon.innerText = type === 'success' ? 'check_circle' : 'error';
-        if (toastMessage) toastMessage.innerText = msg;
-        
-        setTimeout(() => {
-            toast.classList.remove('show');
-        }, 3000);
+    const toast = document.getElementById('toast');
+    if (!toast) return;
+    
+    // Force remove any existing inline styles
+    toast.style.backgroundColor = '';
+    
+    // Set class
+    
+    toast.classList.add('show');
+    
+    if (type === 'success') {
+        toast.classList.add('success');
+        toast.style.backgroundColor = '#25c14a'; // Force green
+    } else if (type === 'error') {
+        toast.classList.add('error');
+        toast.style.backgroundColor = '#e03d4d'; // Force red
     }
+    
+    const toastIcon = document.getElementById('toast-icon');
+    const toastMessage = document.getElementById('toast-message');
+    
+    if (toastIcon) toastIcon.innerText = type === 'success' ? 'check_circle' : 'error';
+    if (toastMessage) toastMessage.innerText = msg;
+    
+    // Log para malaman kung anong nangyayari
+    console.log('Toast type:', type, 'Background:', toast.style.backgroundColor);
+    
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 3000);
+}
 </script>
 </body>
 </html>

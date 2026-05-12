@@ -401,19 +401,6 @@ body {
     width: 100%;
 }
 
-/* Toast */
-.toast-notification {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background: var(--primary-blue);
-    color: white;
-    padding: 10px 20px;
-    border-radius: 40px;
-    font-weight: bold;
-    z-index: 999;
-    animation: slideIn 0.3s ease;
-}
 
 @keyframes slideIn {
     from { transform: translateX(100%); opacity: 0; }
@@ -776,17 +763,16 @@ body {
     transition: top 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
-.toast.show {
-    top: 25px;
-}
-
-/* Success & Error Colors */
 .toast.success { 
-    background: #25c14a; 
+    background: #25c14a !important; 
 }
 
 .toast.error { 
-    background: #e03d4d; 
+    background: #e03d4d !important; 
+}
+
+.toast.show {
+    top: 25px !important;
 }
 
 /* Icon Styling */
